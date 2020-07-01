@@ -63,7 +63,7 @@
   },
   "oclif": {
     "commands": "./src/commands",
-    "bin": "cli",
+    "bin": "permanent-seeder",
     "plugins": [
       "@oclif/plugin-help"
     ]

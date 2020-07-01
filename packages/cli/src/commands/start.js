@@ -1,4 +1,4 @@
-const { Command, flags } = require('@oclif/command');
+const { Command } = require('@oclif/command');
 const seeder = require('@geut/seeder');
 
 class StartCommand extends Command {
@@ -11,13 +11,10 @@ class StartCommand extends Command {
   }
 }
 
-StartCommand.description = `Describe the command here
-...
-Extra documentation goes here
-`;
+StartCommand.description = 'Start permanent seeder daemon';
 
-StartCommand.flags = {
-  name: flags.string({ char: 'n', description: 'name to print' })
-};
+// StartCommand.flags = {
+//   name: flags.string({ char: 'n', description: 'name to print' })
+// };
 
 module.exports = StartCommand;
