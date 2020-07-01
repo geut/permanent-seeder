@@ -1,7 +1,27 @@
 {
   "name": "root",
   "private": true,
+  "homepage": "http://geutstudio.com",
+  "bugs": {
+    "url": "https://github.com/geut/permanent-seeder/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/geut/permanent-seeder.git"
+  },
+  "license": "ISC",
+  "author": {
+    "name": "GEUT",
+    "email": "contact@geutstudio.com"
+  },
+  "scripts": {
+    "bootstrap": "lerna clean && lerna bootstrap",
+    "lint": "lerna run lint",
+    "lint:fix": "lerna run lint -- -- --fix",
+    "test": "lerna run test",
+    "posttest": "npm run lint"
+  },
   "devDependencies": {
     "lerna": "^3.22.1"
-  }
+	}
 }
