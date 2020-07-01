@@ -1,3 +1,3 @@
 test('demo test', () => {
-  expect('nice').toBe('nice')
-})
+  expect('nice').toBe('nice');
+});

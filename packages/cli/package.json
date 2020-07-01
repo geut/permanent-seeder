@@ -67,5 +67,12 @@
     "plugins": [
       "@oclif/plugin-help"
     ]
+  },
+  "semistandard": {
+    "env": [
+      "jest",
+      "node",
+      "browser"
+    ]
   }
 }

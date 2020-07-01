@@ -28,7 +28,7 @@
       "**/tests/**/*.test.js"
     ]
   },
-  "standard": {
+  "semistandard": {
     "env": [
       "jest",
       "node",
