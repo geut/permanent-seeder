@@ -1,0 +1,77 @@
+{
+  "name": "@geut/permanent-seeder",
+  "version": "0.0.1",
+  "description": "Permanent Seeder cli",
+  "keywords": [
+    "create",
+    "geut",
+    "module"
+  ],
+  "homepage": "https://github.com/geut/cli#readme",
+  "bugs": {
+    "url": "https://github.com/geut/cli/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/geut/cli.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "GEUT",
+    "email": "contact@geutstudio.com"
+  },
+  "main": "src/index.js",
+  "bin": {
+    "cli": "./bin/run"
+  },
+  "files": [
+    "/bin",
+    "/npm-shrinkwrap.json",
+    "/oclif.manifest.json",
+    "/src"
+  ],
+  "scripts": {
+    "lint": "xd-ns \"**/*.js\"",
+    "prepack": "oclif-dev manifest && oclif-dev readme",
+    "postpack": "rm -f oclif.manifest.json",
+    "prepublishOnly": "npm test",
+    "test": "jest --passWithNoTests",
+    "posttest": "npm run lint",
+    "version": "chan release --allow-yanked ${npm_package_version} && git add ."
+  },
+  "jest": {
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ]
+  },
+  "dependencies": {
+    "@geut/seeder": "^0.0.1",
+    "@oclif/command": "^1.7.0",
+    "@oclif/config": "^1.16.0",
+    "@oclif/plugin-help": "^3.1.0"
+  },
+  "devDependencies": {
+    "@geut/chan": "^2.2.1",
+    "@geut/xd": "^1.6.0",
+    "@oclif/dev-cli": "^1.22.2",
+    "globby": "^10.0.2",
+    "jest": "^26.1.0",
+    "standard": "^14.3.4"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "oclif": {
+    "commands": "./src/commands",
+    "bin": "permanent-seeder",
+    "plugins": [
+      "@oclif/plugin-help"
+    ]
+  },
+  "standard": {
+    "env": [
+      "jest",
+      "node"
+    ]
+  }
+}

@@ -5,7 +5,11 @@
   "version": "independent",
   "command": {
     "bootstrap": {
-      "npmClientArgs": ["--no-package-lock"]
+      "npmClientArgs": ["--no-package-lock"],
+      "hoist": true
+    },
+    "clean": {
+      "yes": true
     }
   }
 }

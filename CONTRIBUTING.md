@@ -1,4 +1,4 @@
-# Contributing to seeder
+# Contributing to permanent-seeder
 
 ## Issue Contributions
 
@@ -13,13 +13,13 @@ This document will guide you through the contribution process.
 
 ### Step 1: Fork
 
-Fork the project [on GitHub](https://github.com/geut/seeder) and check out your copy locally.
+Fork the project [on GitHub](https://github.com/geut/permanent-seeder) and check out your copy locally.
 
 ```bash
-$ git clone git@github.com:username/seeder.git
-$ cd seeder
+$ git clone git@github.com:username/permanent-seeder.git
+$ cd permanent-seeder
 $ npm install
-$ git remote add upstream git://github.com/geut/seeder.git
+$ git remote add upstream git://github.com/geut/permanent-seeder.git
 ```
 
 ### Step 2: Branch
