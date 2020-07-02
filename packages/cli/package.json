@@ -51,12 +51,12 @@
     "@oclif/plugin-help": "^3.1.0"
   },
   "devDependencies": {
-    "@geut/chan": "^2.0.0",
-    "@geut/xd": "^1.5.0",
+    "@geut/chan": "^2.2.1",
+    "@geut/xd": "^1.6.0",
     "@oclif/dev-cli": "^1.22.2",
     "globby": "^10.0.2",
     "jest": "^26.1.0",
-    "semistandard": "^14.2.2"
+    "standard": "^14.3.4"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -68,11 +68,10 @@
       "@oclif/plugin-help"
     ]
   },
-  "semistandard": {
+  "standard": {
     "env": [
       "jest",
-      "node",
-      "browser"
+      "node"
     ]
   }
 }

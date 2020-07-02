@@ -18,21 +18,14 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@geut/chan": "^2.0.0",
-    "@geut/xd": "^1.5.0",
-    "standard": "^14.3.1",
+    "@geut/chan": "^2.2.1",
+    "@geut/xd": "^1.6.0",
+    "standard": "^14.3.4",
     "jest": "^24.8.0"
   },
   "jest": {
     "testMatch": [
       "**/tests/**/*.test.js"
-    ]
-  },
-  "semistandard": {
-    "env": [
-      "jest",
-      "node",
-      "browser"
     ]
   },
   "repository": {
@@ -52,5 +45,11 @@
   "bugs": {
     "url": "https://github.com/geut/seeder/issues"
   },
-  "homepage": "https://github.com/geut/seeder#readme"
+  "homepage": "https://github.com/geut/seeder#readme",
+  "standard": {
+    "env": [
+      "jest",
+      "node"
+    ]
+  }
 }

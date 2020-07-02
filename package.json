@@ -22,23 +22,23 @@
     "posttest": "npm run lint"
   },
   "devDependencies": {
+    "lerna": "^3.22.1",
     "husky": "^3.1.0",
     "lint-staged": "^10.2.9",
-    "semistandard": "^14.2.0"
+    "standard": "^14.2.0"
   },
   "lint-staged": {
-    "*.js": "semistandard"
+    "*.js": "standard"
   },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
     }
   },
-  "semistandard": {
+  "standard": {
     "env": [
       "jest",
-      "node",
-      "browser"
+      "node"
     ]
   }
 }
