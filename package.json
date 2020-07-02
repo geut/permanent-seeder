@@ -22,13 +22,14 @@
     "posttest": "npm run lint"
   },
   "devDependencies": {
+    "@geut/xd": "^1.6.0",
     "lerna": "^3.22.1",
     "husky": "^3.1.0",
     "lint-staged": "^10.2.9",
     "standard": "^14.2.0"
   },
   "lint-staged": {
-    "*.js": "standard"
+    "*.js": "xd-ns"
   },
   "husky": {
     "hooks": {
