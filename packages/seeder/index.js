@@ -32,9 +32,12 @@ class Seeder {
   constructor (opts = {}) {
     this.opts = { ...DEFAULT_OPTS, ...opts }
     this.drives = new Map()
+    this.ready = false
   }
 
   async init () {
+    if (this.ready) return
+
     this.store = new Corestore(
       getCoreStore(this.opts.storageLocation, '.hyper'),
       this.opts.corestoreOpts
@@ -42,9 +45,11 @@ class Seeder {
     await this.store.ready()
 
     this.networker = new CSN(this.store, { ...this.opts.swarmOpts })
+    this.ready = true
   }
 
   async seed (keys = []) {
+    await this.init()
     for (const key of keys) {
       const drive = Hyperdrive(this.store, key, this.hyperdriveOpts)
       await drive.ready()
