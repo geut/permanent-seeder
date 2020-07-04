@@ -1,0 +1,6 @@
+[security]
+secret = 'YOUR_SECRET_HERE'
+
+[vault]
+endpoint_url = 'http://localhost:1234'
+key_fetch_frequency = 5 # Minutes
