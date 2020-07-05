@@ -1,18 +1,19 @@
 const { promises: { copyFile, writeFile }, constants: { COPYFILE_EXCL }, createReadStream } = require('fs')
-const path = require('path')
+const { join, resolve } = require('path')
 const lodashGet = require('lodash.get')
 const lodashSet = require('lodash.set')
 const deepExtend = require('deep-extend')
-const toml = require('@iarna/toml')
+const tomlParseStream = require('@iarna/toml/parse-stream')
+const tomlStringify = require('@iarna/toml/stringify')
 
 const CONFIG_FILENAME = 'permanent-seeder.toml'
 const CONFIG_EXAMPLE_FILENAME = 'permanent-seeder.example.toml'
 
 const getConfig = async folderPath => {
-  const filePath = path.resolve(path.join(folderPath, CONFIG_FILENAME))
+  const filePath = resolve(join(folderPath, CONFIG_FILENAME))
   let config
   try {
-    config = await toml.parse.stream(createReadStream(filePath, { encoding: 'utf-8' }))
+    config = await tomlParseStream(createReadStream(filePath, { encoding: 'utf-8' }))
   } catch (error) {}
 
   return config
@@ -26,10 +27,10 @@ const getConfig = async folderPath => {
  * @param {boolean} options.force Override existent file
  */
 module.exports.init = async (configFolderPath, options = {}) => {
-  const filePath = path.resolve(path.join(configFolderPath, CONFIG_FILENAME))
+  const filePath = resolve(join(configFolderPath, CONFIG_FILENAME))
 
   await copyFile(
-    path.resolve(__dirname, CONFIG_EXAMPLE_FILENAME),
+    resolve(__dirname, CONFIG_EXAMPLE_FILENAME),
     filePath,
     options.force ? null : COPYFILE_EXCL
   )
@@ -77,7 +78,7 @@ module.exports.set = async (key, value, options = {}) => {
 
   lodashSet(config, key, value)
 
-  const filePath = path.resolve(path.join(options.configFolderPath, CONFIG_FILENAME))
+  const filePath = resolve(join(options.configFolderPath, CONFIG_FILENAME))
 
-  await writeFile(filePath, toml.stringify(config), 'utf-8')
+  await writeFile(filePath, tomlStringify(config), 'utf-8')
 }
