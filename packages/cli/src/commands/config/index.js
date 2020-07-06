@@ -1,4 +1,4 @@
-const path = require('path')
+const { resolve } = require('path')
 const { flags } = require('@oclif/command')
 
 const BaseCommand = require('../../base-command')
@@ -9,7 +9,7 @@ class ConfigCommand extends BaseCommand {
   }
 
   get localConfigFolderPath () {
-    return path.resolve(__dirname)
+    return resolve(__dirname)
   }
 
   get globalConfigFolderPath () {
