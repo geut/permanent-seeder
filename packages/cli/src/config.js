@@ -51,7 +51,7 @@ module.exports.get = async (key, options = {}) => {
 
   if (!globalConfig && !localConfig) return
 
-  const mergedConfig = deepExtend(globalConfig, localConfig)
+  const mergedConfig = deepExtend(globalConfig || {}, localConfig || {})
 
   if (key) {
     return lodashGet(mergedConfig, key)

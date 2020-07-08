@@ -1,6 +1,26 @@
+const { resolve } = require('path')
 const { Command, flags } = require('@oclif/command')
 
+const config = require('./config')
+
 class BaseCommand extends Command {
+  get localConfigFolderPath () {
+    return resolve(process.cwd())
+  }
+
+  get globalConfigFolderPath () {
+    return this.config.home
+  }
+
+  async getConfig (key) {
+    const configValues = await config.get(key, {
+      globalConfigFolderPath: this.globalConfigFolderPath,
+      localConfigFolderPath: this.localConfigFolderPath
+    })
+
+    return configValues
+  }
+
   log (msg, force = false) {
     const { flags } = this.parse(this.constructor)
 

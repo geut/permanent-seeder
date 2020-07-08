@@ -1,4 +1,3 @@
-const { resolve } = require('path')
 const { flags } = require('@oclif/command')
 
 const BaseCommand = require('../../base-command')
@@ -6,14 +5,6 @@ const BaseCommand = require('../../base-command')
 class ConfigCommand extends BaseCommand {
   async run () {
     this._help()
-  }
-
-  get localConfigFolderPath () {
-    return resolve(__dirname)
-  }
-
-  get globalConfigFolderPath () {
-    return this.config.home
   }
 }
 
