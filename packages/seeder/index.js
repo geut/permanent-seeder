@@ -66,7 +66,7 @@ class Seeder extends EventEmitter {
       await drive.ready()
       const { discoveryKey } = drive
       const dkey = discoveryKey.toString('hex')
-      this.drives.set(dkey, drive)
+      this.drives.set(key.toString('hex'), drive)
       // join em all
       await this.networker.join(discoveryKey, { announce: this.opts.announce, lookup: this.opts.lookup })
       const handle = drive.download('/')
@@ -75,7 +75,7 @@ class Seeder extends EventEmitter {
       handle.on('finish', (...args) => this.onEvent('finish', dkey, args))
       handle.on('error', (...args) => this.onEvent('error', dkey, args))
       handle.on('cancel', (...args) => this.onEvent('cancel', dkey, args))
-      this.downloads.set(dkey, handle)
+      this.downloads.set(key.toString('hex'), handle)
       return this.downloads
     }
   }
