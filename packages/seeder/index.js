@@ -62,20 +62,24 @@ class Seeder extends EventEmitter {
   async seed (keys = []) {
     await this.init()
     for (const key of keys) {
-      const drive = Hyperdrive(this.store, key, this.hyperdriveOpts)
+      // get or create hyperdrive
+      const keyString = key.toString('hex')
+      let drive = this.drives.get(keyString)
+      if (!drive) {
+        drive = Hyperdrive(this.store, key, this.hyperdriveOpts)
+        this.drives.set(keyString, drive)
+      }
       await drive.ready()
       const { discoveryKey } = drive
-      const dkey = discoveryKey.toString('hex')
-      this.drives.set(dkey, drive)
       // join em all
       await this.networker.join(discoveryKey, { announce: this.opts.announce, lookup: this.opts.lookup })
       const handle = drive.download('/')
-      handle.on('start', (...args) => this.onEvent('start', dkey, args))
-      handle.on('progress', (...args) => this.onEvent('progress', dkey, args))
-      handle.on('finish', (...args) => this.onEvent('finish', dkey, args))
-      handle.on('error', (...args) => this.onEvent('error', dkey, args))
-      handle.on('cancel', (...args) => this.onEvent('cancel', dkey, args))
-      this.downloads.set(dkey, handle)
+      handle.on('start', (...args) => this.onEvent('start', key, args))
+      handle.on('progress', (...args) => this.onEvent('progress', key, args))
+      handle.on('finish', (...args) => this.onEvent('finish', key, args))
+      handle.on('error', (...args) => this.onEvent('error', key, args))
+      handle.on('cancel', (...args) => this.onEvent('cancel', key, args))
+      this.downloads.set(keyString, handle)
       return this.downloads
     }
   }
