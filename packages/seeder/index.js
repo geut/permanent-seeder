@@ -1,4 +1,5 @@
 const { join } = require('path')
+const { EventEmitter } = require('events')
 const { homedir } = require('os')
 const Hyperdrive = require('@geut/hyperdrive-promise')
 const Corestore = require('corestore')
@@ -28,10 +29,12 @@ const getCoreStore = (storageLocation, name) => {
   return file => raf(join(location, file))
 }
 
-class Seeder {
+class Seeder extends EventEmitter {
   constructor (opts = {}) {
+    super()
     this.opts = { ...DEFAULT_OPTS, ...opts }
     this.drives = new Map()
+    this.downloads = new Map()
     this.ready = false
   }
 
@@ -48,38 +51,53 @@ class Seeder {
     this.ready = true
   }
 
+  get (dkey) {
+    return this.drives.get(dkey)
+  }
+
+  onEvent (event, ...args) {
+    this.emit(`drive-${event}`, { ...args })
+  }
+
   async seed (keys = []) {
     await this.init()
     for (const key of keys) {
       const drive = Hyperdrive(this.store, key, this.hyperdriveOpts)
       await drive.ready()
       const { discoveryKey } = drive
-      this.drives.set(discoveryKey.toString('hex'), drive)
+      const dkey = discoveryKey.toString('hex')
+      this.drives.set(dkey, drive)
       // join em all
       await this.networker.join(discoveryKey, { announce: this.opts.announce, lookup: this.opts.lookup })
       const handle = drive.download('/')
-      await new Promise(resolve => {
-        handle.on('finish', async () => {
-          const stats = await drive.stats('/')
-          console.log({ stats })
-          return resolve()
-        })
-      })
+      handle.on('start', (...args) => this.onEvent('start', dkey, args))
+      handle.on('progress', (...args) => this.onEvent('progress', dkey, args))
+      handle.on('finish', (...args) => this.onEvent('finish', dkey, args))
+      handle.on('error', (...args) => this.onEvent('error', dkey, args))
+      handle.on('cancel', (...args) => this.onEvent('cancel', dkey, args))
+      this.downloads.set(dkey, handle)
+      return this.downloads
     }
   }
 
   async unseed (dkey) {
+    await this.init()
     if (dkey) {
+      const dwld = this.downloads.get(dkey)
+      dwld.destroy()
       return this.networker.leave(dkey)
     }
 
-    // note(dk): I think this can be done in parallel with promise.all
+    // Note(dk): I think this can be done in parallel with promise.all
     for (const drive of this.drives.values()) {
       await this.networker.leave(drive.discoveryKey)
     }
   }
 
   async destroy () {
+    for (const handle of this.downloads.values()) {
+      handle.destroy()
+    }
     await this.networker.close()
   }
 }
