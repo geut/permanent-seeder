@@ -12,8 +12,8 @@ class BaseCommand extends Command {
     return this.config.home
   }
 
-  async getConfig (key) {
-    const configValues = await config.get(key, {
+  getConfig (key) {
+    const configValues = config.get(key, {
       globalConfigFolderPath: this.globalConfigFolderPath,
       localConfigFolderPath: this.localConfigFolderPath
     })
