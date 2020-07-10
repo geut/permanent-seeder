@@ -1,4 +1,4 @@
-const Seeder = require('./')
+const Seeder = require('./seeder')
 
 const main = async () => {
   const s = new Seeder()
