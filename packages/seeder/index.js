@@ -74,11 +74,8 @@ class Seeder extends EventEmitter {
       // join em all
       await this.networker.join(discoveryKey, { announce: this.opts.announce, lookup: this.opts.lookup })
       const handle = drive.download('/')
-      handle.on('start', (...args) => this.onEvent('start', key, args))
-      handle.on('progress', (...args) => this.onEvent('progress', key, args))
       handle.on('finish', (...args) => this.onEvent('finish', key, args))
       handle.on('error', (...args) => this.onEvent('error', key, args))
-      handle.on('cancel', (...args) => this.onEvent('cancel', key, args))
       this.downloads.set(keyString, handle)
       return this.downloads
     }
@@ -92,10 +89,7 @@ class Seeder extends EventEmitter {
       return this.networker.leave(dkey)
     }
 
-    // Note(dk): I think this can be done in parallel with promise.all
-    for (const drive of this.drives.values()) {
-      await this.networker.leave(drive.discoveryKey)
-    }
+    await Promise.all(Array.from(this.drives, ([_, drive]) => this.networker.leave(drive.discoveryKey)))
   }
 
   async destroy () {
