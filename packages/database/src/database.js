@@ -1,8 +1,8 @@
 const assert = require('assert')
 const levelup = require('levelup')
-const leveldown = require('leveldown')
 const encode = require('encoding-down')
 const memdown = require('memdown')
+const level = require('level-party')
 
 const { v4: uuid } = require('uuid')
 
@@ -10,9 +10,11 @@ class Database {
   constructor (db) {
     const options = { valueEncoding: 'json' }
 
-    const storage = encode(typeof db === 'string' ? leveldown(db) : memdown(), options)
-
-    this._db = levelup(storage)
+    if (typeof db === 'string') {
+      this._db = level(db, options)
+    } else {
+      this._db = levelup(encode(memdown(), options))
+    }
   }
 
   static createId () {
