@@ -1,0 +1,51 @@
+{
+  "name": "@geut/seeder-database",
+  "version": "0.0.1",
+  "description": "Key value databse",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "jest --passWithNoTests",
+    "posttest": "npm run lint",
+    "lint": "xd-ns \"**/*.js\"",
+    "version": "chan release --allow-yanked ${npm_package_version} && git add .",
+    "prepublishOnly": "npm test"
+  },
+  "dependencies": {
+    "encoding-down": "^6.3.0",
+    "levelup": "^4.4.0",
+    "level-party": "^4.0.0",
+    "memdown": "^5.1.0",
+    "uuid": "^8.2.0"
+  },
+  "devDependencies": {
+    "@geut/chan": "^2.2.1",
+    "@geut/xd": "^1.6.0",
+    "standard": "^14.3.4",
+    "jest": "^24.8.0"
+  },
+  "jest": {
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/geut/seeder.git"
+  },
+  "author": {
+    "name": "GEUT",
+    "email": "contact@geutstudio.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/geut/seeder/issues"
+  },
+  "homepage": "https://github.com/geut/seeder#readme",
+  "standard": {
+    "env": [
+      "jest",
+      "node"
+    ]
+  }
+}

@@ -8,7 +8,7 @@ class SetCommand extends ConfigCommand {
     const { args: { key, value }, flags: { global } } = this.parse(SetCommand)
     const configFolderPath = global ? this.globalConfigFolderPath : this.localConfigFolderPath
 
-    await config.set(key, value, { configFolderPath })
+    config.set(key, value, { configFolderPath })
   }
 
   async catch (error) {

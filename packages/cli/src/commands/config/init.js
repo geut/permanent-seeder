@@ -10,7 +10,7 @@ class InitCommand extends ConfigCommand {
     const { flags: { global, force } } = this.parse(InitCommand)
     const configFolderPath = global ? this.globalConfigFolderPath : this.localConfigFolderPath
 
-    await config.init(configFolderPath, { force })
+    config.init(configFolderPath, { force })
   }
 
   async catch (error) {

@@ -7,15 +7,13 @@ class GetCommand extends ConfigCommand {
   async run () {
     const { args: { key } } = this.parse(GetCommand)
 
-    const configValues = await config.get(key, {
+    const configValues = config.get(key, {
       globalConfigFolderPath: this.globalConfigFolderPath,
       localConfigFolderPath: this.localConfigFolderPath
     })
 
     if (key && configValues === undefined) {
       return this.warn(`No config key found: ${key}`)
-    } else if (configValues === undefined) {
-      return this.warn('No config file found')
     }
 
     this.log(JSON.stringify(configValues, null, 2), true)
