@@ -6,26 +6,24 @@ const BaseCommand = require('../../base-command')
 
 class AddCommand extends KeyCommand {
   async run () {
-    const { flags: { key, title, createdAt } } = this.parse(AddCommand)
+    const { flags: { key, title } } = this.parse(AddCommand)
 
-    const id = await this.keysDB.addKey({
+    await this.keysDatabase.add({
       key,
-      title,
-      createdAt
+      title
     })
 
-    this.log(`Key added with id: ${id}`, true)
+    this.log('Key added!', true)
   }
 }
 
-AddCommand.description = 'Add a key'
+AddCommand.description = 'Adds a key'
 
 AddCommand.flags = {
   ...KeyCommand.flags,
   ...BaseCommand.flags,
   key: flags.string({ char: 'k', required: true, description: 'Key to add' }),
-  title: flags.string({ char: 't', required: true, description: 'Key title' }),
-  createdAt: flags.string({ char: 'c', required: true, description: 'Key creation date' })
+  title: flags.string({ char: 't', required: true, description: 'Key title' })
 }
 
 module.exports = AddCommand

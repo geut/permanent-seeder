@@ -30,6 +30,8 @@ class BaseCommand extends Command {
   }
 }
 
+BaseCommand.strict = false
+
 BaseCommand.flags = {
   verbose: flags.boolean({ description: 'Log output', default: false })
 }

@@ -4,18 +4,18 @@ const BaseCommand = require('../../base-command')
 
 class RemoveCommand extends KeyCommand {
   async run () {
-    const { args: { id } } = this.parse(RemoveCommand)
+    const { args: { key } } = this.parse(RemoveCommand)
 
-    await this.keysDB.removeKey(id)
+    await this.keysDatabase.remove(key)
 
     this.log('Key removed', true)
   }
 }
 
-RemoveCommand.description = 'Remove a key'
+RemoveCommand.description = 'Removes a key'
 
 RemoveCommand.args = [
-  { name: 'id', required: true, description: 'Key id to remove' }
+  { name: 'key', required: true, description: 'Key to remove' }
 ]
 
 RemoveCommand.flags = {

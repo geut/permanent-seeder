@@ -1,4 +1,6 @@
-const { KeysDB } = require('@geut/seeder')
+const { flags } = require('@oclif/command')
+
+const { KeysDatabase } = require('@geut/seeder-database')
 
 const BaseCommand = require('../../base-command')
 
@@ -7,13 +9,15 @@ class KeyCommand extends BaseCommand {
     return this._dbPath
   }
 
-  get keysDB () {
-    return this._keysDB
+  get keysDatabase () {
+    return this._keysDatabase
   }
 
   async init () {
-    this._dbPath = await this.getConfig('keys.db.path')
-    this._keysDB = new KeysDB(this._dbPath)
+    const { flags: { dbPath } } = this.parse(KeyCommand)
+
+    this._dbPath = dbPath || await this.getConfig('keys.db.path')
+    this._keysDatabase = new KeysDatabase(this._dbPath)
   }
 
   async run () {
@@ -21,8 +25,14 @@ class KeyCommand extends BaseCommand {
   }
 }
 
-KeyCommand.usage = ['key:[add|get|update|remove]']
-
 KeyCommand.description = 'Keys commands'
+
+// KeyCommand.usage = ['key:[add|get|update|remove|stream]']
+
+KeyCommand.flags = {
+  dbPath: flags.string({ description: 'Path to keys database' })
+}
+
+KeyCommand.strict = false
 
 module.exports = KeyCommand

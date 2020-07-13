@@ -4,9 +4,9 @@ const KeyCommand = require('.')
 
 class GetCommand extends KeyCommand {
   async run () {
-    const { args: { id } } = this.parse(GetCommand)
+    const { args: { key } } = this.parse(GetCommand)
 
-    const result = await (id ? this.keysDB.getKey(id) : this.keysDB.getKeys())
+    const result = await (key ? this.keysDatabase.get(key) : this.keysDatabase.getAll())
 
     if (!result) {
       this.log('Key not present', true)
@@ -17,10 +17,10 @@ class GetCommand extends KeyCommand {
   }
 }
 
-GetCommand.description = 'Shows a key entry based on id'
+GetCommand.description = 'Shows a key entry'
 
 GetCommand.args = [
-  { name: 'id', description: 'Key id to show\nIf not present shows all config entries' }
+  { name: 'key', description: 'Key to show\nIf not present shows all config entries' }
 ]
 
 GetCommand.flags = {
