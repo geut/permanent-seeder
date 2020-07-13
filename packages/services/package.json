@@ -17,7 +17,7 @@
     "prepublishOnly": "npm test"
   },
   "dependencies": {
-    "@geut/seeder": "latest",
+    "@geut/seeder": "^0.0.1",
     "moleculer": "^0.14.8"
   },
   "devDependencies": {
