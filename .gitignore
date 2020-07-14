@@ -65,3 +65,6 @@ typings/
 
 # Auto generated toml files
 permanent-seeder.toml
+
+# Default DB name
+*/**/keys.db

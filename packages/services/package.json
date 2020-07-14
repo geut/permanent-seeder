@@ -9,7 +9,8 @@
     "index.js"
   ],
   "scripts": {
-    "start": "node index.js",
+    "dev": "moleculer-runner --repl --hot --config src/moleculer.config.js src/services",
+    "start": "moleculer-runner --config src/moleculer.config.js src/services",
     "test": "jest --passWithNoTests",
     "posttest": "npm run lint",
     "lint": "xd-ns \"**/*.js\"",
