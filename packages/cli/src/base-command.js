@@ -1,4 +1,4 @@
-const { resolve } = require('path')
+const { join, resolve } = require('path')
 const { Command, flags } = require('@oclif/command')
 
 const config = require('./config')
@@ -9,7 +9,7 @@ class BaseCommand extends Command {
   }
 
   get globalConfigFolderPath () {
-    return this.config.home
+    return join(this.config.home, 'permanent-seeder')
   }
 
   getConfig (key) {
