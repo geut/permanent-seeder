@@ -9,7 +9,7 @@
     "type": "git",
     "url": "https://github.com/geut/permanent-seeder.git"
   },
-  "license": "ISC",
+  "license": "MIT",
   "author": {
     "name": "GEUT",
     "email": "contact@geutstudio.com"
