@@ -1,7 +1,12 @@
 const { Seeder } = require('@geut/seeder')
 
+const { Config } = require('../mixins/config.mixin')
+
 module.exports = {
   name: 'seeder',
+
+  mixins: [Config],
+
   actions: {
     seed: {
       params: {
@@ -12,6 +17,7 @@ module.exports = {
         await this.seeder.seed(keys)
       }
     },
+
     readdir: {
       params: {
         key: { type: 'string' },
@@ -22,12 +28,15 @@ module.exports = {
       }
     }
   },
+
   created () {
     this.seeder = new Seeder()
   },
+
   started () {
     return this.seeder.init()
   },
+
   stopped () {
     return this.seeder.destroy()
   }

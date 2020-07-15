@@ -13,9 +13,10 @@ class SDK {
     if (this._broker) return
 
     this._broker = new ServiceBroker({
-      logger: console,
-      hotReload: true
-      // hotReload: process.env.NODE_ENV === 'development'
+      transporter: 'TCP',
+      metadata: {
+        config: this._config
+      }
     })
 
     this._broker.loadServices(servicesPath)
@@ -26,7 +27,9 @@ class SDK {
   async connect () {
     if (this._broker) return
 
-    this._broker = new ServiceBroker({})
+    this._broker = new ServiceBroker({
+      transporter: 'TCP'
+    })
 
     await this._broker.start()
   }
