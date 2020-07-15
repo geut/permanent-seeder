@@ -1,13 +1,6 @@
-const { ServiceBroker } = require('moleculer')
-const Seeder = require('@geut/seeder')
+const { Seeder } = require('@geut/seeder')
 
-// Create a ServiceBroker
-const broker = new ServiceBroker({
-  transporter: 'TCP'
-})
-
-// Define a service
-broker.createService({
+module.exports = {
   name: 'seeder',
   actions: {
     seed: {
@@ -38,9 +31,4 @@ broker.createService({
   stopped () {
     return this.seeder.destroy()
   }
-})
-
-;(async () => {
-  // Start the broker
-  await broker.start()
-})()
+}
