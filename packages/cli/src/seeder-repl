@@ -1,0 +1,9 @@
+#!/usr/bin/env node
+
+const { SDK } = require('@geut/permanent-services')
+
+;(async () => {
+  const sdk = new SDK()
+  await sdk.connect()
+  sdk.repl()
+})()

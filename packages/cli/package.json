@@ -45,8 +45,8 @@
     ]
   },
   "dependencies": {
-    "@geut/seeder": "^0.0.1",
     "@geut/seeder-database": "^0.0.1",
+    "@geut/permanent-services": "^0.0.1",
     "@oclif/command": "^1.7.0",
     "@oclif/config": "^1.16.0",
     "@oclif/errors": "^1.3.3",
