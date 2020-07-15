@@ -1,5 +1,5 @@
 // call broker createServices here
 
-const Api = require('./src/api')
+const SDK = require('./src/sdk')
 
-module.exports.Api = Api
+module.exports.SDK = SDK
