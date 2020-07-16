@@ -61,7 +61,10 @@ typings/
 .next
 
 # vscode settings
-.vscode/
+.vscode/settings.json
 
 # Auto generated toml files
 permanent-seeder.toml
+
+# Default DB name
+*/**/keys.db

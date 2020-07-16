@@ -9,7 +9,6 @@
     "index.js"
   ],
   "scripts": {
-    "start": "node index.js",
     "test": "jest --passWithNoTests",
     "posttest": "npm run lint",
     "lint": "xd-ns \"**/*.js\"",
@@ -18,7 +17,11 @@
   },
   "dependencies": {
     "@geut/seeder": "^0.0.1",
-    "moleculer": "^0.14.8"
+    "@geut/seeder-database": "^0.0.1",
+    "got": "^11.5.0",
+    "moleculer": "^0.14.8",
+    "moleculer-cron": "^0.0.2",
+    "moleculer-repl": "^0.6.4"
   },
   "devDependencies": {
     "@geut/chan": "^2.0.0",

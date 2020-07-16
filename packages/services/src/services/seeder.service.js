@@ -1,14 +1,12 @@
-const { ServiceBroker } = require('moleculer')
-const Seeder = require('@geut/seeder')
+const { Seeder } = require('@geut/seeder')
 
-// Create a ServiceBroker
-const broker = new ServiceBroker({
-  transporter: 'TCP'
-})
+const { Config } = require('../mixins/config.mixin')
 
-// Define a service
-broker.createService({
+module.exports = {
   name: 'seeder',
+
+  mixins: [Config],
+
   actions: {
     seed: {
       params: {
@@ -19,6 +17,7 @@ broker.createService({
         await this.seeder.seed(keys)
       }
     },
+
     readdir: {
       params: {
         key: { type: 'string' },
@@ -29,18 +28,16 @@ broker.createService({
       }
     }
   },
+
   created () {
     this.seeder = new Seeder()
   },
+
   started () {
     return this.seeder.init()
   },
+
   stopped () {
     return this.seeder.destroy()
   }
-})
-
-;(async () => {
-  // Start the broker
-  await broker.start()
-})()
+}

@@ -1,0 +1,14 @@
+#!/usr/bin/env node
+
+const { SDK } = require('@geut/permanent-services')
+
+const seederRepl = async () => {
+  const sdk = new SDK()
+  await sdk.connect()
+  sdk.repl()
+}
+
+seederRepl().catch(error => {
+  console.error(error)
+  process.exit(1)
+})

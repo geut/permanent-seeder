@@ -1,20 +1,36 @@
-const { Command } = require('@oclif/command')
-const seeder = require('@geut/seeder')
+const { spawn } = require('child_process')
 
-class StartCommand extends Command {
+const { resolve } = require('path')
+
+const { flags } = require('@oclif/command')
+
+const BaseCommand = require('../base-command')
+
+class StartCommand extends BaseCommand {
   async run () {
-    const keys = require('../../keys.json')
+    const config = this.getConfig()
+    const { flags: { repl } } = this.parse(StartCommand)
 
-    this.log(JSON.stringify(keys, null, 2))
+    const daemon = spawn(
+      resolve(__dirname, '..', 'seeder-daemon'),
+      [
+        JSON.stringify(config),
+        repl && 'repl'
+      ]
+    )
 
-    seeder()
+    daemon.stdout.pipe(process.stdout)
+    daemon.stderr.pipe(process.stderr)
+    process.stdin.pipe(daemon.stdin)
+
+    daemon.on('close', process.exit)
   }
 }
 
 StartCommand.description = 'Start permanent seeder daemon'
 
-// StartCommand.flags = {
-//   name: flags.string({ char: 'n', description: 'name to print' })
-// };
+StartCommand.flags = {
+  repl: flags.boolean({ default: false, description: 'Interactive' })
+}
 
 module.exports = StartCommand
