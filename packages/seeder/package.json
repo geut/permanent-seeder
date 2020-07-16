@@ -1,20 +1,37 @@
 {
-  "name": "@geut/seeder",
+  "name": "@geut/permanent-seeder-core",
   "version": "0.0.1",
-  "description": "Template to create modules following the Geut path",
-  "main": "index.js",
-  "files": [
-    "lib",
-    "bin",
-    "index.js"
+  "description": "Permanent Seeder core",
+  "keywords": [
+    "seeder",
+    "geut"
   ],
+  "homepage": "https://github.com/geut/permanent-seeder#readme",
+  "bugs": {
+    "url": "https://github.com/geut/permanent-seeder/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/geut/permanent-seeder.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "GEUT",
+    "email": "contact@geutstudio.com"
+  },
+  "main": "index.js",
   "scripts": {
+    "lint": "xd-ns \"**/*.js\"",
+    "prepublishOnly": "npm test",
     "start": "node index.js",
     "test": "jest --passWithNoTests",
     "posttest": "npm run lint",
-    "lint": "xd-ns \"**/*.js\"",
-    "version": "chan release --allow-yanked ${npm_package_version} && git add .",
-    "prepublishOnly": "npm test"
+    "version": "chan release --allow-yanked ${npm_package_version} && git add ."
+  },
+  "jest": {
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ]
   },
   "dependencies": {
     "@geut/hyperdrive-promise": "^3.0.1",
@@ -25,32 +42,9 @@
   "devDependencies": {
     "@geut/chan": "^2.2.1",
     "@geut/xd": "^1.6.0",
-    "standard": "^14.3.4",
-    "jest": "^24.8.0"
+    "jest": "^24.8.0",
+    "standard": "^14.3.4"
   },
-  "jest": {
-    "testMatch": [
-      "**/tests/**/*.test.js"
-    ]
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/geut/seeder.git"
-  },
-  "keywords": [
-    "create",
-    "geut",
-    "module"
-  ],
-  "author": {
-    "name": "GEUT",
-    "email": "contact@geutstudio.com"
-  },
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/geut/seeder/issues"
-  },
-  "homepage": "https://github.com/geut/seeder#readme",
   "standard": {
     "env": [
       "jest",
