@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { SDK } = require('@geut/permanent-services')
+const { SDK } = require('@geut/permanent-seeder-sdk')
 
 const seederDaemon = async () => {
   const config = JSON.parse(process.argv[2])

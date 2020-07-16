@@ -1,6 +1,6 @@
 const { flags } = require('@oclif/command')
 
-const { KeysDatabase } = require('@geut/seeder-database')
+const { KeysDatabase } = require('@geut/permanent-seeder-database')
 
 const BaseCommand = require('../../base-command')
 

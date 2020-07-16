@@ -44,8 +44,8 @@
     ]
   },
   "dependencies": {
-    "@geut/permanent-services": "^0.0.1",
-    "@geut/seeder-database": "^0.0.1",
+    "@geut/permanent-seeder-database": "^0.0.1",
+    "@geut/permanent-seeder-sdk": "^0.0.1",
     "@iarna/toml": "^2.2.5",
     "@oclif/command": "^1.7.0",
     "@oclif/config": "^1.16.0",
