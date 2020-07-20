@@ -1,36 +1,68 @@
-const { spawn } = require('child_process')
-
 const { resolve } = require('path')
 
 const { flags } = require('@oclif/command')
+const pify = require('pify')
+const pm2 = require('pm2')
+
+const ReplCommand = require('./repl')
 
 const BaseCommand = require('../base-command')
+
+const SEEDER_DAEMON = 'seeder-daemon'
+
+const pm2Connect = pify(pm2.connect.bind(pm2))
+const pm2Disconnect = pify(pm2.disconnect.bind(pm2))
+const pm2List = pify(pm2.list.bind(pm2))
+const pm2Start = pify(pm2.start.bind(pm2))
+const pm2Restart = pify(pm2.restart.bind(pm2))
 
 class StartCommand extends BaseCommand {
   async run () {
     const config = this.getConfig()
-    const { flags: { repl } } = this.parse(StartCommand)
+    const { flags: { restart, repl } } = this.parse(StartCommand)
 
-    const daemon = spawn(
-      resolve(__dirname, '..', 'seeder-daemon'),
-      [
-        JSON.stringify(config),
-        repl && 'repl'
-      ]
-    )
+    try {
+      await pm2Connect()
 
-    daemon.stdout.pipe(process.stdout)
-    daemon.stderr.pipe(process.stderr)
-    process.stdin.pipe(daemon.stdin)
+      const runningProcesses = await pm2List()
+      const daemonProcess = runningProcesses.find(proc => proc.name === SEEDER_DAEMON)
 
-    daemon.on('close', process.exit)
+      if (daemonProcess && daemonProcess.pm2_env.status === 'online') {
+        if (restart) {
+          await pm2Restart(SEEDER_DAEMON)
+        } else {
+          const error = new Error('Daemon already running. Use --restart to force')
+          error.code = 'DAEMON_RUNNING'
+          throw error
+        }
+      } else {
+        const args = [JSON.stringify(config)]
+
+        await pm2Start({
+          name: SEEDER_DAEMON,
+          script: resolve(__dirname, '..', SEEDER_DAEMON),
+          args
+        })
+
+        if (repl) {
+          await ReplCommand.run()
+        }
+      }
+    } catch (error) {
+      if (error.code === 'DAEMON_RUNNING') {
+        this.error(error.message)
+      }
+    } finally {
+      !repl && await pm2Disconnect()
+    }
   }
 }
 
 StartCommand.description = 'Start permanent seeder daemon'
 
 StartCommand.flags = {
-  repl: flags.boolean({ default: false, description: 'Interactive' })
+  restart: flags.boolean({ default: false, description: 'Restart daemon if running' }),
+  repl: flags.boolean({ default: false, description: 'Open repl after start' })
 }
 
 module.exports = StartCommand
