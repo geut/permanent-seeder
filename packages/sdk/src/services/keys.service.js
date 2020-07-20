@@ -4,7 +4,7 @@ const { CronTime } = require('cron')
 const Cron = require('moleculer-cron')
 const got = require('got')
 
-const { KeysDatabase } = require('@geut/seeder-database')
+const { KeysDatabase } = require('@geut/permanent-seeder-database')
 
 const { Config } = require('../mixins/config.mixin')
 

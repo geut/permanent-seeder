@@ -1,7 +1,7 @@
 {
-  "name": "@geut/permanent-seeder-database",
+  "name": "@geut/permanent-seeder-sdk",
   "version": "0.0.1",
-  "description": "Permanent Seeder database",
+  "description": "Permanent Seeder SDK",
   "keywords": [
     "seeder",
     "geut"
@@ -23,7 +23,6 @@
   "scripts": {
     "lint": "xd-ns \"**/*.js\"",
     "prepublishOnly": "npm test",
-    "start": "node index.js",
     "test": "jest --passWithNoTests",
     "posttest": "npm run lint",
     "version": "chan release --allow-yanked ${npm_package_version} && git add ."
@@ -34,22 +33,24 @@
     ]
   },
   "dependencies": {
-    "encoding-down": "^6.3.0",
-    "level-party": "^4.0.0",
-    "levelup": "^4.4.0",
-    "memdown": "^5.1.0",
-    "uuid": "^8.2.0"
+    "@geut/permanent-seeder-core": "^0.0.1",
+    "@geut/permanent-seeder-database": "^0.0.1",
+    "got": "^11.5.0",
+    "moleculer": "^0.14.8",
+    "moleculer-cron": "^0.0.2",
+    "moleculer-repl": "^0.6.4"
   },
   "devDependencies": {
-    "@geut/chan": "^2.2.1",
-    "@geut/xd": "^1.6.0",
+    "@geut/chan": "^2.0.0",
+    "@geut/xd": "^1.5.0",
     "jest": "^24.8.0",
-    "standard": "^14.3.4"
+    "standard": "^14.3.1"
   },
   "standard": {
     "env": [
       "jest",
-      "node"
+      "node",
+      "browser"
     ]
   }
 }

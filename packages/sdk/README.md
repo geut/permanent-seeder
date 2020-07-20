@@ -1,6 +1,6 @@
 # permanent services
 
-[![Build Status](https://travis-ci.com/geut/permanent-seeder/packages/permanent-services.svg?branch=master)](https://travis-ci.com/geut/permanent-seeder/packages/permanent-services)
+[![Build Status](https://travis-ci.com/geut/permanent-seeder/packages/permanent-seeder-sdk.svg?branch=master)](https://travis-ci.com/geut/permanent-seeder/packages/permanent-seeder-sdk)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
@@ -22,7 +22,7 @@
 
 ## <a name="contribute"></a> Contributing
 
-:busts_in_silhouette: Ideas and contributions to the project are welcome. You must follow this [guideline](https://github.com/geut/permanent-seeder/packages/permanent-services/blob/master/CONTRIBUTING.md).
+:busts_in_silhouette: Ideas and contributions to the project are welcome. You must follow this [guideline](https://github.com/geut/permanent-seeder/packages/permanent-seeder-sdk/blob/master/CONTRIBUTING.md).
 
 ## License
 

@@ -1,4 +1,4 @@
-const { Seeder } = require('@geut/seeder')
+const { Seeder } = require('@geut/permanent-seeder-core')
 
 const { Config } = require('../mixins/config.mixin')
 

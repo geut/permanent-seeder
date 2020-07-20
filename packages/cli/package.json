@@ -3,17 +3,16 @@
   "version": "0.0.1",
   "description": "Permanent Seeder cli",
   "keywords": [
-    "create",
-    "geut",
-    "module"
+    "seeder",
+    "geut"
   ],
-  "homepage": "https://github.com/geut/cli#readme",
+  "homepage": "https://github.com/geut/permanent-seeder#readme",
   "bugs": {
-    "url": "https://github.com/geut/cli/issues"
+    "url": "https://github.com/geut/permanent-seeder/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/geut/cli.git"
+    "url": "git+https://github.com/geut/permanent-seeder.git"
   },
   "license": "MIT",
   "author": {
@@ -45,16 +44,16 @@
     ]
   },
   "dependencies": {
-    "@geut/seeder-database": "^0.0.1",
-    "@geut/permanent-services": "^0.0.1",
+    "@geut/permanent-seeder-database": "^0.0.1",
+    "@geut/permanent-seeder-sdk": "^0.0.1",
+    "@iarna/toml": "^2.2.5",
     "@oclif/command": "^1.7.0",
     "@oclif/config": "^1.16.0",
     "@oclif/errors": "^1.3.3",
     "@oclif/plugin-help": "^3.1.0",
     "deep-extend": "^0.6.0",
     "lodash.get": "^4.4.2",
-    "lodash.set": "^4.3.2",
-    "@iarna/toml": "^2.2.5"
+    "lodash.set": "^4.3.2"
   },
   "devDependencies": {
     "@geut/chan": "^2.2.1",

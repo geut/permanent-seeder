@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { SDK } = require('@geut/permanent-services')
+const { SDK } = require('@geut/permanent-seeder-sdk')
 
 const seederRepl = async () => {
   const sdk = new SDK()
