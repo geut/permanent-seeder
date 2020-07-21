@@ -8,7 +8,7 @@ const ReplCommand = require('./repl')
 
 const BaseCommand = require('../base-command')
 
-const SEEDER_DAEMON = 'seeder-daemon'
+export const SEEDER_DAEMON = 'seeder-daemon'
 
 const pm2Connect = pify(pm2.connect.bind(pm2))
 const pm2Disconnect = pify(pm2.disconnect.bind(pm2))
