@@ -9,11 +9,18 @@ class SDK {
     this._config = config
   }
 
+  _createBroker (name, options = {}) {
+    this._broker = new ServiceBroker({
+      nodeID: name ? `${name}-${Date.now()}` : undefined,
+      transporter: 'TCP',
+      ...options
+    })
+  }
+
   async start () {
     if (this._broker) return
 
-    this._broker = new ServiceBroker({
-      transporter: 'TCP',
+    this._createBroker('seeder', {
       metadata: {
         config: this._config
       }
@@ -24,12 +31,10 @@ class SDK {
     await this._broker.start()
   }
 
-  async connect () {
+  async connect (name) {
     if (this._broker) return
 
-    this._broker = new ServiceBroker({
-      transporter: 'TCP'
-    })
+    this._createBroker(name)
 
     await this._broker.start()
   }
