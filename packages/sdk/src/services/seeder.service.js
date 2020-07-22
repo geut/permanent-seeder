@@ -7,6 +7,10 @@ module.exports = {
 
   mixins: [Config],
 
+  dependencies: [
+    'keys'
+  ],
+
   actions: {
     seed: {
       params: {
@@ -29,15 +33,32 @@ module.exports = {
     }
   },
 
+  methods: {
+    async startSeeding () {
+      const keys = await this.broker.call('keys.getAll')
+
+      console.log({ keys })
+
+      await this.broker.call('seeder.seed', { keys })
+    }
+  },
+
   created () {
     this.seeder = new Seeder()
   },
 
-  started () {
-    return this.seeder.init()
+  async started () {
+    await this.seeder.init()
+
+    await this.broker.waitForServices(['keys'])
+
+    setTimeout(async () => {
+      await this.startSeeding()
+    })
   },
 
   stopped () {
     return this.seeder.destroy()
   }
+
 }

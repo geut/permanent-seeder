@@ -1,8 +1,6 @@
 // const { resolve, join } = require('path')
 
-const { CronTime } = require('cron')
 const Cron = require('moleculer-cron')
-const got = require('got')
 
 const { KeysDatabase } = require('@geut/permanent-seeder-database')
 
@@ -27,55 +25,40 @@ module.exports = {
   ],
 
   actions: {
-
     add: {
       params: {
+        updateIfExists: { type: 'boolean', default: true },
         key: { type: 'string', length: '64', hex: true },
         title: { type: 'string', empty: 'false' }
       },
       async handler (ctx) {
-        await this.database.add(ctx.params, true)
+        const { updateIfExists, ...data } = ctx.params
+        await this.database.add(data, updateIfExists)
       }
     },
 
     get: {
       params: {
-        key: { type: 'string', length: '64', hex: true }
+        key: { type: 'string', optional: true, length: '64', hex: true }
       },
       async handler (ctx) {
         return this.database.get(ctx.params.key)
       }
     },
 
-    updateKeys: {
-      async handler (ctx) {
-        console.log('updating keys...', new Date())
-
-        let keys = []
-        try {
-          keys = await got(this.config.endpoint_url).json()
-
-          for (const keyRecord of keys) {
-            await ctx.call('keys.add', keyRecord)
-          }
-        } catch (error) {
-          console.error(error)
-        }
+    getAll: {
+      async handler () {
+        return this.database.getAll()
       }
     }
+
   },
 
   created () {
     this.config = {
-      ...this.settings.config.keys.db,
-      ...this.settings.config.vault
+      ...this.settings.config.keys.db
     }
 
     this.database = new KeysDatabase(this.config.path)
-
-    // Set time based on config
-    const updateKeysJob = this.getJob('update-keys-job')
-    updateKeysJob.setTime(new CronTime(`*/${this.config.key_fetch_frequency} * * * *`))
-    updateKeysJob.start()
   }
 }
