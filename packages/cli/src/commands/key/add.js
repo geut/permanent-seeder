@@ -13,7 +13,7 @@ class AddCommand extends KeyCommand {
       title
     })
 
-    this.log('Key added!', true)
+    this.log('Key added!')
   }
 }
 

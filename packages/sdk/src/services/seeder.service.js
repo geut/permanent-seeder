@@ -17,8 +17,7 @@ module.exports = {
         keys: { type: 'array', min: 1 }
       },
       async handler (ctx) {
-        const keys = ctx.params.keys.map(key => Buffer.isBuffer(key) ? key : Buffer.from(key, 'hex'))
-        await this.seeder.seed(keys)
+        return this.seed(ctx.params.keys)
       }
     },
 
@@ -34,12 +33,9 @@ module.exports = {
   },
 
   methods: {
-    async startSeeding () {
-      const keys = await this.broker.call('keys.getAll')
-
-      console.log({ keys })
-
-      await this.broker.call('seeder.seed', { keys })
+    async seed (keyBuffers) {
+      const keys = keyBuffers.map(key => Buffer.isBuffer(key) ? key : Buffer.from(key, 'hex'))
+      return this.seeder.seed(keys)
     }
   },
 
@@ -50,11 +46,11 @@ module.exports = {
   async started () {
     await this.seeder.init()
 
-    await this.broker.waitForServices(['keys'])
+    const keys = await this.broker.call('keys.getAll')
 
-    setTimeout(async () => {
-      await this.startSeeding()
-    })
+    console.log({ keys })
+
+    await this.seed(keys.map(({ key }) => key))
   },
 
   stopped () {
