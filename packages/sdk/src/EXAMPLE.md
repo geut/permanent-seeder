@@ -11,8 +11,8 @@ cat ~/permanent-seeder/permanent-seeder.toml
 
 
 # TERMINAL 2
-# Gist DK
-cd gist-dk
+# Example creator/consumer
+cd permanent-seeder/packages/seeder/src/example
 
 # Run hyperdrive creator (existen drive)
 # Let it running until seeder start
