@@ -20,10 +20,10 @@ module.exports = {
 
   events: {
     async 'keys.added' (ctx) {
-      await ctx.call('seeder.seed', { keys: ctx.params.keys })
+      await ctx.call('seeder.seed', { keys: ctx.params.keys.map(({ key }) => key) })
     },
     async 'keys.updated' (ctx) {
-      await ctx.call('seeder.seed', { keys: ctx.params.keys })
+      await ctx.call('seeder.seed', { keys: ctx.params.keys.map(({ key }) => key) })
     }
   },
 
