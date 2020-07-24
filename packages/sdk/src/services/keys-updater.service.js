@@ -18,6 +18,15 @@ module.exports = {
     'seeder'
   ],
 
+  events: {
+    async 'keys.added' (ctx) {
+      await ctx.call('seeder.seed', { keys: ctx.params.keys })
+    },
+    async 'keys.updated' (ctx) {
+      await ctx.call('seeder.seed', { keys: ctx.params.keys })
+    }
+  },
+
   crons: [
     {
       name: UPDATER_JOB,
@@ -33,28 +42,29 @@ module.exports = {
 
   actions: {
     updateKeys: {
-      async handler (ctx) {
+      async handler () {
         console.log('updating keys...', new Date())
 
-        const newKeys = []
-        try {
-          const keys = await got(this.config.endpoint_url).json()
+        const keys = await this.fetchKeys()
 
-          for (const keyRecord of keys) {
-            const existentKey = await ctx.call('keys.get', { key: keyRecord.key })
-
-            await ctx.call('keys.update', keyRecord)
-
-            if (!existentKey) {
-              newKeys.push(keyRecord)
-            }
-          }
-
-          await ctx.call('seeder.seed', { keys: newKeys })
-        } catch (error) {
-          this.logger.error(error)
-        }
+        this.updateKeys(keys)
       }
+    }
+  },
+
+  methods: {
+    async fetchKeys () {
+      try {
+        return got(this.config.endpoint_url).json()
+      } catch (error) {
+        this.logger.error(error)
+      }
+
+      return []
+    },
+
+    async updateKeys (keys) {
+      await this.ctx.call('keys.updateAll', { keys })
     }
   },
 

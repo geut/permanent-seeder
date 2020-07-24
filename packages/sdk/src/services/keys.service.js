@@ -1,6 +1,5 @@
-// const { resolve, join } = require('path')
-
 const Cron = require('moleculer-cron')
+const deepEqual = require('deep-equal')
 
 const { KeysDatabase } = require('@geut/permanent-seeder-database')
 
@@ -25,15 +24,21 @@ module.exports = {
   ],
 
   actions: {
-    add: {
+    updateAll: {
       params: {
-        updateIfExists: { type: 'boolean', default: true },
-        key: { type: 'string', length: '64', hex: true },
-        title: { type: 'string', empty: 'false' }
+        keys: {
+          type: 'array',
+          items: {
+            type: 'object',
+            props: {
+              key: { type: 'string', length: '64', hex: true },
+              title: { type: 'string', empty: 'false' }
+            }
+          }
+        }
       },
       async handler (ctx) {
-        const { updateIfExists, ...data } = ctx.params
-        await this.database.add(data, updateIfExists)
+        await this.updateKeys(ctx.params.keys)
       }
     },
 
@@ -52,6 +57,34 @@ module.exports = {
       }
     }
 
+  },
+
+  methods: {
+    async update (keyRecord) {
+      const existent = await this.database.get(keyRecord.key)
+
+      if (deepEqual(existent, keyRecord)) {
+        return { updated: false, created: false, keyRecord }
+      }
+
+      try {
+        const created = await this.database.update(keyRecord, true)
+
+        return { updated: !created, created, keyRecord }
+      } catch (error) {
+        this.logger.error(error)
+      }
+    },
+
+    async updateKeys (keys) {
+      const updateResult = await Promise.all(keys.map(keyRecord => this.update(keyRecord)))
+
+      const updated = updateResult.filter(({ updated }) => updated).map(({ keyRecord }) => keyRecord)
+      const created = updateResult.filter(({ created }) => created).map(({ keyRecord }) => keyRecord)
+
+      updated.length && this.broker.broadcast('keys.updated', { keys: updated })
+      created.length && this.broker.broadcast('keys.created', { keys: created })
+    }
   },
 
   created () {

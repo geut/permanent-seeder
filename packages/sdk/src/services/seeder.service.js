@@ -48,8 +48,6 @@ module.exports = {
 
     const keys = await this.broker.call('keys.getAll')
 
-    console.log({ keys })
-
     await this.seed(keys.map(({ key }) => key))
   },
 
