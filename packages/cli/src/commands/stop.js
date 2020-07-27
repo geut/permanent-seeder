@@ -11,11 +11,15 @@ const pm2Stop = pify(pm2.stop.bind(pm2))
 
 class StopCommand extends BaseCommand {
   async run () {
-    await pm2Connect()
+    try {
+      await pm2Connect()
 
-    await pm2Stop(SEEDER_DAEMON)
+      await pm2Stop(SEEDER_DAEMON)
 
-    await pm2Disconnect()
+      await pm2Disconnect()
+    } catch (error) {
+      this.error(error)
+    }
   }
 }
 

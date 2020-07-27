@@ -64,6 +64,9 @@ class Seeder extends EventEmitter {
     for (const key of keys) {
       // get or create hyperdrive
       const keyString = key.toString('hex')
+
+      console.log('SEEDING', keyString)
+
       let drive = this.drives.get(keyString)
       if (!drive) {
         drive = Hyperdrive(this.store, key, this.hyperdriveOpts)

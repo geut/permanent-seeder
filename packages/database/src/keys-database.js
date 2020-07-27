@@ -23,6 +23,13 @@ class KeysDatabase extends Database {
     return this._cleanKeyData(data)
   }
 
+  /**
+   *
+   * @param {object} data keyRecord to add
+   * @param {boolean} updateIfExists update keyRecord if exists
+   *
+   * @returns {boolean} true if existent and key was updated
+   */
   async add (data, updateIfExists = false) {
     const existent = await this.get(data.key)
 
@@ -30,9 +37,18 @@ class KeysDatabase extends Database {
       throw new Error('Key already exists')
     }
 
-    return this.set(data.key, data)
+    await this.set(data.key, data)
+
+    return !!existent
   }
 
+  /**
+   *
+   * @param {object} data keyRecord to update
+   * @param {boolean} createIfNotExists create keyRecord if not exists
+   *
+   * @returns {boolean} true if not existent and key was created
+   */
   async update (data, createIfNotExists = false) {
     const existent = await this.get(data.key)
 
@@ -40,7 +56,9 @@ class KeysDatabase extends Database {
       throw new Error('Key not created')
     }
 
-    return this.set(data.key, data)
+    await this.set(data.key, data)
+
+    return !existent
   }
 }
 

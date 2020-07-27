@@ -35,9 +35,11 @@
   },
   "dependencies": {
     "@geut/hyperdrive-promise": "^3.0.1",
+    "@p2pcommons/sdk-js": "^0.6.3",
     "corestore": "^5.6.0",
     "corestore-swarm-networking": "^5.5.1",
-    "random-access-file": "^2.1.4"
+    "random-access-file": "^2.1.4",
+    "tempy": "latest"
   },
   "devDependencies": {
     "@geut/chan": "^2.2.1",

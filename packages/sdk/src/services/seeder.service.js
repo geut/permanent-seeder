@@ -7,14 +7,17 @@ module.exports = {
 
   mixins: [Config],
 
+  dependencies: [
+    'keys'
+  ],
+
   actions: {
     seed: {
       params: {
         keys: { type: 'array', min: 1 }
       },
       async handler (ctx) {
-        const keys = ctx.params.keys.map(key => Buffer.isBuffer(key) ? key : Buffer.from(key, 'hex'))
-        await this.seeder.seed(keys)
+        return this.seed(ctx.params.keys)
       }
     },
 
@@ -29,15 +32,27 @@ module.exports = {
     }
   },
 
+  methods: {
+    async seed (keyBuffers) {
+      const keys = keyBuffers.map(key => Buffer.isBuffer(key) ? key : Buffer.from(key, 'hex'))
+      return this.seeder.seed(keys)
+    }
+  },
+
   created () {
     this.seeder = new Seeder()
   },
 
-  started () {
-    return this.seeder.init()
+  async started () {
+    await this.seeder.init()
+
+    const keys = await this.broker.call('keys.getAll')
+
+    await this.seed(keys.map(({ key }) => key))
   },
 
   stopped () {
     return this.seeder.destroy()
   }
+
 }
