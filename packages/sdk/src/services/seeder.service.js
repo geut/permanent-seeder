@@ -21,6 +21,12 @@ module.exports = {
       }
     },
 
+    stats: {
+      async handler (ctx) {
+        return await this.seeder.allStats()
+      }
+    },
+
     readdir: {
       params: {
         key: { type: 'string' },

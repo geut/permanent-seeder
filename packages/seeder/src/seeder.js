@@ -8,28 +8,47 @@ const raf = require('random-access-file')
 
 const DEFAULT_OPTS = {
   announce: true,
-  lookup: true,
+  lookup: false, // https://github.com/hyperswarm/hyperswarm#swarmjointopic-options-onjoin`
   hyperdriveOpts: {
     sparse: false,
     latest: true
   },
   storageLocation: join(homedir(), 'permanent-seeder'),
   corestoreOpts: {
+    stats: true,
     sparse: false,
     eagerUpdate: true
   },
   swarmOpts: {
-    announceLocalAddress: true
+    announceLocalAddress: true,
+    maxPeers: 128,
+    preferredPort: 49737
   },
   dhtOpts: {}
 }
 
+/**
+ * getCoreStore.
+ *
+ * @param {} storageLocation
+ * @param {} name
+ */
 const getCoreStore = (storageLocation, name) => {
   const location = join(storageLocation, name)
   return file => raf(join(location, file))
 }
 
+/**
+ * Seeder.
+ *
+ * @extends {EventEmitter}
+ */
 class Seeder extends EventEmitter {
+  /**
+   * constructor.
+   *
+   * @param {} opts
+   */
   constructor (opts = {}) {
     super()
     this.opts = { ...DEFAULT_OPTS, ...opts }
@@ -38,6 +57,9 @@ class Seeder extends EventEmitter {
     this.ready = false
   }
 
+  /**
+   * init.
+   */
   async init () {
     if (this.ready) return
 
@@ -51,14 +73,30 @@ class Seeder extends EventEmitter {
     this.ready = true
   }
 
+  /**
+   * get.
+   *
+   * @param {} dkey
+   */
   get (dkey) {
     return this.drives.get(dkey)
   }
 
+  /**
+   * onEvent.
+   *
+   * @param {} event
+   * @param {} args
+   */
   onEvent (event, ...args) {
     this.emit(`drive-${event}`, { ...args })
   }
 
+  /**
+   * seed.
+   *
+   * @param {} keys
+   */
   async seed (keys = []) {
     await this.init()
     for (const key of keys) {
@@ -84,6 +122,56 @@ class Seeder extends EventEmitter {
     }
   }
 
+  async allStats () {
+    return Promise.all(Array.from(this.drives.keys()).map((driveKey) => this.stat(driveKey)))
+  }
+
+  async stat (key, opts = {}) {
+    const drive = this.drives.get(key)
+    if (!drive) {
+      throw new Error('stat: drive not found')
+    }
+    // network status ? corestore-network status or hyperswarm status? ??
+    // const network = await this._client.network.status(drive.discoveryKey)
+
+    // TODO(dk): check support for mounts
+    // const mounts = await drive.getAllMounts({ memory: true, recursive: !!opts.recursive })
+    const getContentFeed = () => {
+      const cacheContentKey = drive._contentStates.cache.get(drive.db.feed) || { feed: null }
+
+      return cacheContentKey.feed
+    }
+    const core = {
+      content: await getCoreStats(getContentFeed()),
+      metadata: await getCoreStats(drive.metadata)
+    }
+
+    return { core }
+
+    async function getCoreStats (core) {
+      if (!core) return {}
+      const stats = core.stats
+      const networkingStats = {
+        key: core.key,
+        discoveryKey: core.discoveryKey,
+        peers: core.peers.length
+      }
+      return {
+        ...networkingStats,
+        uploadedBytes: (stats && stats.totals.uploadedBytes) || 0,
+        uploadedBlocks: (stats && stats.totals.uploadedBlocks) || 0,
+        downloadedBytes: (stats && stats.totals.downloadedBytes) || 0,
+        downloadedBlocks: opts.networkingOnly ? 0 : await core.downloaded(),
+        totalBlocks: core.length
+      }
+    }
+  }
+
+  /**
+   * unseed.
+   *
+   * @param {} dkey
+   */
   async unseed (dkey) {
     await this.init()
     if (dkey) {
@@ -95,6 +183,9 @@ class Seeder extends EventEmitter {
     await Promise.all(Array.from(this.drives, ([_, drive]) => this.networker.leave(drive.discoveryKey)))
   }
 
+  /**
+   * destroy.
+   */
   async destroy () {
     for (const handle of this.downloads.values()) {
       handle.destroy()
