@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 
-import AppStateContext from './context'
+import AppStateContext from '../context/app-state'
 
 export function useLeftSidebar () {
   const { state: { ui: { leftSidebarOpen } }, dispatch } = useContext(AppStateContext)
