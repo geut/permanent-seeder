@@ -39,7 +39,9 @@
     "got": "^11.5.0",
     "moleculer": "^0.14.8",
     "moleculer-cron": "^0.0.2",
-    "moleculer-repl": "^0.6.4"
+    "moleculer-repl": "^0.6.4",
+    "moleculer-web": "^0.9.1",
+    "socket.io": "^2.3.0"
   },
   "devDependencies": {
     "@geut/chan": "^2.0.0",
