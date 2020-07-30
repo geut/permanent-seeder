@@ -40,11 +40,6 @@
   "eslintConfig": {
     "extends": "react-app"
   },
-  "jest": {
-    "testMatch": [
-      "**/tests/**/*.test.js"
-    ]
-  },
   "dependencies": {
     "@material-ui/core": "^4.11.0",
     "@material-ui/icons": "^4.9.1",
