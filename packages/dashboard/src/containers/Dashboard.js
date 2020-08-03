@@ -1,23 +1,28 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 
-import { Grid } from '@material-ui/core'
+import { useAppBarTitle } from '../hooks/layout'
+import { useDrivesStats } from '../hooks/drives'
 
-import { useSocketSubscription } from '../hooks/socket'
+import DriveItem from '../components/DriveItem'
+import DriveItemHeader from '../components/DriveItemHeader'
 
 function Dashboard () {
-  const [data] = useSocketSubscription('event')
+  const [data] = useDrivesStats()
+  const [, setAppBarTitle] = useAppBarTitle()
+
+  useEffect(() => {
+    setAppBarTitle('Dashboard')
+  }, [setAppBarTitle])
+
+  if (data.length === 0) return null
+
+  const drives = data[data.length - 1]
 
   return (
-    <Grid container spacing={3}>
-
-      <Grid item xs={12} md={8} lg={9}>
-        Permanent seeder dashboard
-
-        <pre>
-          {JSON.stringify(data, null, 2)}
-        </pre>
-      </Grid>
-    </Grid>
+    <div>
+      <DriveItemHeader />
+      {Object.keys(drives).map(key => <DriveItem key={key} driveKey={key} />)}
+    </div>
   )
 }
 

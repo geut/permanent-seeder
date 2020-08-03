@@ -2,7 +2,8 @@ import React, { useReducer, useMemo } from 'react'
 
 const initialState = {
   ui: {
-    leftSidebarOpen: false
+    leftSidebarOpen: false,
+    appBarTitle: 'Home'
   }
 }
 
@@ -12,6 +13,9 @@ function reducer (state, action) {
   switch (action.type) {
     case 'ui.leftSidebar.open':
       newState.ui.leftSidebarOpen = action.payload
+      break
+    case 'ui.appBar.title':
+      newState.ui.appBarTitle = action.payload
       break
     default:
       throw new Error()

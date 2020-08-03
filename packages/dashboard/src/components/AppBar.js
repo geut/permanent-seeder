@@ -13,7 +13,7 @@ import NotificationsIcon from '@material-ui/icons/Notifications'
 
 import { DRAWER_WITH } from '../constants'
 
-import { useLeftSidebar } from '../hooks/layout'
+import { useLeftSidebar, useAppBarTitle } from '../hooks/layout'
 
 const useStyles = makeStyles((theme) => ({
   toolbar: {
@@ -49,6 +49,7 @@ function AppBar ({ drawerWith }) {
   const classes = useStyles()
 
   const [open, setOpen] = useLeftSidebar()
+  const [appBarTitle] = useAppBarTitle()
 
   const handleDrawerOpen = () => {
     setOpen(true)
@@ -66,7 +67,7 @@ function AppBar ({ drawerWith }) {
           <MenuIcon />
         </IconButton>
         <Typography component='h1' variant='h6' color='inherit' noWrap className={classes.title}>
-          Permanent Seeder Dashboard
+          {appBarTitle}
         </Typography>
         <IconButton color='inherit'>
           <Badge badgeContent={4} color='secondary'>

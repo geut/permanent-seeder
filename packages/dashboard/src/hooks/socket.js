@@ -1,21 +1,43 @@
-import { useContext, useEffect, useState } from 'react'
+import { useEffect, useState, useContext } from 'react'
 
 import SocketContext from '../context/socket'
 
-export function useSocketSubscription (namespace = 'event') {
+// export function useSocketSubscription (namespace) {
+//   const socket = useContext(SocketContext)
+//   const [data, setData] = useState([])
+
+//   useEffect(() => {
+//     function handler (data) {
+//       setData(oldData => [...oldData, data.payload])
+//     }
+
+//     socket.on(namespace, handler)
+
+//     return () => {
+//       socket.off(namespace, handler)
+//     }
+//   }, [socket, namespace])
+
+//   return [
+//     data
+//   ]
+// }
+
+export function useSocketSubscription (namespace) {
   const socket = useContext(SocketContext)
-  const [data, setData] = useState([])
+  const [data, setData] = useState()
 
   useEffect(() => {
     function handler (data) {
-      console.log(data)
-      setData(oldData => [...oldData, data.payload])
+      setData(data.payload)
     }
 
     socket.on(namespace, handler)
 
-    return () => socket.off(namespace, handler)
-  }, [socket])
+    return () => {
+      socket.off(namespace, handler)
+    }
+  }, [socket, namespace])
 
   return [
     data

@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { useContext, useMemo } from 'react'
 
 import AppStateContext from '../context/app-state'
 
@@ -12,5 +12,18 @@ export function useLeftSidebar () {
   return [
     leftSidebarOpen,
     setLeftSidebarOpen
+  ]
+}
+
+export function useAppBarTitle () {
+  const { state: { ui: { appBarTitle } }, dispatch } = useContext(AppStateContext)
+
+  const setAppBarTitle = useMemo(() => title => {
+    dispatch({ type: 'ui.appBar.title', payload: title })
+  }, [dispatch])
+
+  return [
+    appBarTitle,
+    setAppBarTitle
   ]
 }
