@@ -3,7 +3,7 @@ const { EventEmitter } = require('events')
 const { homedir } = require('os')
 const Hyperdrive = require('@geut/hyperdrive-promise')
 const Corestore = require('corestore')
-const CSN = require('corestore-swarm-networking')
+const Networker = require('@corestore/networker')
 const raf = require('random-access-file')
 
 const DEFAULT_OPTS = {
@@ -69,7 +69,7 @@ class Seeder extends EventEmitter {
     )
     await this.store.ready()
 
-    this.networker = new CSN(this.store, { ...this.opts.swarmOpts })
+    this.networker = new Networker(this.store)
     this.ready = true
   }
 
@@ -113,13 +113,17 @@ class Seeder extends EventEmitter {
       await drive.ready()
       const { discoveryKey } = drive
       // join em all
-      await this.networker.join(discoveryKey, { announce: this.opts.announce, lookup: this.opts.lookup })
+      await this.networker.configure(discoveryKey, { announce: this.opts.announce, lookup: this.opts.lookup })
       const handle = drive.download('/')
       handle.on('finish', (...args) => this.onEvent('finish', key, args))
       handle.on('error', (...args) => this.onEvent('error', key, args))
       this.downloads.set(keyString, handle)
       return this.downloads
     }
+  }
+
+  async swarmStats (key) {
+    return this.networker.swarm.status(key)
   }
 
   async allStats () {
@@ -131,37 +135,46 @@ class Seeder extends EventEmitter {
     if (!drive) {
       throw new Error('stat: drive not found')
     }
-    // network status ? corestore-network status or hyperswarm status? ??
-    // const network = await this._client.network.status(drive.discoveryKey)
+
+    const network = await this.networker.status(drive.discoveryKey)
 
     // TODO(dk): check support for mounts
     // const mounts = await drive.getAllMounts({ memory: true, recursive: !!opts.recursive })
     const getContentFeed = () => {
       const cacheContentKey = drive._contentStates.cache.get(drive.db.feed) || { feed: null }
-
       return cacheContentKey.feed
     }
-    const core = {
+    const stat = {
       content: await getCoreStats(getContentFeed()),
-      metadata: await getCoreStats(drive.metadata)
+      metadata: await getCoreStats(drive.metadata),
+      network
     }
 
-    return { core }
+    return stat
 
     async function getCoreStats (core) {
       if (!core) return {}
       const stats = core.stats
+      const openedPeers = core.peers.filter(p => p.remoteOpened)
+
       const networkingStats = {
         key: core.key,
         discoveryKey: core.discoveryKey,
-        peers: core.peers.length
+        peerCount: core.peers.length,
+        peers: openedPeers.map(p => {
+          return {
+            ...p.stats,
+            remoteAddress: p.remoteAddress
+          }
+        })
       }
+
       return {
         ...networkingStats,
-        uploadedBytes: (stats && stats.totals.uploadedBytes) || 0,
-        uploadedBlocks: (stats && stats.totals.uploadedBlocks) || 0,
-        downloadedBytes: (stats && stats.totals.downloadedBytes) || 0,
-        downloadedBlocks: opts.networkingOnly ? 0 : await core.downloaded(),
+        uploadedBytes: stats.totals.uploadedBytes || 0,
+        uploadedBlocks: stats.totals.uploadedBlocks || 0,
+        downloadedBytes: stats.totals.downloadedBytes || 0,
+        downloadedBlocks: core.downloaded(),
         totalBlocks: core.length
       }
     }
@@ -177,10 +190,10 @@ class Seeder extends EventEmitter {
     if (dkey) {
       const dwld = this.downloads.get(dkey)
       dwld.destroy()
-      return this.networker.leave(dkey)
+      return this.networker.configure(dkey, { announce: false, lookup: false })
     }
 
-    await Promise.all(Array.from(this.drives, ([_, drive]) => this.networker.leave(drive.discoveryKey)))
+    await Promise.all(Array.from(this.drives, ([_, drive]) => this.networker.configure(drive.discoveryKey, { announce: false, lookup: true })))
   }
 
   /**
