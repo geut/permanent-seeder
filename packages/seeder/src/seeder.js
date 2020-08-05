@@ -1,6 +1,8 @@
 const { join } = require('path')
 const { EventEmitter } = require('events')
 const { homedir } = require('os')
+const { encode, decode } = require('dat-encoding')
+const crypto = require('hypercore-crypto')
 const Hyperdrive = require('@geut/hyperdrive-promise')
 const Corestore = require('corestore')
 const Networker = require('@corestore/networker')
@@ -53,7 +55,8 @@ class Seeder extends EventEmitter {
     super()
     this.opts = { ...DEFAULT_OPTS, ...opts }
     this.drives = new Map()
-    this.downloads = new Map()
+    this.mirrors = new Map()
+    this.unwatches = new Map()
     this.ready = false
   }
 
@@ -89,7 +92,7 @@ class Seeder extends EventEmitter {
    * @param {} args
    */
   onEvent (event, ...args) {
-    this.emit(`drive-${event}`, { ...args })
+    this.emit(`drive-${event}`, ...args)
   }
 
   /**
@@ -114,11 +117,26 @@ class Seeder extends EventEmitter {
       const { discoveryKey } = drive
       // join em all
       await this.networker.configure(discoveryKey, { announce: this.opts.announce, lookup: this.opts.lookup })
-      const handle = drive.download('/')
-      handle.on('finish', (...args) => this.onEvent('finish', key, args))
-      handle.on('error', (...args) => this.onEvent('error', key, args))
-      this.downloads.set(keyString, handle)
-      return this.downloads
+      const unmirror = drive.mirror()
+      this.mirrors.set(keyString, unmirror)
+      const unwatch = drive.watch('/', () => {
+        this.onEvent('update')
+      })
+
+      const contentFeed = await new Promise((resolve, reject) => {
+        drive.getContent((err, cf) => {
+          if (err) {
+            return reject(err)
+          }
+          return resolve(cf)
+        })
+      })
+
+      contentFeed.on('download', (...args) => this.onEvent('download', key, ...args))
+      contentFeed.on('upload', (...args) => this.onEvent('upload', key, ...args))
+      // TODO(dk): remove listeners
+
+      this.unwatches.set(keyString, unwatch)
     }
   }
 
@@ -130,7 +148,7 @@ class Seeder extends EventEmitter {
     return Promise.all(Array.from(this.drives.keys()).map((driveKey) => this.stat(driveKey)))
   }
 
-  async stat (key, opts = {}) {
+  async stat (key) {
     const drive = this.drives.get(key)
     if (!drive) {
       throw new Error('stat: drive not found')
@@ -140,12 +158,19 @@ class Seeder extends EventEmitter {
 
     // TODO(dk): check support for mounts
     // const mounts = await drive.getAllMounts({ memory: true, recursive: !!opts.recursive })
+    /*
     const getContentFeed = () => {
       const cacheContentKey = drive._contentStates.cache.get(drive.db.feed) || { feed: null }
       return cacheContentKey.feed
     }
+    */
+
+    const contentFeed = await new Promise(resolve => {
+      drive.getContent((cf) => resolve(cf))
+    })
+
     const stat = {
-      content: await getCoreStats(getContentFeed()),
+      content: await getCoreStats(contentFeed),
       metadata: await getCoreStats(drive.metadata),
       network
     }
@@ -183,25 +208,31 @@ class Seeder extends EventEmitter {
   /**
    * unseed.
    *
-   * @param {} dkey
+   * @param {string | buffer} key - public key
    */
-  async unseed (dkey) {
+  async unseed (key) {
     await this.init()
-    if (dkey) {
-      const dwld = this.downloads.get(dkey)
-      dwld.destroy()
+    if (key) {
+      const keyString = encode(key)
+      const unmirror = this.mirrors.get(keyString)
+      await unmirror()
+      const unwatch = this.unwatches.get(keyString)
+      unwatch.destroy()
+
+      const dkey = crypto.discoveryKey(decode(key))
       return this.networker.configure(dkey, { announce: false, lookup: false })
     }
 
-    await Promise.all(Array.from(this.drives, ([_, drive]) => this.networker.configure(drive.discoveryKey, { announce: false, lookup: true })))
+    await Promise.all(Array.from(this.drives, ([_, drive]) => this.networker.configure(drive.discoveryKey, { announce: false, lookup: false })))
   }
 
   /**
    * destroy.
    */
   async destroy () {
-    for (const handle of this.downloads.values()) {
-      handle.destroy()
+    await Promise.all(Array.from(this.mirrors, ([_, unmirror]) => unmirror()))
+    for (const unmirror of this.unwatches.values()) {
+      unmirror.destroy()
     }
     await this.networker.close()
   }
