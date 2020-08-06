@@ -1,3 +1,5 @@
+const path = require('path')
+
 const ApiGatewayService = require('moleculer-web')
 const IO = require('socket.io')
 
@@ -35,18 +37,24 @@ module.exports = {
 
   settings: {
     port: 3001,
+
+    // Dashboard site
+    assets: {
+      folder: path.resolve(__dirname, '../../../dashboard/build')
+    },
+
     whitelist: [
       'api.*'
     ],
+
     routes: [{
       aliases: {
         'GET api/drives': 'api.drives',
         'GET api/drives/:key': 'api.drive'
       }
     }],
-    cors: {
-      origin: ['http://localhost:3000']
-    }
+
+    cors: true
   },
 
   events: {
