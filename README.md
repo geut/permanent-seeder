@@ -13,21 +13,27 @@ npm run bootstrap
 
 ## <a name="usage"></a> Usage
 
+### Create config for dashboard
+```
+cd packages/dashboard
+cp .env.example .env
+```
+
+### Build dashboard app before start services with:
+```
+cd packages/dashboard
+npm build
+```
+
 ### Start services
 ```
 cd packages/cli
 ./bin/run start --restart
 ```
 
-Remember to build dashboard app before start services with:
-```
-cd packages/dashboard
-npm build
-```
-
 Dashboard will run on `http://localhost:3001`
 
-### Start Dashboard in DEV mode
+### Optional: Start Dashboard in DEV mode
 ```
 cd packages/dashboard
 npm start
