@@ -147,7 +147,7 @@ class Seeder extends EventEmitter {
   }
 
   async stat (key) {
-    const drive = this.drives.get(key)
+    const drive = this.drives.get(encode(key))
     if (!drive) {
       throw new Error('stat: drive not found')
     }
