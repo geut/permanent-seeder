@@ -3,7 +3,7 @@ const path = require('path')
 const ApiGatewayService = require('moleculer-web')
 const IO = require('socket.io')
 
-const EXAMPLE_KEY = 'faa6f1af5e60c4edbc260ea473c0216dc7b5e79ee387922293313c3cdaa1da33'
+const EXAMPLE_KEY = '2d7f8e3d9fc29da5a31297b145377eae54af200bbd2f85628eb35c6612189bc1'
 const exampleDrive = key => ({
   key,
   peers: 2,
@@ -59,11 +59,13 @@ module.exports = {
 
   events: {
     'seeder.stats' (payload, sender, event) {
+      this.logger.info({ payload })
       if (this.io) {
-        this.io.emit(event, {
+        const eventName = `stats.drives.${payload.key.toString('hex')}`
+        this.io.emit(eventName, {
           sender,
           event,
-          payload
+          payload: payload.stat
         })
       }
     }
