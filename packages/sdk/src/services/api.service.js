@@ -3,8 +3,7 @@ const path = require('path')
 const ApiGatewayService = require('moleculer-web')
 const IO = require('socket.io')
 
-const EXAMPLE_KEY = 'faa6f1af5e60c4edbc260ea473c0216dc7b5e79ee387922293313c3cdaa1da33'
-const EXAMPLE_KEY_1 = '7c9dff14680d00c791e33c9a7698ba4f98ef89bb06c3151d479fe6b050f0cdb3'
+const EXAMPLE_KEY = '2d7f8e3d9fc29da5a31297b145377eae54af200bbd2f85628eb35c6612189bc1'
 const exampleDrive = key => ({
   key,
   title: 'A title for this key',
@@ -61,11 +60,13 @@ module.exports = {
 
   events: {
     'seeder.stats' (payload, sender, event) {
+      this.logger.info({ payload })
       if (this.io) {
-        this.io.emit(event, {
+        const eventName = `stats.drives.${payload.key.toString('hex')}`
+        this.io.emit(eventName, {
           sender,
           event,
-          payload
+          payload: payload.stat
         })
       }
     }
@@ -75,8 +76,7 @@ module.exports = {
     drives: {
       async handler () {
         return {
-          [EXAMPLE_KEY]: exampleDrive(EXAMPLE_KEY),
-          [EXAMPLE_KEY_1]: exampleDrive(EXAMPLE_KEY_1)
+          [EXAMPLE_KEY]: exampleDrive(EXAMPLE_KEY)
         }
       }
     },
