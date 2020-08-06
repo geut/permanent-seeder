@@ -87,6 +87,9 @@ module.exports = {
   },
 
   stopped () {
+    // remove listeners
+    this.seeder.removeAllListeners('drive-download')
+    this.seeder.removeAllListeners('drive-upload')
     return this.seeder.destroy()
   }
 

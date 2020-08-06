@@ -1,4 +1,5 @@
 const { join } = require('path')
+const { promisify } = require('util')
 const { EventEmitter } = require('events')
 const { homedir } = require('os')
 const { encode, decode } = require('dat-encoding')
@@ -123,18 +124,15 @@ class Seeder extends EventEmitter {
         this.onEvent('update')
       })
 
-      const contentFeed = await new Promise((resolve, reject) => {
-        drive.getContent((err, cf) => {
-          if (err) {
-            return reject(err)
-          }
-          return resolve(cf)
-        })
-      })
+      const getContentFeed = promisify(drive.getContent)
+      const contentFeed = await getContentFeed()
 
       contentFeed.on('download', (...args) => this.onEvent('download', key, ...args))
       contentFeed.on('upload', (...args) => this.onEvent('upload', key, ...args))
-      // TODO(dk): remove listeners
+      contentFeed.on('close', () => {
+        contentFeed.removeListener('download', this.onEvent)
+        contentFeed.removeListener('upload', this.onEvent)
+      })
 
       this.unwatches.set(keyString, unwatch)
     }
