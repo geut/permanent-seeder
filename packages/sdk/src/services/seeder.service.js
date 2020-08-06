@@ -21,6 +21,30 @@ module.exports = {
       }
     },
 
+    unseed: {
+      params: {
+        key: { type: 'string', optional: true }
+      },
+      async handler (ctx) {
+        return this.unseed(ctx.params.key)
+      }
+    },
+
+    stats: {
+      async handler (ctx) {
+        return await this.seeder.allStats()
+      }
+    },
+
+    stat: {
+      params: {
+        key: { type: 'string' }
+      },
+      async handler (ctx) {
+        return await this.seeder.stat(ctx.params.key)
+      }
+    },
+
     readdir: {
       params: {
         key: { type: 'string' },
@@ -48,10 +72,24 @@ module.exports = {
 
     const keys = await this.broker.call('keys.getAll')
 
+    // hook seeder events
+    this.seeder.on('drive-download', async (key) => {
+      const stat = await this.seeder.stat(key)
+      this.broker.broadcast('seeder.stats', { key, stat })
+    })
+
+    this.seeder.on('drive-upload', async (key) => {
+      const stat = await this.seeder.stat(key)
+      this.broker.broadcast('seeder.stats', { key, stat })
+    })
+
     await this.seed(keys.map(({ key }) => key))
   },
 
   stopped () {
+    // remove listeners
+    this.seeder.removeAllListeners('drive-download')
+    this.seeder.removeAllListeners('drive-upload')
     return this.seeder.destroy()
   }
 
