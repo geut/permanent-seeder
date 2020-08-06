@@ -47,7 +47,7 @@ function DriveItemHeader ({ driveKey }) {
         <Typography variant='h5' align='center'>{title}</Typography>
       </Grid>
     ))
-  })
+  }, [classes.gridItem])
 
   return (
     <div className={classes.driveContainer}>
