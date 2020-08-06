@@ -58,7 +58,7 @@ module.exports = {
   },
 
   events: {
-    'stats.**' (payload, sender, event) {
+    'seeder.stats' (payload, sender, event) {
       if (this.io) {
         this.io.emit(event, {
           sender,
@@ -86,14 +86,6 @@ module.exports = {
   },
 
   started () {
-    // // Simulate drive created
-    // this.broker.emit('stats.drives', {
-    //   faa6f1af5e60c4edbc260ea473c0216dc7b5e79ee387922293313c3cdaa1da33: {}
-    // })
-
-    // Drive updates
-    setInterval(() => this.broker.emit(`stats.drives.${EXAMPLE_KEY}`, exampleDrive(EXAMPLE_KEY)), 1000)
-
     // Create a Socket.IO instance, passing it our server
     this.io = IO.listen(this.server)
 
