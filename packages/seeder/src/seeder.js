@@ -156,16 +156,15 @@ class Seeder extends EventEmitter {
 
     // TODO(dk): check support for mounts
     // const mounts = await drive.getAllMounts({ memory: true, recursive: !!opts.recursive })
+
     /*
     const getContentFeed = () => {
       const cacheContentKey = drive._contentStates.cache.get(drive.db.feed) || { feed: null }
       return cacheContentKey.feed
     }
     */
-
-    const contentFeed = await new Promise(resolve => {
-      drive.getContent((cf) => resolve(cf))
-    })
+    const getContentFeed = promisify(drive.getContent)
+    const contentFeed = await getContentFeed()
 
     const stat = {
       content: await getCoreStats(contentFeed),
