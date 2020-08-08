@@ -38,7 +38,9 @@
     "level-party": "^4.0.0",
     "levelup": "^4.4.0",
     "memdown": "^5.1.0",
-    "uuid": "^8.2.0"
+    "uuid": "^8.2.0",
+    "level-auto-index": "^2.0.0",
+    "subleveldown": "^5.0.1"
   },
   "devDependencies": {
     "@geut/chan": "^2.2.1",
