@@ -75,12 +75,14 @@ module.exports = {
     // hook seeder events
     this.seeder.on('drive-download', async (key) => {
       const stat = await this.seeder.stat(key)
-      this.broker.broadcast('seeder.stats', { key, stat })
+      const timestamp = Date.now()
+      this.broker.broadcast('seeder.stats', { key, timestamp, stat })
     })
 
     this.seeder.on('drive-upload', async (key) => {
       const stat = await this.seeder.stat(key)
-      this.broker.broadcast('seeder.stats', { key, stat })
+      const timestamp = Date.now()
+      this.broker.broadcast('seeder.stats', { key, timestamp, stat })
     })
 
     await this.seed(keys.map(({ key }) => key))
