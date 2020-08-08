@@ -151,23 +151,18 @@ test('filter keys', async () => {
   const firstBatchKey = keys[0].key
 
   // add one extra key
-  const data = createRandomKeyData()
-  data.key = randomBytes(32).toString('hex')
+  const data = keys[0]
+  data.timestamp = Date.now()
   const dataKey = [data.key, data.timestamp]
   await metricsDB.set(...dataKey, data)
   const keys2 = await metricsDB.getAll()
   expect(keys2.length).toBe(11)
 
   // filter by key
-  // const gte = `metrics!${firstBatchKey}!`
-  const gte = metricsDB._buildKey([firstBatchKey, ''])
+  const keysFiltered = await metricsDB.filterByTimestamp(firstBatchKey)
+  expect(keysFiltered.length).toBe(2)
 
-  console.log({ gte })
-
-  const filter = {
-    lte: `${gte}~`
-  }
-  const keysFiltered = metricsDB._filter(filter)
-  // expect(metricsDB.getAll(firstBatchKey)).resolves.toHaveLength(10)
-  expect(keysFiltered.length).toBe(10)
+  // filter by key and timestamp`
+  const keysFilteredTimestamp = await metricsDB.filterByTimestamp(firstBatchKey, data.timestamp)
+  expect(keysFilteredTimestamp.length).toBe(1)
 })
