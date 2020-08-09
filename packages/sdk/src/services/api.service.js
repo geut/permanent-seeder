@@ -3,8 +3,7 @@ const path = require('path')
 const ApiGatewayService = require('moleculer-web')
 const IO = require('socket.io')
 
-const EXAMPLE_KEY = 'faa6f1af5e60c4edbc260ea473c0216dc7b5e79ee387922293313c3cdaa1da33'
-const EXAMPLE_KEY_1 = '7c9dff14680d00c791e33c9a7698ba4f98ef89bb06c3151d479fe6b050f0cdb3'
+/*
 const exampleDrive = key => ({
   key,
   title: 'A title for this key',
@@ -31,6 +30,7 @@ const exampleDrive = key => ({
   memory: Math.random(),
   disk: Math.random()
 })
+*/
 
 module.exports = {
   name: 'api',
@@ -73,17 +73,15 @@ module.exports = {
 
   actions: {
     drives: {
-      async handler () {
-        return {
-          [EXAMPLE_KEY]: exampleDrive(EXAMPLE_KEY),
-          [EXAMPLE_KEY_1]: exampleDrive(EXAMPLE_KEY_1)
-        }
+      async handler (ctx) {
+        const all = await ctx.call('metrics.getAll')
+        return all
       }
     },
 
     drive: {
       async handler (ctx) {
-        return exampleDrive(ctx.params.key)
+        return ctx.call('metrics.get', { key: ctx.params.key, timestamp: ctx.params.timestamp })
       }
     }
   },
@@ -95,8 +93,8 @@ module.exports = {
     // })
 
     // Drive updates
-    setInterval(() => this.broker.emit(`stats.drives.${EXAMPLE_KEY}`, exampleDrive(EXAMPLE_KEY)), 1000)
-    setInterval(() => this.broker.emit(`stats.drives.${EXAMPLE_KEY_1}`, exampleDrive(EXAMPLE_KEY_1)), 4200)
+    // setInterval(() => this.broker.emit(`stats.drives.${EXAMPLE_KEY}`, exampleDrive(EXAMPLE_KEY)), 1000)
+    // setInterval(() => this.broker.emit(`stats.drives.${EXAMPLE_KEY_1}`, exampleDrive(EXAMPLE_KEY_1)), 4200)
 
     // Create a Socket.IO instance, passing it our server
     this.io = IO.listen(this.server)
