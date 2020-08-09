@@ -25,7 +25,7 @@ module.exports = {
         timestamp: { type: 'number', optional: true }
       },
       async handler (ctx) {
-        return this.database.filterByTimestamp(ctx.params.key)
+        return this.database.filterByTimestamp(ctx.params.key, ctx.params.timestamp)
       }
     },
     getAll: {
