@@ -165,11 +165,13 @@ class Seeder extends EventEmitter {
     */
     const getContentFeed = promisify(drive.getContent)
     const contentFeed = await getContentFeed()
+    const driveStat = await drive.stat('/')
 
     const stat = {
       content: await getCoreStats(contentFeed),
       metadata: await getCoreStats(drive.metadata),
-      network
+      network,
+      drive: driveStat
     }
 
     return stat
