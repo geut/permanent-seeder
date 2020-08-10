@@ -9,11 +9,11 @@ class GetCommand extends KeyCommand {
     const result = await (key ? this.keysDatabase.get(key) : this.keysDatabase.getAll())
 
     if (!result) {
-      this.log('Key not present', true)
+      this.log('Key not present')
       return
     }
 
-    this.log(JSON.stringify(result, null, 2), true)
+    this.log(JSON.stringify(result, null, 2))
   }
 }
 

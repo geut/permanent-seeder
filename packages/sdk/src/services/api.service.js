@@ -3,34 +3,34 @@ const path = require('path')
 const ApiGatewayService = require('moleculer-web')
 const IO = require('socket.io')
 // this key does not matter
-const EXAMPLE_KEY = '2d7f8e3d9fc29da5a31297b145377eae54af200bbd2f85628eb35c6612189bc1'
+// const EXAMPLE_KEY = 'ea500089febf96665ae5fbeccb1b4f85228c72ba3bf248ea0fcb52af646781db'
 
-const exampleDrive = key => ({
-  key,
-  title: 'A title for this key',
-  peers: 2,
-  size: {
-    bytes: 2048,
-    blocks: 20
-  },
-  upload: {
-    bytes: 512,
-    blocks: 5,
-    peers: {
-      f4e2d07a6ee9ac05f33df3759c41c4de1649d412e5eacfe93210ff6c78afeb14: {
-        bytes: 512,
-        blocks: 5
-      }
-    }
-  },
-  download: {
-    bytes: 819.2,
-    blocks: 8
-  },
-  cpu: Math.random(),
-  memory: Math.random(),
-  disk: Math.random()
-})
+// const exampleDrive = key => ({
+//   content: {},
+//   metadata: {
+//     key: Buffer.from(key, 'hex'),
+//     discoveryKey: Buffer.from(key, 'hex'),
+//     peerCount: 1,
+//     peers: [
+//       {
+//         uploadedBytes: 101,
+//         uploadedBlocks: 2,
+//         downloadedBytes: 0,
+//         downloadedBlocks: 0,
+//         remoteAddress: '::ffff:192.168.0.223'
+//       }
+//     ],
+//     uploadedBytes: 101,
+//     uploadedBlocks: 2,
+//     downloadedBytes: 0,
+//     downloadedBlocks: 5,
+//     totalBlocks: 5
+//   },
+//   network: {
+//     announce: true,
+//     lookup: false
+//   }
+// })
 
 module.exports = {
   name: 'api',
@@ -60,14 +60,10 @@ module.exports = {
   },
 
   events: {
-    'seeder.stats' (payload, sender, event) {
+    'seeder.stats' (payload) {
       if (this.io) {
-        const eventName = `stats.drives.${payload.key.toString('hex')}`
-        this.io.emit(eventName, {
-          sender,
-          event,
-          payload: payload.stat
-        })
+        this.io.emit('seeder.stats', payload.stat)
+        this.io.emit(`seeder.stats.${payload.key.toString('hex')}`, payload.stat)
       }
     }
   },
@@ -76,19 +72,24 @@ module.exports = {
     drives: {
       async handler () {
         return {
-          [EXAMPLE_KEY]: exampleDrive(EXAMPLE_KEY)
+          // [EXAMPLE_KEY]: exampleDrive(EXAMPLE_KEY)
         }
       }
     },
 
     drive: {
       async handler (ctx) {
-        return exampleDrive(ctx.params.key)
+        return {}
+        // return exampleDrive(ctx.params.key)
       }
     }
   },
 
   started () {
+    // setInterval(() => {
+    //   this.broker.emit('seeder.stats', { key: Buffer.from(EXAMPLE_KEY, 'hex'), stat: exampleDrive(EXAMPLE_KEY) })
+    // }, 2000)
+
     // Create a Socket.IO instance, passing it our server
     this.io = IO.listen(this.server)
 

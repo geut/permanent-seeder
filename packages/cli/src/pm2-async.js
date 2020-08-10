@@ -1,0 +1,10 @@
+const pify = require('pify')
+const pm2 = require('pm2')
+
+module.exports.pm2Connect = pify(pm2.connect.bind(pm2))
+module.exports.pm2Disconnect = pify(pm2.disconnect.bind(pm2))
+module.exports.pm2Start = pify(pm2.start.bind(pm2))
+module.exports.pm2Stop = pify(pm2.stop.bind(pm2))
+module.exports.pm2Restart = pify(pm2.restart.bind(pm2))
+module.exports.pm2List = pify(pm2.list.bind(pm2))
+module.exports.pm2SendDataToProcessId = pify(pm2.sendDataToProcessId.bind(pm2))

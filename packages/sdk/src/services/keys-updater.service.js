@@ -19,7 +19,7 @@ module.exports = {
   ],
 
   events: {
-    async 'keys.added' (ctx) {
+    async 'keys.created' (ctx) {
       await ctx.call('seeder.seed', { keys: ctx.params.keys.map(({ key }) => key) })
     },
     async 'keys.updated' (ctx) {
@@ -43,8 +43,6 @@ module.exports = {
   actions: {
     updateKeys: {
       async handler () {
-        console.log('updating keys...', new Date())
-
         const keys = await this.fetchKeys()
 
         this.updateKeys(keys)

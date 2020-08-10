@@ -8,6 +8,12 @@ const seederDaemon = async () => {
   const sdk = new SDK(config)
 
   await sdk.start()
+
+  process.on('message', function (packet, handler) {
+    if (packet.topic === 'keys:add') {
+      sdk.addKey(packet.data)
+    }
+  })
 }
 
 seederDaemon().catch(error => {

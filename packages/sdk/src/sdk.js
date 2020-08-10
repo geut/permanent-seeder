@@ -17,10 +17,10 @@ class SDK {
     })
   }
 
-  async start () {
+  async start (name = 'seeder') {
     if (this._broker) return
 
-    this._createBroker('seeder', {
+    this._createBroker(name, {
       metadata: {
         config: this._config
       }
@@ -41,6 +41,10 @@ class SDK {
 
   repl () {
     return this._broker.repl()
+  }
+
+  addKey (keyRecord) {
+    return this._broker.call('keys.add', keyRecord)
   }
 }
 

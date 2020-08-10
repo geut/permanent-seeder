@@ -1,13 +1,8 @@
-const pify = require('pify')
-const pm2 = require('pm2')
 
 const { SEEDER_DAEMON } = require('./start')
 
 const BaseCommand = require('../base-command')
-
-const pm2Connect = pify(pm2.connect.bind(pm2))
-const pm2Disconnect = pify(pm2.disconnect.bind(pm2))
-const pm2Stop = pify(pm2.stop.bind(pm2))
+const { pm2Connect, pm2Stop, pm2Disconnect } = require('../pm2-async')
 
 class StopCommand extends BaseCommand {
   async run () {

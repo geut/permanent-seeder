@@ -1,20 +1,13 @@
 const { resolve } = require('path')
 
 const { flags } = require('@oclif/command')
-const pify = require('pify')
-const pm2 = require('pm2')
 
 const ReplCommand = require('./repl')
 
 const BaseCommand = require('../base-command')
+const { pm2Connect, pm2List, pm2Restart, pm2Start, pm2Disconnect } = require('../pm2-async')
 
 const SEEDER_DAEMON = 'seeder-daemon'
-
-const pm2Connect = pify(pm2.connect.bind(pm2))
-const pm2Disconnect = pify(pm2.disconnect.bind(pm2))
-const pm2List = pify(pm2.list.bind(pm2))
-const pm2Start = pify(pm2.start.bind(pm2))
-const pm2Restart = pify(pm2.restart.bind(pm2))
 
 class StartCommand extends BaseCommand {
   async run () {
