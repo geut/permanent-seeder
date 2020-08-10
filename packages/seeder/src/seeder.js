@@ -82,8 +82,16 @@ class Seeder extends EventEmitter {
    *
    * @param {} dkey
    */
-  get (dkey) {
-    return this.drives.get(dkey)
+  get (key) {
+    return this.drives.get(key)
+  }
+
+  getDriveStats (key, path = '/') {
+    const drive = this.drives.get(key)
+    if (!drive) {
+      return {}
+    }
+    return drive.stat(path)
   }
 
   /**

@@ -45,6 +45,16 @@ module.exports = {
       }
     },
 
+    getDriveStats: {
+      params: {
+        key: { type: 'string' },
+        path: { type: 'string', optional: true }
+      },
+      async handler (ctx) {
+        return await this.seeder.getDriveStats(ctx.params.key, ctx.params.path)
+      }
+    },
+
     readdir: {
       params: {
         key: { type: 'string' },
