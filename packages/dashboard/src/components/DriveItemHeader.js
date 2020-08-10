@@ -28,22 +28,22 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const HEADERS = [
-  'Drive Key',
-  'Size',
-  'Download',
-  'Upload',
-  'Peers',
-  'CPU',
-  'Memory',
-  'Disk'
+  ['Drive Key', { }],
+  ['Size', { }],
+  ['Download', { xs: 2 }],
+  ['Upload', { xs: 2 }],
+  ['Peers', { }]
+  // 'CPU',
+  // 'Memory',
+  // 'Disk'
 ]
 
-function DriveItemHeader ({ driveKey }) {
+function DriveItemHeader () {
   const classes = useStyles()
 
   const headers = useMemo(() => {
-    return HEADERS.map(title => (
-      <Grid item xs={1} key={title} className={classes.gridItem}>
+    return HEADERS.map(([title, { xs = 1 }]) => (
+      <Grid item xs={xs} key={title} className={classes.gridItem}>
         <Typography variant='h5' align='center'>{title}</Typography>
       </Grid>
     ))
