@@ -91,7 +91,7 @@ class Seeder extends EventEmitter {
     if (!drive) {
       return {}
     }
-    return drive.stat(path)
+    return drive.stat(path)[0]
   }
 
   /**
@@ -127,6 +127,11 @@ class Seeder extends EventEmitter {
       // join em all
       await this.networker.configure(discoveryKey, { announce: this.opts.announce, lookup: this.opts.lookup })
       const unmirror = drive.mirror()
+
+      if (!this.mirrors.has(keyString)) {
+        this.onEvent('new', key)
+      }
+
       this.mirrors.set(keyString, unmirror)
       const unwatch = drive.watch('/', () => {
         this.onEvent('update')
@@ -173,7 +178,7 @@ class Seeder extends EventEmitter {
     */
     const getContentFeed = promisify(drive.getContent)
     const contentFeed = await getContentFeed()
-    const driveStat = await drive.stat('/')
+    const driveStat = await drive.stat('/')[0]
 
     const stat = {
       content: await getCoreStats(contentFeed),
