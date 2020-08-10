@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import prettyBytes from 'pretty-bytes'
 
 import { makeStyles } from '@material-ui/core'
@@ -17,10 +17,9 @@ import Typography from '@material-ui/core/Typography'
 import purple from '@material-ui/core/colors/purple'
 import grey from '@material-ui/core/colors/grey'
 
-import { useDrivesStats } from '../hooks/drives'
-
-import CircularProgress from './CircularProgress'
+// import CircularProgress from './CircularProgress'
 import DriveItemGridContainer from './DriveItemGridContainer'
+import { useLastMessage } from 'use-socketio'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -68,22 +67,33 @@ function useHumanizedBytes (bytes = 0) {
   return [humanized, unit, pretty]
 }
 
+const emptyDriveStat = {
+  metadata: {},
+  content: {},
+  network: {}
+}
+
 function DriveItem ({ driveKey }) {
   const classes = useStyles()
-  const [data] = useDrivesStats(driveKey)
 
-  const currentData = data.length > 0 ? data[data.length - 1] : {}
+  const { data = emptyDriveStat, unsubscribe } = useLastMessage(`seeder.stats.${driveKey}`)
 
-  const sizeBlocks = currentData.size?.blocks || 0
-  const downloadBlocks = currentData.download?.blocks || 0
-  const uploadBlocks = currentData.upload?.blocks || 0
+  useEffect(() => {
+    return () => unsubscribe()
+  }, [])
+
+  const { metadata } = data
+
+  const sizeBlocks = metadata.totalBlocks || 0
+  const downloadBlocks = metadata.downloadedBlocks || 0
+  const uploadBlocks = metadata.uploadedBlocks || 0
 
   const downloadPercent = downloadBlocks * 100 / (sizeBlocks || 1)
   const uploadPercent = uploadBlocks * 100 / (sizeBlocks || 1)
 
-  const [size, sizeUnit] = useHumanizedBytes(currentData.size?.bytes)
-  const [download, downloadUnit] = useHumanizedBytes(currentData.download?.bytes)
-  const [upload, uploadUnit] = useHumanizedBytes(currentData.upload?.bytes)
+  const [size, sizeUnit] = useHumanizedBytes(metadata.size?.bytes)
+  const [download, downloadUnit, downloadPretty] = useHumanizedBytes(metadata.downloadedBytes)
+  const [upload, uploadUnit, uploadPretty] = useHumanizedBytes(metadata.uploadedBytes)
 
   return (
     <Paper className={classes.root} elevation={5}>
@@ -91,7 +101,7 @@ function DriveItem ({ driveKey }) {
         <Grid container>
           <DriveItemGridContainer xs alignItems='center' justify='flex-start'>
             <Grid container direction='column'>
-              <Typography variant='h4'>{currentData.title}</Typography>
+              <Typography variant='h4'>Drive title</Typography>
               <Typography variant='subtitle1' className={classes.driveKey}>{driveKey}</Typography>
             </Grid>
           </DriveItemGridContainer>
@@ -101,7 +111,7 @@ function DriveItem ({ driveKey }) {
             <Typography variant='h6' align='center'>{sizeBlocks} <Typography variant='caption'>blocks</Typography></Typography>
           </DriveItemGridContainer>
 
-          <DriveItemGridContainer direction='row'>
+          <DriveItemGridContainer xs={2} direction='row'>
             <Grid container item xs direction='column' alignItems='flex-end' justify='center'>
               <Typography variant='h3'>{downloadPercent}%</Typography>
             </Grid>
@@ -111,7 +121,7 @@ function DriveItem ({ driveKey }) {
             </Grid>
           </DriveItemGridContainer>
 
-          <DriveItemGridContainer direction='row'>
+          <DriveItemGridContainer xs={2} direction='row'>
             <Grid container item xs direction='column' alignItems='flex-end' justify='center'>
               <Typography variant='h3'>{uploadPercent}%</Typography>
             </Grid>
@@ -122,20 +132,20 @@ function DriveItem ({ driveKey }) {
           </DriveItemGridContainer>
 
           <DriveItemGridContainer>
-            <Typography variant='h3'>{currentData.peers}</Typography>
+            <Typography variant='h3'>{metadata.peerCount}</Typography>
+          </DriveItemGridContainer>
+
+          {/* <DriveItemGridContainer>
+            <CircularProgress value={drive.cpu * 100} size={64} />
           </DriveItemGridContainer>
 
           <DriveItemGridContainer>
-            <CircularProgress value={currentData.cpu * 100} size={64} />
+            <CircularProgress value={drive.memory * 100} size={64} />
           </DriveItemGridContainer>
 
           <DriveItemGridContainer>
-            <CircularProgress value={currentData.memory * 100} size={64} />
-          </DriveItemGridContainer>
-
-          <DriveItemGridContainer>
-            <CircularProgress value={currentData.disk * 100} size={64} />
-          </DriveItemGridContainer>
+            <CircularProgress value={drive.disk * 100} size={64} />
+          </DriveItemGridContainer> */}
         </Grid>
       </div>
 
@@ -151,13 +161,16 @@ function DriveItem ({ driveKey }) {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {['Download', 'Upload'].map((row) => (
-                  <TableRow key={row}>
-                    <TableCell component='th' scope='row'>{row}</TableCell>
-                    <TableCell align='center'>{currentData[row.toLowerCase()]?.blocks}</TableCell>
-                    <TableCell align='center'>{prettyBytes(currentData[row.toLowerCase()]?.bytes || 0)}</TableCell>
-                  </TableRow>
-                ))}
+                <TableRow>
+                  <TableCell component='th' scope='row'>Download</TableCell>
+                  <TableCell align='center'>{downloadBlocks}</TableCell>
+                  <TableCell align='center'>{downloadPretty}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell component='th' scope='row'>Upload</TableCell>
+                  <TableCell align='center'>{uploadBlocks}</TableCell>
+                  <TableCell align='center'>{uploadPretty}</TableCell>
+                </TableRow>
               </TableBody>
             </Table>
           </TableContainer>

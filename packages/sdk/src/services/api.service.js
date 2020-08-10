@@ -3,34 +3,35 @@ const path = require('path')
 const ApiGatewayService = require('moleculer-web')
 const IO = require('socket.io')
 
-/*
-const exampleDrive = key => ({
-  key,
-  title: 'A title for this key',
-  peers: 2,
-  size: {
-    bytes: 2048,
-    blocks: 20
-  },
-  upload: {
-    bytes: 512,
-    blocks: 5,
-    peers: {
-      f4e2d07a6ee9ac05f33df3759c41c4de1649d412e5eacfe93210ff6c78afeb14: {
-        bytes: 512,
-        blocks: 5
-      }
-    }
-  },
-  download: {
-    bytes: 819.2,
-    blocks: 8
-  },
-  cpu: Math.random(),
-  memory: Math.random(),
-  disk: Math.random()
-})
-*/
+// Example key
+// const EXAMPLE_KEY = 'ea500089febf96665ae5fbeccb1b4f85228c72ba3bf248ea0fcb52af646781db'
+
+// const exampleDrive = key => ({
+//   content: {},
+//   metadata: {
+//     key: Buffer.from(key, 'hex'),
+//     discoveryKey: Buffer.from(key, 'hex'),
+//     peerCount: 1,
+//     peers: [
+//       {
+//         uploadedBytes: 101,
+//         uploadedBlocks: 2,
+//         downloadedBytes: 0,
+//         downloadedBlocks: 0,
+//         remoteAddress: '::ffff:192.168.0.223'
+//       }
+//     ],
+//     uploadedBytes: 101,
+//     uploadedBlocks: 2,
+//     downloadedBytes: 0,
+//     downloadedBlocks: 5,
+//     totalBlocks: 5
+//   },
+//   network: {
+//     announce: true,
+//     lookup: false
+//   }
+// })
 
 module.exports = {
   name: 'api',
@@ -60,13 +61,10 @@ module.exports = {
   },
 
   events: {
-    'stats.**' (payload, sender, event) {
+    'seeder.stats' (payload) {
       if (this.io) {
-        this.io.emit(event, {
-          sender,
-          event,
-          payload
-        })
+        this.io.emit('seeder.stats', payload.stat)
+        this.io.emit(`seeder.stats.${payload.key.toString('hex')}`, payload.stat)
       }
     }
   },
@@ -87,15 +85,6 @@ module.exports = {
   },
 
   started () {
-    // // Simulate drive created
-    // this.broker.emit('stats.drives', {
-    //   faa6f1af5e60c4edbc260ea473c0216dc7b5e79ee387922293313c3cdaa1da33: {}
-    // })
-
-    // Drive updates
-    // setInterval(() => this.broker.emit(`stats.drives.${EXAMPLE_KEY}`, exampleDrive(EXAMPLE_KEY)), 1000)
-    // setInterval(() => this.broker.emit(`stats.drives.${EXAMPLE_KEY_1}`, exampleDrive(EXAMPLE_KEY_1)), 4200)
-
     // Create a Socket.IO instance, passing it our server
     this.io = IO.listen(this.server)
 

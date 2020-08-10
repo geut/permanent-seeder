@@ -8,7 +8,7 @@ class RemoveCommand extends KeyCommand {
 
     await this.keysDatabase.remove(key)
 
-    this.log('Key removed', true)
+    this.log('Key removed')
   }
 }
 

@@ -54,7 +54,6 @@
     "deep-extend": "^0.6.0",
     "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2",
-    "pify": "^5.0.0",
     "pm2": "^4.4.0"
   },
   "devDependencies": {

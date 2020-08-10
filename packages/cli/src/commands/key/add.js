@@ -1,19 +1,35 @@
 const { flags } = require('@oclif/command')
 
-const KeyCommand = require('.')
-
+const { pm2SendDataToProcessId } = require('../../pm2-async')
 const BaseCommand = require('../../base-command')
+
+const KeyCommand = require('.')
 
 class AddCommand extends KeyCommand {
   async run () {
     const { flags: { key, title } } = this.parse(AddCommand)
 
-    await this.keysDatabase.add({
-      key,
-      title
-    })
+    // await this.keysDatabase.add({
+    //   key,
+    //   title
+    // })
+
+    try {
+      await this.runOnDaemon(async daemonProcess => {
+        await pm2SendDataToProcessId(daemonProcess.pm_id, {
+          topic: 'keys:add',
+          data: {
+            key,
+            title
+          }
+        })
+      })
+    } catch (error) {
+      this.error(error.message)
+    }
 
     this.log('Key added!')
+    process.exit(0)
   }
 }
 

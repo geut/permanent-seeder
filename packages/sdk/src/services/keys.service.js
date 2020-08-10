@@ -42,6 +42,16 @@ module.exports = {
       }
     },
 
+    add: {
+      params: {
+        key: { type: 'string', length: '64', hex: true },
+        title: { type: 'string', empty: 'false' }
+      },
+      async handler (ctx) {
+        this.updateKeys([ctx.params])
+      }
+    },
+
     get: {
       params: {
         key: { type: 'string', optional: true, length: '64', hex: true }

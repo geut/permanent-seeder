@@ -1,27 +1,35 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+import { useSocket } from 'use-socketio'
 
 import { useAppBarTitle } from '../hooks/layout'
-import { useDrivesStats } from '../hooks/drives'
 
 import DriveItem from '../components/DriveItem'
 import DriveItemHeader from '../components/DriveItemHeader'
 
 function Dashboard () {
-  const [data] = useDrivesStats()
   const [, setAppBarTitle] = useAppBarTitle()
+  const [seederStats, setSeederStats] = useState({})
+
+  const { unsubscribe } = useSocket('seeder.stats', stat => {
+    const key = Buffer.from(stat.metadata.key).toString('hex')
+    setSeederStats(seederStats => ({
+      ...seederStats,
+      [key]: stat
+    }))
+  })
 
   useEffect(() => {
     setAppBarTitle('Dashboard')
   }, [setAppBarTitle])
 
-  if (data.length === 0) return null
-
-  const drives = data[data.length - 1]
+  useEffect(() => {
+    return () => unsubscribe()
+  }, [])
 
   return (
     <div>
       <DriveItemHeader />
-      {Object.keys(drives).map(key => <DriveItem key={key} driveKey={key} />)}
+      {Object.keys(seederStats).map(key => <DriveItem key={key} driveKey={key} />)}
     </div>
   )
 }
