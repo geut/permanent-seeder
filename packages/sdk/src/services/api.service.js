@@ -2,7 +2,8 @@ const path = require('path')
 
 const ApiGatewayService = require('moleculer-web')
 const IO = require('socket.io')
-// this key does not matter
+
+// Example key
 // const EXAMPLE_KEY = 'ea500089febf96665ae5fbeccb1b4f85228c72ba3bf248ea0fcb52af646781db'
 
 // const exampleDrive = key => ({
@@ -70,25 +71,20 @@ module.exports = {
 
   actions: {
     drives: {
-      async handler () {
-        return {
-          // [EXAMPLE_KEY]: exampleDrive(EXAMPLE_KEY)
-        }
+      async handler (ctx) {
+        const all = await ctx.call('metrics.getAll')
+        return all
       }
     },
 
     drive: {
       async handler (ctx) {
-        return {}
-        // return exampleDrive(ctx.params.key)
+        return ctx.call('metrics.get', { key: ctx.params.key, timestamp: ctx.params.timestamp })
       }
     }
   },
 
   started () {
-    // setInterval(() => {
-    //   this.broker.emit('seeder.stats', { key: Buffer.from(EXAMPLE_KEY, 'hex'), stat: exampleDrive(EXAMPLE_KEY) })
-    // }, 2000)
 
     // Create a Socket.IO instance, passing it our server
     this.io = IO.listen(this.server)
