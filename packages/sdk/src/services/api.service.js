@@ -85,7 +85,6 @@ module.exports = {
   },
 
   started () {
-
     // Create a Socket.IO instance, passing it our server
     this.io = IO.listen(this.server)
 
