@@ -2,19 +2,37 @@
 
 const { SDK } = require('@geut/permanent-seeder-sdk')
 
+const MESSAGE_TOPIC_KEY_ADD = 'keys:add'
+
+let sdk
+
 const seederDaemon = async () => {
   const config = JSON.parse(process.argv[2])
 
-  const sdk = new SDK(config)
+  sdk = new SDK(config)
 
   await sdk.start()
-
-  process.on('message', function (packet, handler) {
-    if (packet.topic === 'keys:add') {
-      sdk.addKey(packet.data)
-    }
-  })
 }
+
+const messageHandlers = {
+  [MESSAGE_TOPIC_KEY_ADD]: handleAddKeyMessage
+}
+
+function handleAddKeyMessage (packet) {
+  sdk.addKey(packet.data)
+}
+
+function handleMessage (packet) {
+  if (!messageHandlers[packet.topic]) return
+
+  return messageHandlers[packet.topic](packet)
+}
+
+process.on('message', handleMessage)
+
+process.on('exit', function () {
+  process.off('message', handleMessage)
+})
 
 seederDaemon().catch(error => {
   console.error(error)
