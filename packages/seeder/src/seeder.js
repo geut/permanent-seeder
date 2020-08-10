@@ -82,8 +82,16 @@ class Seeder extends EventEmitter {
    *
    * @param {} dkey
    */
-  get (dkey) {
-    return this.drives.get(dkey)
+  get (key) {
+    return this.drives.get(key)
+  }
+
+  getDriveStats (key, path = '/') {
+    const drive = this.drives.get(key)
+    if (!drive) {
+      return {}
+    }
+    return drive.stat(path)
   }
 
   /**
@@ -165,11 +173,13 @@ class Seeder extends EventEmitter {
     */
     const getContentFeed = promisify(drive.getContent)
     const contentFeed = await getContentFeed()
+    const driveStat = await drive.stat('/')
 
     const stat = {
       content: await getCoreStats(contentFeed),
       metadata: await getCoreStats(drive.metadata),
-      network
+      network,
+      drive: driveStat
     }
 
     return stat
