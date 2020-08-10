@@ -32,7 +32,7 @@ module.exports = {
 
     stats: {
       async handler (ctx) {
-        return await this.seeder.allStats()
+        return this.seeder.allStats()
       }
     },
 
@@ -41,7 +41,7 @@ module.exports = {
         key: { type: 'string' }
       },
       async handler (ctx) {
-        return await this.seeder.stat(ctx.params.key)
+        return this.seeder.stat(ctx.params.key)
       }
     },
 
@@ -51,7 +51,7 @@ module.exports = {
         path: { type: 'string', optional: true }
       },
       async handler (ctx) {
-        return await this.seeder.getDriveStats(ctx.params.key, ctx.params.path)
+        return this.seeder.getDriveStats(ctx.params.key, ctx.params.path)
       }
     },
 
@@ -82,7 +82,13 @@ module.exports = {
 
     const keys = await this.broker.call('keys.getAll')
 
+    this.logger.info('hook seeder events')
     // hook seeder events
+    this.seeder.on('drive-new', async (key) => {
+      const stat = await this.seeder.stat(key)
+      const timestamp = Date.now()
+      this.broker.broadcast('seeder.stats', { key, timestamp, stat })
+    })
     this.seeder.on('drive-download', async (key) => {
       const stat = await this.seeder.stat(key)
       const timestamp = Date.now()
@@ -100,6 +106,7 @@ module.exports = {
 
   stopped () {
     // remove listeners
+    this.seeder.removeAllListeners('drive-new')
     this.seeder.removeAllListeners('drive-download')
     this.seeder.removeAllListeners('drive-upload')
     return this.seeder.destroy()
