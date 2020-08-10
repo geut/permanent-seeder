@@ -38,6 +38,10 @@ module.exports = {
 
   mixins: [ApiGatewayService],
 
+  dependencies: [
+    'metrics'
+  ],
+
   settings: {
     port: 3001,
 

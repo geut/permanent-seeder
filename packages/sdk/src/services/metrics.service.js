@@ -6,10 +6,6 @@ module.exports = {
 
   mixins: [Config],
 
-  dependencies: [
-    'metricsdb'
-  ],
-
   events: {
     'seeder.stats': {
       async handler (ctx) {
@@ -35,12 +31,9 @@ module.exports = {
     }
   },
 
-  methods: {
-  },
-
   created () {
     this.config = {
-      ...this.seetings.config.metrics.db
+      ...this.settings.config.metrics.db
     }
 
     this.database = new MetricsDatabase(this.config.path)

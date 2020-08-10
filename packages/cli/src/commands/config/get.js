@@ -16,7 +16,7 @@ class GetCommand extends ConfigCommand {
       return this.warn(`No config key found: ${key}`)
     }
 
-    this.log(JSON.stringify(configValues, null, 2), true)
+    this.log(JSON.stringify(configValues, null, 2))
   }
 }
 
