@@ -12,7 +12,7 @@ const SEEDER_DAEMON = 'seeder-daemon'
 class StartCommand extends BaseCommand {
   async run () {
     const config = this.getConfig()
-    const { flags: { restart, repl } } = this.parse(StartCommand)
+    const { flags: { restart, repl, hot } } = this.parse(StartCommand)
 
     try {
       await pm2Connect()
@@ -30,6 +30,10 @@ class StartCommand extends BaseCommand {
         }
       } else {
         const args = [JSON.stringify(config)]
+
+        if (hot) {
+          args.push(true)
+        }
 
         await pm2Start({
           name: SEEDER_DAEMON,
@@ -55,7 +59,8 @@ StartCommand.description = 'Start permanent seeder daemon'
 
 StartCommand.flags = {
   restart: flags.boolean({ default: false, description: 'Restart daemon if running' }),
-  repl: flags.boolean({ default: false, description: 'Open repl after start' })
+  repl: flags.boolean({ default: false, description: 'Open repl after start' }),
+  hot: flags.boolean({ default: false, description: 'Reload on change' })
 }
 
 module.exports = StartCommand

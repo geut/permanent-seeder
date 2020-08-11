@@ -103,5 +103,9 @@ module.exports = {
     }
 
     this.database = new KeysDatabase(this.config.path)
+  },
+
+  async stopped () {
+    await this.database.close()
   }
 }
