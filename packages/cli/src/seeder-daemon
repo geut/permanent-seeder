@@ -8,10 +8,11 @@ let sdk
 
 const seederDaemon = async () => {
   const config = JSON.parse(process.argv[2])
+  const hot = Boolean(process.argv[3])
 
   sdk = new SDK(config)
 
-  await sdk.start()
+  await sdk.start('seeder', hot)
 }
 
 const messageHandlers = {

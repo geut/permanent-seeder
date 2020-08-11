@@ -17,13 +17,14 @@ class SDK {
     })
   }
 
-  async start (name = 'seeder') {
+  async start (name = 'seeder', hotReload = false) {
     if (this._broker) return
 
     this._createBroker(name, {
       metadata: {
         config: this._config
-      }
+      },
+      hotReload
     })
 
     this._broker.loadServices(servicesPath)
