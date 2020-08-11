@@ -45,7 +45,8 @@ module.exports = {
       async handler () {
         const keys = await this.fetchKeys()
 
-        this.updateKeys(keys)
+        // Note(dk): this might need an update when we consume the real endpoint
+        this.updateKeys(keys.data)
       }
     }
   },
@@ -62,7 +63,7 @@ module.exports = {
     },
 
     async updateKeys (keys) {
-      await this.ctx.call('keys.updateAll', { keys })
+      await this.broker.call('keys.updateAll', { keys })
     }
   },
 
