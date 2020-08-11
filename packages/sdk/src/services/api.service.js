@@ -88,13 +88,20 @@ module.exports = {
     }
   },
 
-  started () {
+  async started () {
     // Create a Socket.IO instance, passing it our server
     this.io = IO.listen(this.server)
 
+    this.logger.info('Getting all stats...')
+    const allStats = await this.broker.call('metrics.getAll')
     // Add a connect listener
     this.io.on('connection', client => {
       this.logger.info('SOCKET: Client connected via websocket!')
+
+      for (const driveStat of allStats) {
+        this.io.emit('seeder.stats', driveStat.stat)
+        this.io.emit(`seeder.stats.${driveStat.key.toString('hex')}`, driveStat.stat)
+      }
 
       client.on('disconnect', () => {
         this.logger.info('SOCKET: Client disconnected')
