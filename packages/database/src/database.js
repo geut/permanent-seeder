@@ -38,6 +38,10 @@ class Database {
     })
   }
 
+  async close () {
+    await this._db.close()
+  }
+
   async set (...args) {
     assert(args.length > 1, 'Missing value and/or key parts. Use db.set(...keyParts, value)')
 
