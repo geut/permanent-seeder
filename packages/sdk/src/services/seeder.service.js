@@ -101,6 +101,18 @@ module.exports = {
       this.broker.broadcast('seeder.stats', { key, timestamp, stat })
     })
 
+    this.seeder.on('drive-peer-add', async (key) => {
+      const stat = await this.seeder.stat(key)
+      const timestamp = Date.now()
+      this.broker.broadcast('seeder.stats', { key, timestamp, stat })
+    })
+
+    this.seeder.on('drive-peer-remove', async (key) => {
+      const stat = await this.seeder.stat(key)
+      const timestamp = Date.now()
+      this.broker.broadcast('seeder.stats', { key, timestamp, stat })
+    })
+
     await this.seed(keys.map(({ key }) => key))
   },
 
@@ -109,6 +121,8 @@ module.exports = {
     this.seeder.removeAllListeners('drive-new')
     this.seeder.removeAllListeners('drive-download')
     this.seeder.removeAllListeners('drive-upload')
+    this.seeder.removeAllListeners('drive-peer-add')
+    this.seeder.removeAllListeners('drive-peer-remove')
     return this.seeder.destroy()
   }
 

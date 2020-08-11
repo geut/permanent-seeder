@@ -140,11 +140,15 @@ class Seeder extends EventEmitter {
       const getContentFeed = promisify(drive.getContent)
       const contentFeed = await getContentFeed()
 
+      contentFeed.on('peer-add', (...args) => this.onEvent('peer-add', key, ...args))
+      contentFeed.on('peer-remove', (...args) => this.onEvent('peer-remove', key, ...args))
       contentFeed.on('download', (...args) => this.onEvent('download', key, ...args))
       contentFeed.on('upload', (...args) => this.onEvent('upload', key, ...args))
       contentFeed.on('close', () => {
         contentFeed.removeListener('download', this.onEvent)
         contentFeed.removeListener('upload', this.onEvent)
+        contentFeed.removeListener('peer-add', this.onEvent)
+        contentFeed.removeListener('peer-remove', this.onEvent)
       })
 
       this.unwatches.set(keyString, unwatch)
