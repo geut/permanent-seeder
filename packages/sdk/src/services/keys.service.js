@@ -1,5 +1,6 @@
 const Cron = require('moleculer-cron')
 const deepEqual = require('deep-equal')
+const { encode } = require('dat-encoding')
 
 const { KeysDatabase } = require('@geut/permanent-seeder-database')
 
@@ -31,14 +32,23 @@ module.exports = {
           items: {
             type: 'object',
             props: {
-              key: { type: 'string', length: '64', hex: true },
-              title: { type: 'string', empty: 'false' }
+              url: { type: 'string' },
+              title: { type: 'string', empty: 'false' },
+              id: { type: 'number' },
+              created_at: { type: 'string' }
             }
           }
         }
       },
       async handler (ctx) {
-        await this.updateKeys(ctx.params.keys)
+        this.logger.info(ctx.params.keys)
+        const keys = ctx.params.keys.map(datum => {
+          const key = encode(datum.url)
+          delete datum.url
+
+          return { ...datum, key }
+        })
+        await this.updateKeys(keys)
       }
     },
 
