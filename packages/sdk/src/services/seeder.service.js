@@ -114,7 +114,7 @@ module.exports = {
       const timestamp = Date.now()
       this.broker.broadcast('seeder.stats', { key, timestamp, stat })
     })
-    
+
     this.seeder.on('drive-sync', async (key) => {
       const stat = await this.seeder.stat(key)
       const timestamp = Date.now()
