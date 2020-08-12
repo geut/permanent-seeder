@@ -45,13 +45,9 @@ module.exports = {
       }
     },
 
-    getDriveStats: {
-      params: {
-        key: { type: 'string' },
-        path: { type: 'string', optional: true }
-      },
-      async handler (ctx) {
-        return this.seeder.getDriveStats(ctx.params.key, ctx.params.path)
+    getSwarmStats: {
+      handler () {
+        return this.seeder.getSwarmStats()
       }
     },
 
