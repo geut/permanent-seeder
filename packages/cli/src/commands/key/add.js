@@ -9,11 +9,6 @@ class AddCommand extends KeyCommand {
   async run () {
     const { flags: { key, title } } = this.parse(AddCommand)
 
-    // await this.keysDatabase.add({
-    //   key,
-    //   title
-    // })
-
     try {
       await this.runOnDaemon(async daemonProcess => {
         await pm2SendDataToProcessId(daemonProcess.pm_id, {

@@ -27,14 +27,15 @@ class MetricsDatabase extends Database {
     const key = typeof data.key === 'string' ? data.key : data.key.toString('hex')
 
     return {
-      key,
-      ...data
+      ...data,
+      key
     }
   }
 
   async onPreSet (key, data) {
-    await this.metrics.put(key, data)
-    return this._cleanKeyData(data)
+    const cleanedData = this._cleanKeyData(data)
+    await this.metrics.put(key, cleanedData)
+    return cleanedData
   }
 
   /**
@@ -85,11 +86,11 @@ class MetricsDatabase extends Database {
       stream
         .on('data', data => {
           if (!query) {
-            if (data.key === key) {
+            if (data.key.toString('hex') === key) {
               out.push(data)
             }
           } else {
-            if (data.key === key && data.timestamp >= query) {
+            if (data.key.toString('hex') === key && data.timestamp >= query) {
               out.push(data)
             }
           }

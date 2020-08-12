@@ -1,35 +1,48 @@
 import React, { useEffect, useState } from 'react'
 import { useSocket } from 'use-socketio'
+import useFetch from 'use-http'
 
 import { useAppBarTitle } from '../hooks/layout'
 
 import DriveItem from '../components/DriveItem'
 import DriveItemHeader from '../components/DriveItemHeader'
 
+function reduceKeys (keys = []) {
+  return keys.reduce((keys, keyRecord) => {
+    keys[keyRecord.key] = keyRecord
+    return keys
+  }, {})
+}
+
 function Dashboard () {
   const [, setAppBarTitle] = useAppBarTitle()
-  const [seederStats, setSeederStats] = useState({})
+  const [keys, setKeys] = useState({})
 
-  const { unsubscribe } = useSocket('seeder.stats', stat => {
-    const key = Buffer.from(stat.metadata.key).toString('hex')
-    setSeederStats(seederStats => ({
-      ...seederStats,
-      [key]: stat
-    }))
+  const { unsubscribe } = useSocket('keys', keys => {
+    setKeys(reduceKeys(keys))
   })
 
   useEffect(() => {
     setAppBarTitle('Dashboard')
   }, [setAppBarTitle])
 
+  const { get, response } = useFetch('http://localhost:3001/api')
+
   useEffect(() => {
+    async function fetchInitalData () {
+      const keys = await get('/keys')
+      if (response.ok) setKeys(reduceKeys(keys))
+    }
+
+    fetchInitalData()
+
     return () => unsubscribe()
   }, [])
 
   return (
     <div>
       <DriveItemHeader />
-      {Object.keys(seederStats).map(key => <DriveItem key={key} driveKey={key} />)}
+      {Object.keys(keys).map(key => <DriveItem key={key} driveKey={key} />)}
     </div>
   )
 }
