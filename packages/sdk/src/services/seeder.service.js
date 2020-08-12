@@ -83,12 +83,14 @@ module.exports = {
     const keys = await this.broker.call('keys.getAll')
 
     this.logger.info('hook seeder events')
+
     // hook seeder events
     this.seeder.on('drive-new', async (key) => {
       const stat = await this.seeder.stat(key)
       const timestamp = Date.now()
       this.broker.broadcast('seeder.stats', { key, timestamp, stat })
     })
+
     this.seeder.on('drive-download', async (key) => {
       const stat = await this.seeder.stat(key)
       const timestamp = Date.now()
@@ -96,6 +98,12 @@ module.exports = {
     })
 
     this.seeder.on('drive-upload', async (key) => {
+      const stat = await this.seeder.stat(key)
+      const timestamp = Date.now()
+      this.broker.broadcast('seeder.stats', { key, timestamp, stat })
+    })
+
+    this.seeder.on('drive-sync', async (key) => {
       const stat = await this.seeder.stat(key)
       const timestamp = Date.now()
       this.broker.broadcast('seeder.stats', { key, timestamp, stat })

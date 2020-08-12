@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import prettyBytes from 'pretty-bytes'
+import useFetch from 'use-http'
 
 import { makeStyles } from '@material-ui/core'
 import Grid from '@material-ui/core/Grid'
@@ -67,33 +68,60 @@ function useHumanizedBytes (bytes = 0) {
   return [humanized, unit, pretty]
 }
 
-const emptyDriveStat = {
+const emptyKeyStat = {
   metadata: {},
   content: {},
-  network: {}
+  network: {},
+  drive: {}
 }
 
 function DriveItem ({ driveKey }) {
   const classes = useStyles()
 
-  const { data = emptyDriveStat, unsubscribe } = useLastMessage(`seeder.stats.${driveKey}`)
+  const [keyData, setKeyData] = useState({})
+  const [keyStat, setKeyStat] = useState(emptyKeyStat)
+  const { get, response } = useFetch('http://localhost:3001/api')
+
+  const { data: liveKeyStat, unsubscribe } = useLastMessage(`stats.keys.${driveKey}`)
 
   useEffect(() => {
+    async function fetchInitalData () {
+      const keyData = await get(`/keys/${driveKey}`)
+      if (response.ok) setKeyData(keyData)
+
+      const keyStats = await get(`/stats/keys/${driveKey}`)
+      if (keyStats.length > 0) {
+        const keyStat = keyStats.pop()
+        if (response.ok) setKeyStat(keyStat.stat)
+      }
+    }
+
+    fetchInitalData()
+
     return () => unsubscribe()
-  }, [])
+  }, [driveKey])
 
-  const { metadata } = data
+  useEffect(() => {
+    if (!liveKeyStat) return
+    setKeyStat(liveKeyStat)
+  }, [liveKeyStat])
 
-  const sizeBlocks = metadata.totalBlocks || 0
-  const downloadBlocks = metadata.downloadedBlocks || 0
-  const uploadBlocks = metadata.uploadedBlocks || 0
+  const { content, drive } = keyStat
+
+  const sizeBlocks = content.totalBlocks || 0
+  const downloadBlocks = content.downloadedBlocks || 0
+  const uploadBlocks = content.uploadedBlocks || 0
 
   const downloadPercent = downloadBlocks * 100 / (sizeBlocks || 1)
   const uploadPercent = uploadBlocks * 100 / (sizeBlocks || 1)
 
-  const [size, sizeUnit] = useHumanizedBytes(metadata.size?.bytes)
-  const [download, downloadUnit, downloadPretty] = useHumanizedBytes(metadata.downloadedBytes)
-  const [upload, uploadUnit, uploadPretty] = useHumanizedBytes(metadata.uploadedBytes)
+  const [size, sizeUnit] = useHumanizedBytes(drive.size?.bytes)
+  const [download, downloadUnit, downloadPretty] = useHumanizedBytes(content.downloadedBytes)
+  const [upload, uploadUnit, uploadPretty] = useHumanizedBytes(content.uploadedBytes)
+
+  if (!keyData) {
+    return null
+  }
 
   return (
     <Paper className={classes.root} elevation={5}>
@@ -101,7 +129,7 @@ function DriveItem ({ driveKey }) {
         <Grid container>
           <DriveItemGridContainer xs alignItems='center' justify='flex-start'>
             <Grid container direction='column'>
-              <Typography variant='h4'>Drive title</Typography>
+              <Typography variant='h4'>{keyData.title}</Typography>
               <Typography variant='subtitle1' className={classes.driveKey}>{driveKey}</Typography>
             </Grid>
           </DriveItemGridContainer>
@@ -132,7 +160,7 @@ function DriveItem ({ driveKey }) {
           </DriveItemGridContainer>
 
           <DriveItemGridContainer>
-            <Typography variant='h3'>{metadata.peerCount}</Typography>
+            <Typography variant='h3'>{content.peerCount}</Typography>
           </DriveItemGridContainer>
 
           {/* <DriveItemGridContainer>
