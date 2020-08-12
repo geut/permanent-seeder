@@ -31,11 +31,7 @@ const HEADERS = [
   ['Drive Key', { }],
   ['Size', { }],
   ['Download', { xs: 2 }],
-  ['Upload', { xs: 2 }],
   ['Peers', { }]
-  // 'CPU',
-  // 'Memory',
-  // 'Disk'
 ]
 
 function DriveItemHeader () {
