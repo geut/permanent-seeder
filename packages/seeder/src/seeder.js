@@ -242,10 +242,8 @@ class Seeder extends EventEmitter {
     const driveStat = async (drive) => {
       const statAll = await drive.stat('/')
       const stat = statAll[0]
-      delete stat.size // useless size value
 
       const fileStats = this.stats.get(encode(drive.key))
-      console.log({ fileStats })
       const out = {
         ...stat,
         fileStats
