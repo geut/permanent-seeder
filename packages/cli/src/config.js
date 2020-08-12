@@ -47,6 +47,7 @@ module.exports.init = (configFolderPath, options = {}) => {
 
   // Set initial runtime config
   this.set('keys.db.path', resolve(configFolderPath, 'keys.db'), { configFolderPath })
+  this.set('metrics.db.path', resolve(configFolderPath, 'metrics.db'), { configFolderPath })
   this.set('security.secret', randomBytes(32).toString('hex'), { configFolderPath })
 }
 
