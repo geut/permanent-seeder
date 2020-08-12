@@ -58,6 +58,7 @@ class Seeder extends EventEmitter {
     this.drives = new Map()
     this.mirrors = new Map()
     this.unwatches = new Map()
+    this.stats = new Map()
     this.ready = false
   }
 
@@ -86,22 +87,78 @@ class Seeder extends EventEmitter {
     return this.drives.get(key)
   }
 
-  getDriveStats (key, path = '/') {
-    const drive = this.drives.get(key)
-    if (!drive) {
-      return {}
+  /**
+   * getSwarmStats
+   * @description return some hyperswarm info and currently connected peers
+   *
+   * @return {{
+   *   holepunchable,
+   *   remoteAddress,
+   *   currentPeers
+   * }}
+   */
+  getSwarmStats () {
+    if (!this.ready) return {}
+
+    const holepunchable = this.networker.swarm.holepunchable()
+    const ra = this.networker.swarm.remoteAddress()
+    const remoteAddress = ra ? `${ra.host}:${ra.port}` : ''
+    const currentPeers = this.networker.peers
+
+    return {
+      holepunchable,
+      remoteAddress,
+      currentPeers
     }
-    return drive.stat(path)[0]
   }
 
   /**
-   * onEvent.
+   * onAdd.
    *
-   * @param {} event
-   * @param {} args
+   * @description emitted when a new drive is added to the permanent seeder
+   * @event
+   * @param {string} key - drive key
    */
-  onEvent (event, ...args) {
-    this.emit(`drive-${event}`, ...args)
+  onAdd (key) {
+    this.emit('add', key)
+  }
+
+  /**
+   * onWatchUpdate.
+   * @description emitted when on drive.watch cb
+   * @event
+   * @param {string} key - drive key
+   */
+  onWatchUpdate (key) {
+    this.emit('watch-update', key)
+  }
+
+  onPeerAdd (...args) {
+    this.emit('peer-add', ...args)
+  }
+
+  onPeerRemove (...args) {
+    this.emit('peer-remove', ...args)
+  }
+
+  onDownload (...args) {
+    this.emit('download', ...args)
+  }
+
+  onUpload (...args) {
+    this.emit('upload', ...args)
+  }
+
+  onSync (...args) {
+    this.emit('sync', ...args)
+  }
+
+  _statsToString (stats) {
+    const out = {}
+    for (const [key, val] of stats.entries()) {
+      out[key] = val
+    }
+    return out
   }
 
   /**
@@ -113,7 +170,7 @@ class Seeder extends EventEmitter {
     await this.init()
     for (const key of keys) {
       // get or create hyperdrive
-      const keyString = key.toString('hex')
+      const keyString = encode(key)
 
       console.log('SEEDING', keyString)
 
@@ -129,28 +186,36 @@ class Seeder extends EventEmitter {
       const unmirror = drive.mirror()
 
       if (!this.mirrors.has(keyString)) {
-        this.onEvent('new', key)
+        this.onAdd(keyString)
       }
 
       this.mirrors.set(keyString, unmirror)
-      const unwatch = drive.watch('/', () => {
-        this.onEvent('update')
+      const unwatch = drive.watch('/', async () => {
+        const stats = await drive.stats('/')
+        this.stats.set(keyString, this._statsToString(stats))
+        this.onWatchUpdate(keyString)
       })
 
       const getContentFeed = promisify(drive.getContent)
       const contentFeed = await getContentFeed()
 
-      contentFeed.on('peer-add', (...args) => this.onEvent('peer-add', key, ...args))
-      contentFeed.on('peer-remove', (...args) => this.onEvent('peer-remove', key, ...args))
-      contentFeed.on('download', (...args) => this.onEvent('download', key, ...args))
-      contentFeed.on('upload', (...args) => this.onEvent('upload', key, ...args))
-      contentFeed.on('sync', (...args) => this.onEvent('sync', key, ...args))
+      // get stats
+      const stats = await drive.stats('/')
+
+      this.stats.set(keyString, this._statsToString(stats))
+
+      // re-emit content feed events
+      contentFeed.on('peer-add', (...args) => this.onPeerAdd(keyString, ...args))
+      contentFeed.on('peer-remove', (...args) => this.onPeerRemove(keyString, ...args))
+      contentFeed.on('download', (...args) => this.onDownload(keyString, ...args))
+      contentFeed.on('upload', (...args) => this.onUpload(keyString, ...args))
+      contentFeed.on('sync', (...args) => this.onSync(keyString, ...args))
       contentFeed.on('close', () => {
-        contentFeed.removeListener('download', this.onEvent)
-        contentFeed.removeListener('upload', this.onEvent)
-        contentFeed.removeListener('peer-add', this.onEvent)
-        contentFeed.removeListener('peer-remove', this.onEvent)
-        contentFeed.removeListener('sync', this.onEvent)
+        contentFeed.removeListener('download', this.onDownload)
+        contentFeed.removeListener('upload', this.onUpload)
+        contentFeed.removeListener('peer-add', this.onPeerAdd)
+        contentFeed.removeListener('peer-remove', this.onPeerRemove)
+        contentFeed.removeListener('sync', this.onSync)
       })
 
       this.unwatches.set(keyString, unwatch)
@@ -174,34 +239,19 @@ class Seeder extends EventEmitter {
 
     const network = await this.networker.status(drive.discoveryKey)
 
-    // TODO(dk): check support for mounts
-    // const mounts = await drive.getAllMounts({ memory: true, recursive: !!opts.recursive })
+    const driveStat = async (drive) => {
+      const statAll = await drive.stat('/')
+      const stat = statAll[0]
 
-    /*
-    const getContentFeed = () => {
-      const cacheContentKey = drive._contentStates.cache.get(drive.db.feed) || { feed: null }
-      return cacheContentKey.feed
-    }
-    */
-    const getContentFeed = promisify(drive.getContent)
-    const contentFeed = await getContentFeed()
-
-    const stat = {
-      content: await getCoreStats(contentFeed),
-      metadata: await getCoreStats(drive.metadata),
-      network,
-      drive: await driveStat(drive)
+      const fileStats = this.stats.get(encode(drive.key))
+      const out = {
+        ...stat,
+        fileStats
+      }
+      return out
     }
 
-    return stat
-
-    async function driveStat (drive) {
-      const stat = await drive.stat('/')
-
-      return { ...stat[0] }
-    }
-
-    async function getCoreStats (core) {
+    const getCoreStats = async (core) => {
       if (!core) return {}
       const stats = core.stats
       const openedPeers = core.peers.filter(p => p.remoteOpened)
@@ -227,6 +277,26 @@ class Seeder extends EventEmitter {
         totalBlocks: core.length
       }
     }
+    // TODO(dk): check support for mounts
+    // const mounts = await drive.getAllMounts({ memory: true, recursive: !!opts.recursive })
+
+    /*
+    const getContentFeed = () => {
+      const cacheContentKey = drive._contentStates.cache.get(drive.db.feed) || { feed: null }
+      return cacheContentKey.feed
+    }
+    */
+    const getContentFeed = promisify(drive.getContent)
+    const contentFeed = await getContentFeed()
+
+    const stat = {
+      content: await getCoreStats(contentFeed),
+      metadata: await getCoreStats(drive.metadata),
+      network,
+      drive: await driveStat(drive)
+    }
+
+    return stat
   }
 
   /**
