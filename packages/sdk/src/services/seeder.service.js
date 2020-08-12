@@ -70,7 +70,14 @@ module.exports = {
     async seed (keyBuffers) {
       const keys = keyBuffers.map(key => Buffer.isBuffer(key) ? key : Buffer.from(key, 'hex'))
       return this.seeder.seed(keys)
+    },
+
+    async broadcastEvent ({ event, key }) {
+      const stat = await this.seeder.stat(key)
+      const timestamp = Date.now()
+      this.broker.broadcast('seeder.stats', { key, timestamp, stat, event })
     }
+
   },
 
   created () {
@@ -85,53 +92,32 @@ module.exports = {
     this.logger.info('hook seeder events')
 
     // hook seeder events
-    this.seeder.on('drive-new', async (key) => {
-      const stat = await this.seeder.stat(key)
-      const timestamp = Date.now()
-      this.broker.broadcast('seeder.stats', { key, timestamp, stat })
-    })
+    this.seeder.on('add', (key) => this.broadcastEvent({ key, event: 'add' }))
 
-    this.seeder.on('drive-download', async (key) => {
-      const stat = await this.seeder.stat(key)
-      const timestamp = Date.now()
-      this.broker.broadcast('seeder.stats', { key, timestamp, stat })
-    })
+    this.seeder.on('watch-update', (key) => this.broadcastEvent({ key, event: 'watch-update' }))
 
-    this.seeder.on('drive-upload', async (key) => {
-      const stat = await this.seeder.stat(key)
-      const timestamp = Date.now()
-      this.broker.broadcast('seeder.stats', { key, timestamp, stat })
-    })
+    this.seeder.on('download', (key) => this.broadcastEvent({ key, event: 'download' }))
 
-    this.seeder.on('drive-peer-add', async (key) => {
-      const stat = await this.seeder.stat(key)
-      const timestamp = Date.now()
-      this.broker.broadcast('seeder.stats', { key, timestamp, stat })
-    })
+    this.seeder.on('upload', (key) => this.broadcastEvent({ key, event: 'upload' }))
 
-    this.seeder.on('drive-peer-remove', async (key) => {
-      const stat = await this.seeder.stat(key)
-      const timestamp = Date.now()
-      this.broker.broadcast('seeder.stats', { key, timestamp, stat })
-    })
+    this.seeder.on('peer-add', (key) => this.broadcastEvent({ key, event: 'peer-add' }))
 
-    this.seeder.on('drive-sync', async (key) => {
-      const stat = await this.seeder.stat(key)
-      const timestamp = Date.now()
-      this.broker.broadcast('seeder.stats', { key, timestamp, stat })
-    })
+    this.seeder.on('peer-remove', (key) => this.broadcastEvent({ key, event: 'peer-remove' }))
+
+    this.seeder.on('sync', (key) => this.broadcastEvent({ key, event: 'sync' }))
 
     await this.seed(keys.map(({ key }) => key))
   },
 
   stopped () {
     // remove listeners
-    this.seeder.removeAllListeners('drive-new')
-    this.seeder.removeAllListeners('drive-download')
-    this.seeder.removeAllListeners('drive-upload')
-    this.seeder.removeAllListeners('drive-peer-add')
-    this.seeder.removeAllListeners('drive-peer-remove')
-    this.seeder.removeAllListeners('drive-sync')
+    this.seeder.removeListener('add', this.broadcastEvent)
+    this.seeder.removeListener('download', this.broadcastEvent)
+    this.seeder.removeListener('upload', this.broadcastEvent)
+    this.seeder.removeListener('peer-add', this.broadcastEvent)
+    this.seeder.removeListener('peer-remove', this.broadcastEvent)
+    this.seeder.removeListener('sync', this.broadcastEvent)
+    this.seeder.removeListener('watch-update', this.broadcastEvent)
     return this.seeder.destroy()
   }
 
