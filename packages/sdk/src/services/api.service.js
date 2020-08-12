@@ -2,6 +2,7 @@ const path = require('path')
 
 const ApiGatewayService = require('moleculer-web')
 const IO = require('socket.io')
+const compression = require('compression')
 
 module.exports = {
   name: 'api',
@@ -25,9 +26,13 @@ module.exports = {
     ],
 
     routes: [{
+      use: [
+        compression()
+      ],
       aliases: {
         'GET api/keys/:key?': 'api.keys',
-        'GET api/stats/keys/:key?': 'api.stats.keys'
+        'GET api/stats/keys/:key?': 'api.stats.keys',
+        'GET api/stats/keys/:key/latest': 'api.stats.keys.latest'
       }
     }],
 
@@ -71,6 +76,13 @@ module.exports = {
         }
 
         return ctx.call('metrics.getAll')
+      }
+    },
+
+    'stats.keys.latest': {
+      async handler (ctx) {
+        const allStats = await ctx.call('metrics.get', { key: ctx.params.key })
+        return allStats.length ? allStats[allStats.length - 1] : {}
       }
     }
   },

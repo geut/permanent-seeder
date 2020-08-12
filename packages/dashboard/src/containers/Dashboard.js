@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useSocket } from 'use-socketio'
 import useFetch from 'use-http'
 
+import { API_URL } from '../config'
 import { useAppBarTitle } from '../hooks/layout'
 
 import DriveItem from '../components/DriveItem'
@@ -26,7 +27,7 @@ function Dashboard () {
     setAppBarTitle('Dashboard')
   }, [setAppBarTitle])
 
-  const { get, response } = useFetch('http://localhost:3001/api')
+  const { get, response } = useFetch(API_URL)
 
   useEffect(() => {
     async function fetchInitalData () {
