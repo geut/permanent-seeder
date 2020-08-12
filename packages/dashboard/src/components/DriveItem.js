@@ -8,9 +8,6 @@ import LinearProgress from '@material-ui/core/LinearProgress'
 import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
 
-import purple from '@material-ui/core/colors/purple'
-import grey from '@material-ui/core/colors/grey'
-
 import { API_URL } from '../config'
 
 import { useHumanizedBytes } from '../hooks/sizes'
@@ -37,23 +34,8 @@ const useStyles = makeStyles(theme => ({
     height: theme.spacing(1.5)
   },
 
-  transferProgressDownloadBar: {
-    backgroundColor: purple[500]
-  },
-
-  transferProgressUploadBar: {
-    backgroundColor: purple[100]
-  },
-
-  transferProgressBackground: {
-    backgroundImage: 'none',
-    backgroundColor: grey[300],
-    animation: 'none'
-  },
-
-  transferTooltip: {
-    padding: 0,
-    maxWidth: 'none'
+  noPeers: {
+    margin: theme.spacing()
   }
 }))
 
@@ -161,8 +143,13 @@ function DriveItem ({ driveKey }) {
 
       {showPeers && (
         <Grid container>
-          <DriveItemPeerHeader />
-          {Object.values(peers).map(peer => <DriveItemPeer key={peer.remoteAddress} driveSizeBlocks={sizeBlocks} {...peer} />)}
+          {Object.values(peers).length === 0 && <Typography className={classes.noPeers} variant='h6'>No peers to show</Typography>}
+          {Object.values(peers).length > 0 && (
+            <>
+              <DriveItemPeerHeader />
+              {Object.values(peers).map(peer => <DriveItemPeer key={peer.remoteAddress} driveSizeBlocks={sizeBlocks} {...peer} />)}
+            </>
+          )}
         </Grid>
       )}
     </Paper>
