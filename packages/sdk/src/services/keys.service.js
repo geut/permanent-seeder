@@ -64,7 +64,7 @@ module.exports = {
 
     get: {
       params: {
-        key: { type: 'string', optional: true, length: '64', hex: true }
+        key: { type: 'string', length: '64', hex: true }
       },
       async handler (ctx) {
         return this.database.get(ctx.params.key)

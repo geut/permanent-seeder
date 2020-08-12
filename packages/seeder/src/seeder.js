@@ -144,11 +144,13 @@ class Seeder extends EventEmitter {
       contentFeed.on('peer-remove', (...args) => this.onEvent('peer-remove', key, ...args))
       contentFeed.on('download', (...args) => this.onEvent('download', key, ...args))
       contentFeed.on('upload', (...args) => this.onEvent('upload', key, ...args))
+      contentFeed.on('sync', (...args) => this.onEvent('sync', key, ...args))
       contentFeed.on('close', () => {
         contentFeed.removeListener('download', this.onEvent)
         contentFeed.removeListener('upload', this.onEvent)
         contentFeed.removeListener('peer-add', this.onEvent)
         contentFeed.removeListener('peer-remove', this.onEvent)
+        contentFeed.removeListener('sync', this.onEvent)
       })
 
       this.unwatches.set(keyString, unwatch)
@@ -165,6 +167,7 @@ class Seeder extends EventEmitter {
 
   async stat (key) {
     const drive = this.drives.get(encode(key))
+
     if (!drive) {
       throw new Error('stat: drive not found')
     }
@@ -182,16 +185,21 @@ class Seeder extends EventEmitter {
     */
     const getContentFeed = promisify(drive.getContent)
     const contentFeed = await getContentFeed()
-    const driveStat = await drive.stat('/')[0]
 
     const stat = {
       content: await getCoreStats(contentFeed),
       metadata: await getCoreStats(drive.metadata),
       network,
-      drive: driveStat
+      drive: await driveStat(drive)
     }
 
     return stat
+
+    async function driveStat (drive) {
+      const stat = await drive.stat('/')
+
+      return { ...stat[0] }
+    }
 
     async function getCoreStats (core) {
       if (!core) return {}
@@ -199,8 +207,8 @@ class Seeder extends EventEmitter {
       const openedPeers = core.peers.filter(p => p.remoteOpened)
 
       const networkingStats = {
-        key: core.key,
-        discoveryKey: core.discoveryKey,
+        key: encode(core.key),
+        discoveryKey: encode(core.discoveryKey),
         peerCount: core.peers.length,
         peers: openedPeers.map(p => {
           return {
