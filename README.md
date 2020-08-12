@@ -28,6 +28,7 @@ npm build
 ### Start services
 ```
 cd packages/cli
+./bin/run config:init --global
 ./bin/run start --restart
 ```
 
