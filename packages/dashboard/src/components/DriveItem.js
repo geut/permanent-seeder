@@ -56,24 +56,114 @@ function DriveItem ({ driveKey }) {
 
   const { data: liveKeyStat, unsubscribe } = useLastMessage(`stats.keys.${driveKey}`)
 
-  function setKeyStatData (data) {
-    const { content, drive } = data
-
-    const { blocks: sizeBlocks, size: sizeBytes } = Object.values(drive.fileStats).reduce((total, { blocks, size }) => {
-      total.blocks += blocks
-      total.size += size
+  function reduceFileStats (fileStats) {
+    return Object.values(fileStats).reduce((total, { blocks, size }) => {
+      total.sizeBlocks += blocks
+      total.sizeBytes += size
       return total
-    }, { blocks: 0, size: 0 })
+    }, { sizeBlocks: 0, sizeBytes: 0 })
+  }
 
-    setSizeBlocks(sizeBlocks)
-    setSizeBytes(sizeBytes)
-    setDownloadedBlocks(content.downloadedBlocks)
-    setDownloadedBytes(content.downloadedBytes)
+  function updatePeers (peers, field) {
+    setPeers(previousPeers => {
+      const newPeers = {}
 
-    setPeers(peers => ({
-      ...peers,
-      ...content.peers.reduce((peers, peer) => ({ ...peers, [peer.remoteAddress]: peer }), {})
-    }))
+      peers.map(peer => {
+        newPeers[peer.remoteAddress] = {
+          ...emptyPeer(peer.remoteAddress),
+          ...previousPeers[peer.remoteAddress],
+          [`${field}Blocks`]: peer[`${field}Blocks`],
+          [`${field}Bytes`]: peer[`${field}Bytes`]
+        }
+      })
+
+      return {
+        ...previousPeers,
+        ...newPeers
+      }
+    })
+  }
+
+  function setKeyStatData ({ event, stat: { content, drive } }) {
+    if (event === 'add') {
+      const { sizeBlocks, sizeBytes } = reduceFileStats(drive.fileStats)
+
+      setSizeBlocks(sizeBlocks)
+      setSizeBytes(sizeBytes)
+    }
+
+    if (event === 'download') {
+      setDownloadedBlocks(content.downloadedBlocks)
+      setDownloadedBytes(content.downloadedBytes)
+
+      updatePeers(content.peers, 'downloaded')
+    }
+
+    if (event === 'upload') {
+      updatePeers(content.peers, 'uploaded')
+    }
+  }
+
+  function emptyPeer (remoteAddress) {
+    return {
+      remoteAddress,
+      downloadedBytes: 0,
+      downloadedBlocks: 0,
+      uploadedBytes: 0,
+      uploadedBlocks: 0
+    }
+  }
+
+  function processKeyStatsData (stats = []) {
+    if (stats.length === 0) return
+
+    const processed = stats.reduce((stats, { event, stat: { content, drive } }) => {
+      if (event === 'add') {
+        const { sizeBlocks, sizeBytes } = reduceFileStats(drive.fileStats)
+
+        stats.sizeBlocks = sizeBlocks
+        stats.sizeBytes = sizeBytes
+      }
+
+      if (event === 'download') {
+        stats.downloadedBlocks = content.downloadedBlocks
+        stats.downloadedBytes = content.downloadedBytes
+
+        content.peers.map(peer => {
+          if (!stats.peers[peer.remoteAddress]) {
+            stats.peers[peer.remoteAddress] = emptyPeer(peer.remoteAddress)
+          }
+
+          stats.peers[peer.remoteAddress].downloadedBlocks = peer.downloadedBlocks
+          stats.peers[peer.remoteAddress].downloadedBytes = peer.downloadedBytes
+        })
+      }
+
+      if (event === 'upload') {
+        content.peers.map(peer => {
+          if (!stats.peers[peer.remoteAddress]) {
+            stats.peers[peer.remoteAddress] = emptyPeer(peer.remoteAddress)
+          }
+
+          stats.peers[peer.remoteAddress].uploadedBlocks = peer.uploadedBlocks
+          stats.peers[peer.remoteAddress].uploadedBytes = peer.uploadedBytes
+        })
+      }
+
+      return stats
+    }, {
+      sizeBlocks: 0,
+      sizeBytes: 0,
+      downloadedBlocks: 0,
+      downloadedBytes: 0,
+      peers: {}
+    })
+
+    setSizeBlocks(processed.sizeBlocks)
+    setSizeBytes(processed.sizeBytes)
+    setDownloadedBlocks(processed.downloadedBlocks)
+    setDownloadedBytes(processed.downloadedBytes)
+    setPeers(processed.peers)
   }
 
   useEffect(() => {
@@ -81,8 +171,8 @@ function DriveItem ({ driveKey }) {
       const keyData = await get(`/keys/${driveKey}`)
       if (response.ok) setKeyData(keyData)
 
-      const keyStat = await get(`/stats/keys/${driveKey}/latest`)
-      if (response.ok && keyStat.stat) setKeyStatData(keyStat.stat)
+      const keyStats = await get(`/stats/keys/${driveKey}`)
+      if (response.ok) processKeyStatsData(keyStats)
     }
 
     fetchInitalData()
@@ -143,10 +233,10 @@ function DriveItem ({ driveKey }) {
 
       {showPeers && (
         <Grid container>
-          {Object.values(peers).length === 0 && <Typography className={classes.noPeers} variant='h6'>No peers to show</Typography>}
+          {Object.values(peers).length === 0 && <Typography key='peers-header-empty' className={classes.noPeers} variant='h6'>No peers to show</Typography>}
           {Object.values(peers).length > 0 && (
             <>
-              <DriveItemPeerHeader />
+              <DriveItemPeerHeader key={`peers-header-${driveKey}`} />
               {Object.values(peers).map(peer => <DriveItemPeer key={peer.remoteAddress} driveSizeBlocks={sizeBlocks} {...peer} />)}
             </>
           )}

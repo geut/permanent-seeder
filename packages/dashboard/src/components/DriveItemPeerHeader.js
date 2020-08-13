@@ -18,9 +18,9 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const HEADERS = [
-  ['Address', { xs: 1 }],
-  ['Download', { xs: 2 }],
-  ['Uploaded', { xs: 2 }]
+  ['Address', { xs: 2 }],
+  ['Download', { xs: 3 }],
+  ['Upload', { xs: 3 }]
 ]
 
 function DriveItemPeerHeader () {

@@ -40,11 +40,11 @@ function DriveItemPeer ({ remoteAddress, downloadedBytes, downloadedBlocks, uplo
         <PersonIcon />
       </DriveItemGridContainer>
 
-      <DriveItemGridContainer xs={1}>
+      <DriveItemGridContainer xs={2}>
         <Typography variant='caption' className={classes.remoteAddress}>{remoteAddress}</Typography>
       </DriveItemGridContainer>
 
-      <DriveItemGridContainer xs={2}>
+      <DriveItemGridContainer xs={3}>
         <Typography variant='h5'>
           {downloaded} <Typography variant='caption'>{downloadedUnit}</Typography> /{' '}
           {downloadedBlocks} <Typography variant='caption'>blocks</Typography> / {' '}
@@ -52,7 +52,7 @@ function DriveItemPeer ({ remoteAddress, downloadedBytes, downloadedBlocks, uplo
         </Typography>
       </DriveItemGridContainer>
 
-      <DriveItemGridContainer xs={2}>
+      <DriveItemGridContainer xs={3}>
         <Typography variant='h5'>
           {uploaded} <Typography variant='caption'>{uploadedUnit}</Typography> /{' '}
           {uploadedBlocks} <Typography variant='caption'>blocks</Typography> /{' '}
