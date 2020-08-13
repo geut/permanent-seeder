@@ -56,7 +56,7 @@ function DriveItem ({ driveKey }) {
 
   const { data: liveKeyStat, unsubscribe } = useLastMessage(`stats.keys.${driveKey}`)
 
-  function reduceFileStats (fileStats) {
+  function reduceFileStats (fileStats = {}) {
     return Object.values(fileStats).reduce((total, { blocks, size }) => {
       total.sizeBlocks += blocks
       total.sizeBytes += size
