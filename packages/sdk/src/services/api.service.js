@@ -31,6 +31,7 @@ module.exports = {
       ],
       aliases: {
         'GET api/keys/:key?': 'api.keys',
+        'GET api/stats/host': 'metrics.getHostInfo',
         'GET api/stats/keys/:key?': 'api.stats.keys',
         'GET api/stats/keys/:key/latest': 'api.stats.keys.latest'
       }
