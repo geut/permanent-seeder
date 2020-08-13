@@ -32,7 +32,7 @@ module.exports = {
         return {
           cpu: top.cpu(),
           mem: top.memory(),
-          uptime: top.runtime(),
+          uptime: top.time(),
           loadavg: top.loadavg(),
           disk
         }

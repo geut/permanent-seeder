@@ -32,7 +32,8 @@ module.exports = {
       aliases: {
         'GET api/keys/:key?': 'api.keys',
         'GET api/stats/keys/:key?': 'api.stats.keys',
-        'GET api/stats/keys/:key/latest': 'api.stats.keys.latest'
+        'GET api/stats/keys/:key/latest': 'api.stats.keys.latest',
+        'GET api/stats/host': 'api.stats.host'
       }
     }],
 
@@ -83,6 +84,13 @@ module.exports = {
       async handler (ctx) {
         const allStats = await ctx.call('metrics.get', { key: ctx.params.key })
         return allStats.length ? allStats[allStats.length - 1] : {}
+      }
+    },
+
+    'stats.host': {
+      async handler (ctx) {
+        const hostInfo = await ctx.call('metrics.getHostInfo')
+        return hostInfo
       }
     }
   },
