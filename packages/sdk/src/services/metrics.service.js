@@ -1,6 +1,6 @@
 const { MetricsDatabase } = require('@geut/permanent-seeder-database')
 const top = require('process-top')()
-const { getDiskInfo } = require('node-disk-info')
+// const { getDiskInfo } = require('node-disk-info')
 
 const { Config } = require('../mixins/config.mixin')
 
@@ -29,20 +29,20 @@ module.exports = {
     },
     getHostInfo: {
       async handler () {
-        let disk = {}
+        // let disk = {}
 
-        try {
-          disk = await getDiskInfo()
-        } catch (error) {
-          console.error(error)
-        }
+        // try {
+        //   disk = await getDiskInfo()
+        // } catch (error) {
+        //   console.error(error)
+        // }
 
         return {
           cpu: top.cpu().percent,
           mem: top.memory().percent,
           uptime: top.time(),
-          loadavg: top.loadavg(),
-          disk
+          loadavg: top.loadavg()
+          // disk
         }
       }
     },
@@ -51,6 +51,13 @@ module.exports = {
         return this.database.getAll()
       }
     }
+  },
+
+  started () {
+    this.hostInfoInterval = setInterval(async () => {
+      const hostStats = await this.broker.call('metrics.getHostInfo')
+      this.broker.broadcast('host.stats', hostStats)
+    }, 1500)
   },
 
   created () {
@@ -63,6 +70,7 @@ module.exports = {
 
   async stopped () {
     await this.database.close()
+    clearInterval(this.hostInfoInterval)
   }
 
 }
