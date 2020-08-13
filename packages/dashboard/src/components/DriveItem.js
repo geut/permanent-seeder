@@ -16,9 +16,9 @@ import { API_URL } from '../config'
 import { useHumanizedBytes } from '../hooks/unit'
 
 import DriveItemGridContainer from './DriveItemGridContainer'
-import DriveItemPeer from './DriveItemPeer'
-import DriveItemPeerHeader from './DriveItemPeerHeader'
 import DriveFiles from './DriveFiles'
+import DrivePeers from './DrivePeers'
+import { indigo } from '@material-ui/core/colors'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -41,6 +41,11 @@ const useStyles = makeStyles(theme => ({
 
   noItems: {
     margin: theme.spacing()
+  },
+
+  infoItem: {
+    padding: theme.spacing(2),
+    backgroundColor: indigo[100]
   }
 }))
 
@@ -260,16 +265,11 @@ function DriveItem ({ driveKey }) {
 
       {showInfo && (
         <Grid container>
-          <Grid item container xs>
+          <Grid item xs className={classes.infoItem}>
             {Object.values(peers).length === 0 && <Typography key='peers-header-empty' className={classes.noItems} variant='h6'>No peers to show</Typography>}
-            {Object.values(peers).length > 0 && (
-              <>
-                <DriveItemPeerHeader key={`peers-header-${driveKey}`} />
-                {Object.values(peers).map(peer => <DriveItemPeer key={peer.remoteAddress} driveSizeBlocks={sizeBlocks} {...peer} />)}
-              </>
-            )}
+            {Object.values(peers).length > 0 && <DrivePeers peers={peers} driveSizeBlocks={sizeBlocks} />}
           </Grid>
-          <Grid item xs>
+          <Grid item xs={4} className={classes.infoItem}>
             {Object.values(files).length === 0 && <Typography key='files-header-empty' className={classes.noItems} variant='h6'>No files to show</Typography>}
             {Object.values(files).length > 0 && <DriveFiles files={files} />}
           </Grid>
