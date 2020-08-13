@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import useFetch from 'use-http'
+import { useLastMessage } from 'use-socketio'
 
 import { makeStyles, withStyles } from '@material-ui/core/styles'
 import Avatar from '@material-ui/core/Avatar'
@@ -103,6 +104,7 @@ function HostStats () {
 
   const { get, response } = useFetch(API_URL)
   const [stats, setStats] = useState({ cpu: 0, mem: 0, uptime: 0, loadavg: [0, 0, 0], disk: [] })
+  const { data: liveHostStat, unsubscribe } = useLastMessage('host.stats')
 
   useEffect(() => {
     async function fetchInitalData () {
@@ -112,7 +114,14 @@ function HostStats () {
     }
 
     fetchInitalData()
+
+    return () => unsubscribe()
   }, [])
+
+  useEffect(() => {
+    if (!liveHostStat) return
+    setStats(liveHostStat)
+  }, [liveHostStat])
 
   return (
     <BottomNavigation

@@ -46,6 +46,11 @@ module.exports = {
         this.io.emit(`stats.keys.${payload.key.toString('hex')}`, payload)
       }
     },
+    'host.stats' (payload) {
+      if (this.io) {
+        this.io.emit('host.stats', payload)
+      }
+    },
 
     async 'keys.created' (ctx) {
       const keys = await ctx.call('keys.getAll')
