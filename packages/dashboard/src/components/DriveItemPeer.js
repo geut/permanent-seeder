@@ -6,7 +6,7 @@ import Typography from '@material-ui/core/Typography'
 
 import PersonIcon from '@material-ui/icons/Person'
 
-import { useHumanizedBytes } from '../hooks/sizes'
+import { useHumanizedBytes } from '../hooks/unit'
 
 import DriveItemGridContainer from './DriveItemGridContainer'
 

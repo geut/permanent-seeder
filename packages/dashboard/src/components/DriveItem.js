@@ -1,20 +1,24 @@
 import React, { useEffect, useState } from 'react'
 import useFetch from 'use-http'
 import { useLastMessage } from 'use-socketio'
+import { CopyToClipboard } from 'react-copy-to-clipboard'
 
 import { makeStyles } from '@material-ui/core'
+import Button from '@material-ui/core/Button'
 import Grid from '@material-ui/core/Grid'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import Paper from '@material-ui/core/Paper'
+import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 
 import { API_URL } from '../config'
 
-import { useHumanizedBytes } from '../hooks/sizes'
+import { useHumanizedBytes } from '../hooks/unit'
 
 import DriveItemGridContainer from './DriveItemGridContainer'
 import DriveItemPeer from './DriveItemPeer'
 import DriveItemPeerHeader from './DriveItemPeerHeader'
+import DriveFiles from './DriveFiles'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -27,14 +31,15 @@ const useStyles = makeStyles(theme => ({
 
   driveKey: {
     fontFamily: 'monospace',
-    fontSize: '1.2rem'
+    fontSize: '1.2rem',
+    cursor: 'pointer'
   },
 
   transferProgress: {
     height: theme.spacing(1.5)
   },
 
-  noPeers: {
+  noItems: {
     margin: theme.spacing()
   }
 }))
@@ -48,20 +53,26 @@ function DriveItem ({ driveKey }) {
   const [sizeBytes, setSizeBytes] = useState(0)
   const [downloadedBlocks, setDownloadedBlocks] = useState(0)
   const [downloadedBytes, setDownloadedBytes] = useState(0)
+  const [files, setFiles] = useState([])
 
   const [peers, setPeers] = useState({})
-  const [showPeers, setShowPeers] = useState(false)
+  const [showInfo, setShowInfo] = useState(false)
 
   const { get, response } = useFetch(API_URL)
 
   const { data: liveKeyStat, unsubscribe } = useLastMessage(`stats.keys.${driveKey}`)
 
   function reduceFileStats (fileStats = {}) {
-    return Object.values(fileStats).reduce((total, { blocks, size }) => {
+    return Object.entries(fileStats).reduce((total, [fileName, { blocks, size }]) => {
       total.sizeBlocks += blocks
       total.sizeBytes += size
+      total.files = {
+        ...total.files,
+        [fileName]: { blocks, size }
+      }
+
       return total
-    }, { sizeBlocks: 0, sizeBytes: 0 })
+    }, { sizeBlocks: 0, sizeBytes: 0, files: {} })
   }
 
   function updatePeers (peers, field) {
@@ -86,8 +97,9 @@ function DriveItem ({ driveKey }) {
 
   function setKeyStatData ({ event, stat: { content, drive } }) {
     if (event === 'add') {
-      const { sizeBlocks, sizeBytes } = reduceFileStats(drive.fileStats)
+      const { sizeBlocks, sizeBytes, files } = reduceFileStats(drive.fileStats)
 
+      setFiles(files)
       setSizeBlocks(sizeBlocks)
       setSizeBytes(sizeBytes)
     }
@@ -119,8 +131,9 @@ function DriveItem ({ driveKey }) {
 
     const processed = stats.reduce((stats, { event, stat: { content, drive } }) => {
       if (event === 'add') {
-        const { sizeBlocks, sizeBytes } = reduceFileStats(drive.fileStats)
+        const { sizeBlocks, sizeBytes, files } = reduceFileStats(drive.fileStats)
 
+        stats.files = files
         stats.sizeBlocks = sizeBlocks
         stats.sizeBytes = sizeBytes
       }
@@ -156,7 +169,8 @@ function DriveItem ({ driveKey }) {
       sizeBytes: 0,
       downloadedBlocks: 0,
       downloadedBytes: 0,
-      peers: {}
+      peers: {},
+      files: {}
     })
 
     setSizeBlocks(processed.sizeBlocks)
@@ -164,6 +178,7 @@ function DriveItem ({ driveKey }) {
     setDownloadedBlocks(processed.downloadedBlocks)
     setDownloadedBytes(processed.downloadedBytes)
     setPeers(processed.peers)
+    setFiles(processed.files)
   }
 
   useEffect(() => {
@@ -196,12 +211,24 @@ function DriveItem ({ driveKey }) {
 
   return (
     <Paper className={classes.root} elevation={5}>
-      <div className={classes.driveContainer} onClick={() => setShowPeers(showPeers => !showPeers)}>
+      <div className={classes.driveContainer}>
         <Grid container>
           <DriveItemGridContainer xs alignItems='center' justify='center'>
-            <Grid container direction='column'>
+            <Grid container direction='column' alignItems='flex-start'>
               <Typography variant='h4'>{keyData.title}</Typography>
-              <Typography variant='subtitle1' className={classes.driveKey}>{driveKey}</Typography>
+              <div onClick={e => e.stopPropagation()}>
+                <CopyToClipboard text={driveKey}>
+                  <Tooltip title='Click to copy'>
+                    <Typography
+                      variant='subtitle1'
+                      className={classes.driveKey}
+                    >
+                      {driveKey}
+                    </Typography>
+                  </Tooltip>
+                </CopyToClipboard>
+              </div>
+              <Button color='primary' onClick={() => setShowInfo(showInfo => !showInfo)}>{showInfo ? 'Hide' : 'Show'} info</Button>
             </Grid>
           </DriveItemGridContainer>
 
@@ -231,15 +258,21 @@ function DriveItem ({ driveKey }) {
         className={classes.transferProgress}
       />
 
-      {showPeers && (
+      {showInfo && (
         <Grid container>
-          {Object.values(peers).length === 0 && <Typography key='peers-header-empty' className={classes.noPeers} variant='h6'>No peers to show</Typography>}
-          {Object.values(peers).length > 0 && (
-            <>
-              <DriveItemPeerHeader key={`peers-header-${driveKey}`} />
-              {Object.values(peers).map(peer => <DriveItemPeer key={peer.remoteAddress} driveSizeBlocks={sizeBlocks} {...peer} />)}
-            </>
-          )}
+          <Grid item container xs>
+            {Object.values(peers).length === 0 && <Typography key='peers-header-empty' className={classes.noItems} variant='h6'>No peers to show</Typography>}
+            {Object.values(peers).length > 0 && (
+              <>
+                <DriveItemPeerHeader key={`peers-header-${driveKey}`} />
+                {Object.values(peers).map(peer => <DriveItemPeer key={peer.remoteAddress} driveSizeBlocks={sizeBlocks} {...peer} />)}
+              </>
+            )}
+          </Grid>
+          <Grid item xs>
+            {Object.values(files).length === 0 && <Typography key='files-header-empty' className={classes.noItems} variant='h6'>No files to show</Typography>}
+            {Object.values(files).length > 0 && <DriveFiles files={files} />}
+          </Grid>
         </Grid>
       )}
     </Paper>
