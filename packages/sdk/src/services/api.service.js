@@ -42,7 +42,7 @@ module.exports = {
   events: {
     'seeder.stats' (payload) {
       if (this.io) {
-        this.io.emit(`stats.keys.${payload.key.toString('hex')}`, payload.stat)
+        this.io.emit(`stats.keys.${payload.key.toString('hex')}`, payload)
       }
     },
 
