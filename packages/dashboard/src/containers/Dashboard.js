@@ -7,6 +7,7 @@ import { useAppBarTitle } from '../hooks/layout'
 
 import DriveItem from '../components/DriveItem'
 import DriveItemHeader from '../components/DriveItemHeader'
+import HostStats from '../components/HostStats'
 
 function reduceKeys (keys = []) {
   return keys.reduce((keys, keyRecord) => {
@@ -24,7 +25,7 @@ function Dashboard () {
   })
 
   useEffect(() => {
-    setAppBarTitle('Dashboard')
+    setAppBarTitle('Permanent Seeder')
   }, [setAppBarTitle])
 
   const { get, response } = useFetch(API_URL)
@@ -41,10 +42,13 @@ function Dashboard () {
   }, [])
 
   return (
-    <div>
-      <DriveItemHeader />
-      {Object.keys(keys).map(key => <DriveItem key={key} driveKey={key} />)}
-    </div>
+    <>
+      <div>
+        <DriveItemHeader />
+        {Object.keys(keys).map(key => <DriveItem key={key} driveKey={key} />)}
+      </div>
+      <HostStats />
+    </>
   )
 }
 
