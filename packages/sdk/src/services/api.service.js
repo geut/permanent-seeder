@@ -33,7 +33,8 @@ module.exports = {
         'GET api/keys/:key?': 'api.keys',
         'GET api/stats/host': 'metrics.getHostInfo',
         'GET api/stats/keys/:key?': 'api.stats.keys',
-        'GET api/stats/keys/:key/latest': 'api.stats.keys.latest'
+        'GET api/stats/keys/:key/latest': 'api.stats.keys.latest',
+        'GET api/stats/swarm': 'api.stats.swarm'
       }
     }],
 
@@ -89,6 +90,13 @@ module.exports = {
       async handler (ctx) {
         const allStats = await ctx.call('metrics.get', { key: ctx.params.key })
         return allStats.length ? allStats[allStats.length - 1] : {}
+      }
+    },
+
+    'stats.swarm': {
+      async handler (ctx) {
+        const swarm = ctx.call('seeder.getSwarmStats')
+        return swarm
       }
     }
   },
