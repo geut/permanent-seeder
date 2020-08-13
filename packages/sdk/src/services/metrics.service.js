@@ -54,7 +54,7 @@ module.exports = {
   },
 
   started () {
-    setInterval(async () => {
+    this.hostInfoInterval = setInterval(async () => {
       const hostStats = await this.broker.call('metrics.getHostInfo')
       this.broker.broadcast('host.stats', hostStats)
     }, 1500)
@@ -70,6 +70,7 @@ module.exports = {
 
   async stopped () {
     await this.database.close()
+    clearInterval(this.hostInfoInterval)
   }
 
 }
