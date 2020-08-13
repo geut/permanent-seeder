@@ -19,7 +19,7 @@ import DataUsageIcon from '@material-ui/icons/DataUsage'
 import CircularProgress from './CircularProgress'
 
 import { API_URL } from '../config'
-import { useMilisecondsToHms } from '../hooks/sizes'
+import { useMilisecondsToHms } from '../hooks/unit'
 
 const useStyles = makeStyles(theme => ({
   root: {
