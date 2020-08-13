@@ -109,7 +109,6 @@ function HostStats () {
   useEffect(() => {
     async function fetchInitalData () {
       const hostStats = await get('/stats/host')
-      console.log({ hostStats })
       if (response.ok) setStats(hostStats)
     }
 
