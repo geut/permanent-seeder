@@ -26,8 +26,6 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
     backgroundColor: 'transparent',
-    position: 'fixed',
-    bottom: 0,
     width: '100%'
   }
 }))
