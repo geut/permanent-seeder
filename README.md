@@ -21,13 +21,12 @@ cp .env.example .env
 
 ### Build dashboard app before start services with:
 ```
-cd packages/dashboard
-npm build
+npm run build
 ```
 
 ### Start services
 ```
-cd packages/cli
+cd ../cli
 ./bin/run config:init --global
 ./bin/run start --restart
 ```
@@ -36,7 +35,7 @@ Dashboard will run on `http://localhost:3001`
 
 ### Optional: Start Dashboard in DEV mode
 ```
-cd packages/dashboard
+cd ../dashboard
 npm start
 ```
 
@@ -47,6 +46,14 @@ Dashboard will run on `http://localhost:3000`
 - Out: `tail -f ~/.pm2/logs/seeder-daemon-out.log`
 - Errors: `tail -f ~/.pm2/logs/seeder-daemon-error.log`
 
+
+### Stop services
+```
+cd ../cli
+./bin/run stop
+```
+
+Dashboard will run on `http://localhost:3001`
 
 ## <a name="issues"></a> Issues
 
