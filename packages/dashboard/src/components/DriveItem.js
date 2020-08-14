@@ -68,16 +68,18 @@ function DriveItem ({ driveKey }) {
   const { data: liveKeyStat, unsubscribe } = useLastMessage(`stats.keys.${driveKey}`)
 
   function reduceFileStats (fileStats = {}) {
-    return Object.entries(fileStats).reduce((total, [fileName, { blocks, size }]) => {
+    return Object.entries(fileStats).reduce((total, [fileName, { blocks, size, downloadedBlocks }]) => {
       total.sizeBlocks += blocks
       total.sizeBytes += size
+      total.downloadedBlocks += downloadedBlocks
+      total.downloadedBytes += downloadedBlocks * size / blocks
       total.files = {
         ...total.files,
         [fileName]: { blocks, size }
       }
 
       return total
-    }, { sizeBlocks: 0, sizeBytes: 0, files: {} })
+    }, { sizeBlocks: 0, sizeBytes: 0, downloadedBlocks: 0, downloadedBytes: 0, files: {} })
   }
 
   function updatePeers (peers, field) {
@@ -101,20 +103,22 @@ function DriveItem ({ driveKey }) {
   }
 
   function setKeyStatData ({ event, stat: { content, drive } }) {
-    if (event === 'add') {
-      const { sizeBlocks, sizeBytes, files } = reduceFileStats(drive.fileStats)
+    if (event === 'add' || event === 'download') {
+      const { sizeBlocks, sizeBytes, downloadedBlocks, downloadedBytes, files } = reduceFileStats(drive.fileStats)
 
-      setFiles(files)
-      setSizeBlocks(sizeBlocks)
-      setSizeBytes(sizeBytes)
+      if (event === 'add') {
+        setFiles(files)
+        setSizeBlocks(sizeBlocks)
+        setSizeBytes(sizeBytes)
+        setDownloadedBlocks(downloadedBlocks)
+        setDownloadedBytes(downloadedBytes)
+      } else {
+        updatePeers(content.peers, 'downloaded')
+      }
     }
 
-    if (event === 'download') {
-      setDownloadedBlocks(content.downloadedBlocks)
-      setDownloadedBytes(content.downloadedBytes)
-
-      updatePeers(content.peers, 'downloaded')
-    }
+    // if (event === 'download') {
+    // }
 
     if (event === 'upload') {
       updatePeers(content.peers, 'uploaded')
@@ -135,26 +139,25 @@ function DriveItem ({ driveKey }) {
     if (stats.length === 0) return
 
     const processed = stats.reduce((stats, { event, stat: { content, drive } }) => {
-      if (event === 'add') {
-        const { sizeBlocks, sizeBytes, files } = reduceFileStats(drive.fileStats)
+      if (event === 'add' || event === 'download') {
+        const { sizeBlocks, sizeBytes, downloadedBlocks, downloadedBytes, files } = reduceFileStats(drive.fileStats)
 
-        stats.files = files
-        stats.sizeBlocks = sizeBlocks
-        stats.sizeBytes = sizeBytes
-      }
+        if (event === 'add') {
+          stats.files = files
+          stats.sizeBlocks = sizeBlocks
+          stats.sizeBytes = sizeBytes
+          stats.downloadedBlocks = downloadedBlocks
+          stats.downloadedBytes = downloadedBytes
+        } else {
+          content.peers.map(peer => {
+            if (!stats.peers[peer.remoteAddress]) {
+              stats.peers[peer.remoteAddress] = emptyPeer(peer.remoteAddress)
+            }
 
-      if (event === 'download') {
-        stats.downloadedBlocks = content.downloadedBlocks
-        stats.downloadedBytes = content.downloadedBytes
-
-        content.peers.map(peer => {
-          if (!stats.peers[peer.remoteAddress]) {
-            stats.peers[peer.remoteAddress] = emptyPeer(peer.remoteAddress)
-          }
-
-          stats.peers[peer.remoteAddress].downloadedBlocks = peer.downloadedBlocks
-          stats.peers[peer.remoteAddress].downloadedBytes = peer.downloadedBytes
-        })
+            stats.peers[peer.remoteAddress].downloadedBlocks = peer.downloadedBlocks
+            stats.peers[peer.remoteAddress].downloadedBytes = peer.downloadedBytes
+          })
+        }
       }
 
       if (event === 'upload') {
