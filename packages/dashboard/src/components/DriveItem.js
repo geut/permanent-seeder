@@ -238,16 +238,16 @@ function DriveItem ({ driveKey }) {
           </DriveItemGridContainer>
 
           <DriveItemGridContainer>
-            <Typography variant='h3'>{size} <Typography variant='caption'>{sizeUnit}</Typography></Typography>
+            <Typography variant='h4'>{size} <Typography variant='caption'>{sizeUnit}</Typography></Typography>
             <Typography variant='h6' align='center'>{sizeBlocks} <Typography variant='caption'>blocks</Typography></Typography>
           </DriveItemGridContainer>
 
-          <DriveItemGridContainer xs={2} direction='row'>
+          <DriveItemGridContainer xs={3} direction='row'>
             <Grid container item xs direction='column' alignItems='flex-end' justify='center'>
               <Typography variant='h3'>{downloadPercent}%</Typography>
             </Grid>
             <Grid container item xs direction='column' alignItems='center'>
-              <Typography variant='h3'>{download} <Typography variant='caption'>{downloadUnit}</Typography></Typography>
+              <Typography variant='h4'>{download} <Typography variant='caption'>{downloadUnit}</Typography></Typography>
               <Typography variant='h6' align='center'>{downloadedBlocks} <Typography variant='caption'>blocks</Typography></Typography>
             </Grid>
           </DriveItemGridContainer>
