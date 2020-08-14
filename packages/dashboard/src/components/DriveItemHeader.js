@@ -30,7 +30,7 @@ const useStyles = makeStyles(theme => ({
 const HEADERS = [
   ['Drive Key', { }],
   ['Size', { }],
-  ['Download', { xs: 2 }],
+  ['Download', { xs: 3 }],
   ['Peers', { }]
 ]
 
