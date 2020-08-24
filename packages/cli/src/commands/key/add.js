@@ -1,4 +1,5 @@
 const { flags } = require('@oclif/command')
+const { encode } = require('dat-encoding')
 
 const { pm2SendDataToProcessId } = require('../../pm2-async')
 const BaseCommand = require('../../base-command')
@@ -24,16 +25,15 @@ class AddCommand extends KeyCommand {
     }
 
     this.log('Key added!')
-    process.exit(0)
   }
 }
 
-AddCommand.description = 'Adds a key'
+AddCommand.description = 'Adds a key to be persisted'
 
 AddCommand.flags = {
   ...KeyCommand.flags,
   ...BaseCommand.flags,
-  key: flags.string({ char: 'k', required: true, description: 'Key to add' }),
+  key: flags.string({ char: 'k', parse: key => encode(key), required: true, description: 'Key to add' }),
   title: flags.string({ char: 't', required: true, description: 'Key title' })
 }
 
