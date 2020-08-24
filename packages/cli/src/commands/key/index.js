@@ -20,7 +20,7 @@ class KeyCommand extends BaseCommand {
     this._keysDatabase = new KeysDatabase(this._dbPath)
   }
 
-  async run () {
+  run () {
     this._help()
   }
 }
