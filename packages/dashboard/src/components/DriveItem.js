@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import useFetch from 'use-http'
-import { useLastMessage } from 'use-socketio'
+import { useSocket } from 'use-socketio'
 import { CopyToClipboard } from 'react-copy-to-clipboard'
 
 import { makeStyles } from '@material-ui/core'
@@ -10,6 +10,7 @@ import LinearProgress from '@material-ui/core/LinearProgress'
 import Paper from '@material-ui/core/Paper'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
+import indigo from '@material-ui/core/colors/indigo'
 
 import { API_URL } from '../config'
 
@@ -18,7 +19,6 @@ import { useHumanizedBytes } from '../hooks/unit'
 import DriveItemGridContainer from './DriveItemGridContainer'
 import DriveFiles from './DriveFiles'
 import DrivePeers from './DrivePeers'
-import { indigo } from '@material-ui/core/colors'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -52,170 +52,77 @@ const useStyles = makeStyles(theme => ({
 function DriveItem ({ driveKey }) {
   const classes = useStyles()
 
-  const [keyData, setKeyData] = useState({})
-
+  const [title, setTitle] = useState('')
   const [sizeBlocks, setSizeBlocks] = useState(0)
   const [sizeBytes, setSizeBytes] = useState(0)
   const [downloadedBlocks, setDownloadedBlocks] = useState(0)
-  const [downloadedBytes, setDownloadedBytes] = useState(0)
-  const [files, setFiles] = useState([])
-
-  const [peers, setPeers] = useState({})
+  const [files, setFiles] = useState({})
+  const [peers, setPeers] = useState([])
   const [showInfo, setShowInfo] = useState(false)
 
-  const { get, response } = useFetch(API_URL)
+  const { get, response, error } = useFetch(API_URL)
 
-  const { data: liveKeyStat, unsubscribe } = useLastMessage(`stats.keys.${driveKey}`)
+  const { socket } = useSocket()
 
-  function reduceFileStats (fileStats = {}) {
-    return Object.entries(fileStats).reduce((total, [fileName, { blocks, size, downloadedBlocks }]) => {
-      total.sizeBlocks += blocks
-      total.sizeBytes += size
-      total.downloadedBlocks += downloadedBlocks
-      total.downloadedBytes += downloadedBlocks * size / blocks
-      total.files = {
-        ...total.files,
-        [fileName]: { blocks, size }
-      }
+  const { unsubscribe: unsubscribeDriveUpadte } = useSocket(`drive.${driveKey}.update`, () => {
+    socket.emit('drive.stats', driveKey, setFiles)
+  })
 
-      return total
-    }, { sizeBlocks: 0, sizeBytes: 0, downloadedBlocks: 0, downloadedBytes: 0, files: {} })
-  }
-
-  function updatePeers (peers, field) {
-    setPeers(previousPeers => {
-      const newPeers = {}
-
-      peers.map(peer => {
-        newPeers[peer.remoteAddress] = {
-          ...emptyPeer(peer.remoteAddress),
-          ...previousPeers[peer.remoteAddress],
-          [`${field}Blocks`]: peer[`${field}Blocks`],
-          [`${field}Bytes`]: peer[`${field}Bytes`]
-        }
-      })
-
-      return {
-        ...previousPeers,
-        ...newPeers
-      }
-    })
-  }
-
-  function setKeyStatData ({ event, stat: { content, drive } }) {
-    if (event === 'add' || event === 'download') {
-      const { sizeBlocks, sizeBytes, downloadedBlocks, downloadedBytes, files } = reduceFileStats(drive.fileStats)
-
-      if (event === 'add') {
-        setFiles(files)
-        setSizeBlocks(sizeBlocks)
-        setSizeBytes(sizeBytes)
-        setDownloadedBlocks(downloadedBlocks)
-        setDownloadedBytes(downloadedBytes)
-      } else {
-        updatePeers(content.peers, 'downloaded')
-      }
-    }
-
-    // if (event === 'download') {
-    // }
-
-    if (event === 'upload') {
-      updatePeers(content.peers, 'uploaded')
-    }
-  }
-
-  function emptyPeer (remoteAddress) {
-    return {
-      remoteAddress,
-      downloadedBytes: 0,
-      downloadedBlocks: 0,
-      uploadedBytes: 0,
-      uploadedBlocks: 0
-    }
-  }
-
-  function processKeyStatsData (stats = []) {
-    if (stats.length === 0) return
-
-    const processed = stats.reduce((stats, { event, stat: { content, drive } }) => {
-      if (event === 'add' || event === 'download') {
-        const { sizeBlocks, sizeBytes, downloadedBlocks, downloadedBytes, files } = reduceFileStats(drive.fileStats)
-
-        if (event === 'add') {
-          stats.files = files
-          stats.sizeBlocks = sizeBlocks
-          stats.sizeBytes = sizeBytes
-          stats.downloadedBlocks = downloadedBlocks
-          stats.downloadedBytes = downloadedBytes
-        } else {
-          content.peers.map(peer => {
-            if (!stats.peers[peer.remoteAddress]) {
-              stats.peers[peer.remoteAddress] = emptyPeer(peer.remoteAddress)
-            }
-
-            stats.peers[peer.remoteAddress].downloadedBlocks = peer.downloadedBlocks
-            stats.peers[peer.remoteAddress].downloadedBytes = peer.downloadedBytes
-          })
-        }
-      }
-
-      if (event === 'upload') {
-        content.peers.map(peer => {
-          if (!stats.peers[peer.remoteAddress]) {
-            stats.peers[peer.remoteAddress] = emptyPeer(peer.remoteAddress)
-          }
-
-          stats.peers[peer.remoteAddress].uploadedBlocks = peer.uploadedBlocks
-          stats.peers[peer.remoteAddress].uploadedBytes = peer.uploadedBytes
-        })
-      }
-
-      return stats
-    }, {
-      sizeBlocks: 0,
-      sizeBytes: 0,
-      downloadedBlocks: 0,
-      downloadedBytes: 0,
-      peers: {},
-      files: {}
+  const { unsubscribe: unsubscribeDriveDownload } = useSocket(`drive.${driveKey}.download`, () => {
+    socket.emit('drive.size', driveKey, size => {
+      setSizeBlocks(size.blocks)
+      setSizeBytes(size.bytes)
+      setDownloadedBlocks(size.downloadedBlocks)
     })
 
-    setSizeBlocks(processed.sizeBlocks)
-    setSizeBytes(processed.sizeBytes)
-    setDownloadedBlocks(processed.downloadedBlocks)
-    setDownloadedBytes(processed.downloadedBytes)
-    setPeers(processed.peers)
-    setFiles(processed.files)
-  }
+    socket.emit('drive.peers', driveKey, setPeers)
+  })
+
+  const { unsubscribe: unsubscribeDriveUpload } = useSocket(`drive.${driveKey}.upload`, () => {
+    socket.emit('drive.peers', driveKey, setPeers)
+  })
+
+  const { unsubscribe: unsubscribeDrivePeerAdd } = useSocket(`drive.${driveKey}.peer.add`, () => {
+    socket.emit('drive.peers', driveKey, setPeers)
+  })
+
+  const { unsubscribe: unsubscribeDrivePeerRemove } = useSocket(`drive.${driveKey}.peer.remove`, () => {
+    socket.emit('drive.peers', driveKey, setPeers)
+  })
 
   useEffect(() => {
     async function fetchInitalData () {
-      const keyData = await get(`/keys/${driveKey}`)
-      if (response.ok) setKeyData(keyData)
+      const drive = await get(`/drives/${driveKey}`)
 
-      const keyStats = await get(`/stats/keys/${driveKey}`)
-      if (response.ok) processKeyStatsData(keyStats)
+      if (!response.ok) {
+        console.warn(error)
+        return
+      }
+
+      setTitle(drive.key.title)
+      setSizeBlocks(drive.size.blocks)
+      setSizeBytes(drive.size.bytes)
+      setDownloadedBlocks(drive.size.downloadedBlocks)
+      setFiles(drive.stats)
+      setPeers(drive.peers)
     }
 
     fetchInitalData()
 
-    return () => unsubscribe()
+    return () => {
+      unsubscribeDriveUpadte()
+      unsubscribeDriveDownload()
+      unsubscribeDriveUpload()
+      unsubscribeDrivePeerAdd()
+      unsubscribeDrivePeerRemove()
+    }
   }, [driveKey])
-
-  useEffect(() => {
-    if (!liveKeyStat) return
-    setKeyStatData(liveKeyStat)
-  }, [liveKeyStat])
 
   const downloadPercent = Math.round(downloadedBlocks * 100 / (sizeBlocks || 1))
 
+  const bytesPerBlock = sizeBytes / (sizeBlocks || 1)
   const [size, sizeUnit] = useHumanizedBytes(sizeBytes)
-  const [download, downloadUnit] = useHumanizedBytes(downloadedBytes)
-
-  if (!keyData) {
-    return null
-  }
+  const [download, downloadUnit] = useHumanizedBytes(downloadedBlocks * bytesPerBlock)
 
   return (
     <Paper className={classes.root} elevation={5}>
@@ -223,7 +130,7 @@ function DriveItem ({ driveKey }) {
         <Grid container>
           <DriveItemGridContainer xs alignItems='center' justify='center'>
             <Grid container direction='column' alignItems='flex-start'>
-              <Typography variant='h4'>{keyData.title}</Typography>
+              <Typography variant='h4'>{title}</Typography>
               <div onClick={e => e.stopPropagation()}>
                 <CopyToClipboard text={driveKey}>
                   <Tooltip title='Click to copy'>
@@ -255,7 +162,7 @@ function DriveItem ({ driveKey }) {
             </Grid>
           </DriveItemGridContainer>
           <DriveItemGridContainer>
-            <Typography variant='h3'>{Object.keys(peers).length}</Typography>
+            <Typography variant='h3'>{peers.length}</Typography>
           </DriveItemGridContainer>
         </Grid>
       </div>
@@ -269,8 +176,8 @@ function DriveItem ({ driveKey }) {
       {showInfo && (
         <Grid container>
           <Grid item xs className={classes.infoItem}>
-            {Object.values(peers).length === 0 && <Typography key='peers-header-empty' className={classes.noItems} variant='h6'>No peers to show</Typography>}
-            {Object.values(peers).length > 0 && <DrivePeers peers={peers} driveSizeBlocks={sizeBlocks} />}
+            {peers.length === 0 && <Typography key='peers-header-empty' className={classes.noItems} variant='h6'>No peers to show</Typography>}
+            {peers.length > 0 && <DrivePeers peers={peers} driveSizeBlocks={sizeBlocks} />}
           </Grid>
           <Grid item xs={4} className={classes.infoItem}>
             {Object.values(files).length === 0 && <Typography key='files-header-empty' className={classes.noItems} variant='h6'>No files to show</Typography>}

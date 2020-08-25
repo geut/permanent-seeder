@@ -23,25 +23,37 @@ module.exports = {
 
     unseed: {
       params: {
-        key: { type: 'string', optional: true }
+        key: { type: 'string', length: '64', hex: true, optional: true }
       },
       async handler (ctx) {
         return this.unseed(ctx.params.key)
       }
     },
 
-    stats: {
+    driveSize: {
+      params: {
+        key: { type: 'string', length: '64', hex: true }
+      },
       async handler (ctx) {
-        return this.seeder.allStats()
+        return this.driveSize(ctx.params.key)
       }
     },
 
-    stat: {
+    drivePeers: {
       params: {
-        key: { type: 'string' }
+        key: { type: 'string', length: '64', hex: true }
       },
       async handler (ctx) {
-        return this.seeder.stat(ctx.params.key)
+        return this.drivePeers(ctx.params.key)
+      }
+    },
+
+    driveStats: {
+      params: {
+        key: { type: 'string', length: '64', hex: true }
+      },
+      async handler (ctx) {
+        return this.driveStats(ctx.params.key)
       }
     },
 
@@ -49,17 +61,32 @@ module.exports = {
       handler () {
         return this.seeder.getSwarmStats()
       }
-    },
-
-    readdir: {
-      params: {
-        key: { type: 'string' },
-        path: { type: 'string', default: '/' }
-      },
-      async handler (ctx) {
-        return this.seeder.drives.get(ctx.params.key).readdir(ctx.params.path)
-      }
     }
+
+    // stats: {
+    //   async handler (ctx) {
+    //     return this.seeder.allStats()
+    //   }
+    // },
+
+    // stat: {
+    //   params: {
+    //     key: { type: 'string' }
+    //   },
+    //   async handler (ctx) {
+    //     return this.seeder.stat(ctx.params.key)
+    //   }
+    // },
+
+    // readdir: {
+    //   params: {
+    //     key: { type: 'string' },
+    //     path: { type: 'string', default: '/' }
+    //   },
+    //   async handler (ctx) {
+    //     return this.seeder.drives.get(ctx.params.key).readdir(ctx.params.path)
+    //   }
+    // }
   },
 
   methods: {
@@ -68,12 +95,50 @@ module.exports = {
       return this.seeder.seed(keys)
     },
 
-    async broadcastEvent ({ event, key }) {
-      const stat = await this.seeder.stat(key)
-      const timestamp = Date.now()
-      this.broker.broadcast('seeder.stats', { key, timestamp, stat, event })
-    }
+    async unseed (key) {
+      return this.seeder.unseed(key)
+    },
 
+    driveSize (key) {
+      return this.seeder.driveSize(key)
+    },
+
+    drivePeers (key) {
+      const peers = this.seeder.drivePeers(key)
+
+      return peers.map(peer => ({
+        remoteAddress: peer.remoteAddress,
+        ...peer.stats
+      }))
+    },
+
+    driveStats (key) {
+      return Object.fromEntries(this.seeder.driveStats(key))
+    },
+
+    onDriveAdd (key) {
+      this.broker.broadcast('seeder.drive.add', { key })
+    },
+
+    onDriveRemove (key) {
+      this.broker.broadcast('seeder.drive.remove', { key })
+    },
+
+    onDriveDownload (key) {
+      this.broker.broadcast('seeder.drive.download', { key })
+    },
+
+    onDriveUpload (key) {
+      this.broker.broadcast('seeder.drive.upload', { key })
+    },
+
+    onDrivePeerAdd (key) {
+      this.broker.broadcast('seeder.drive.peer.add', { key })
+    },
+
+    onDrivePeerRemove (key) {
+      this.broker.broadcast('seeder.drive.peer.remove', { key })
+    }
   },
 
   created () {
@@ -85,35 +150,25 @@ module.exports = {
 
     const keys = await this.broker.call('keys.getAll')
 
-    this.logger.info('hook seeder events')
+    this.seeder.on('drive-add', this.onDriveAdd)
+    this.seeder.on('drive-remove', this.onDriveRemove)
+    this.seeder.on('drive-download', this.onDriveDownload)
+    this.seeder.on('drive-upload', this.onDriveUpload)
+    this.seeder.on('drive-peer-add', this.onDrivePeerAdd)
+    this.seeder.on('drive-peer-remove', this.onDrivePeerRemove)
 
-    // hook seeder events
-    this.seeder.on('add', (key) => this.broadcastEvent({ key, event: 'add' }))
-
-    this.seeder.on('watch-update', (key) => this.broadcastEvent({ key, event: 'watch-update' }))
-
-    this.seeder.on('download', (key) => this.broadcastEvent({ key, event: 'download' }))
-
-    this.seeder.on('upload', (key) => this.broadcastEvent({ key, event: 'upload' }))
-
-    this.seeder.on('peer-add', (key) => this.broadcastEvent({ key, event: 'peer-add' }))
-
-    this.seeder.on('peer-remove', (key) => this.broadcastEvent({ key, event: 'peer-remove' }))
-
-    this.seeder.on('sync', (key) => this.broadcastEvent({ key, event: 'sync' }))
-
-    await this.seed(keys.map(({ key }) => key))
+    this.seed(keys.map(({ key }) => key))
   },
 
   stopped () {
     // remove listeners
-    this.seeder.removeListener('add', this.broadcastEvent)
-    this.seeder.removeListener('download', this.broadcastEvent)
-    this.seeder.removeListener('upload', this.broadcastEvent)
-    this.seeder.removeListener('peer-add', this.broadcastEvent)
-    this.seeder.removeListener('peer-remove', this.broadcastEvent)
-    this.seeder.removeListener('sync', this.broadcastEvent)
-    this.seeder.removeListener('watch-update', this.broadcastEvent)
+    this.seeder.off('drive-add', this.onDriveAdd)
+    this.seeder.off('drive-remove', this.onDriveRemove)
+    this.seeder.off('drive-download', this.onDriveDownload)
+    this.seeder.off('drive-upload', this.onDriveUpload)
+    this.seeder.off('drive-peer-add', this.onDrivePeerAdd)
+    this.seeder.off('drive-peer-remove', this.onDrivePeerRemove)
+
     return this.seeder.destroy()
   }
 

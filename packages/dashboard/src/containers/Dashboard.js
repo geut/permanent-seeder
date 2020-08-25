@@ -30,21 +30,10 @@ const useStyles = makeStyles((theme) => ({
   }
 }))
 
-function reduceKeys (keys = []) {
-  return keys.reduce((keys, keyRecord) => {
-    keys[keyRecord.key] = keyRecord
-    return keys
-  }, {})
-}
-
 function Dashboard () {
   const classes = useStyles()
   const [, setAppBarTitle] = useAppBarTitle()
-  const [keys, setKeys] = useState({})
-
-  const { unsubscribe } = useSocket('keys', keys => {
-    setKeys(reduceKeys(keys))
-  })
+  const [keys, setKeys] = useState([])
 
   useEffect(() => {
     setAppBarTitle('Permanent Seeder')
@@ -52,22 +41,41 @@ function Dashboard () {
 
   const { get, response } = useFetch(API_URL)
 
+  // New keys
+  const { unsubscribe: unsubscribeKeyAdd } = useSocket('drive.add', key => {
+    setKeys(keys => [...keys, key])
+  })
+
+  // Removed keys
+  const { unsubscribe: unsubscribeKeyRemove } = useSocket('drive.remove', key => {
+    setKeys(keys => {
+      const newKeys = [...keys]
+      const keyIndex = newKeys.findIndex(k => k === key)
+      newKeys.splice(keyIndex, 1)
+      return newKeys
+    })
+  })
+
+  // Existing keys
   useEffect(() => {
     async function fetchInitalData () {
-      const keys = await get('/keys')
-      if (response.ok) setKeys(reduceKeys(keys))
+      const drives = await get('/drives')
+      if (response.ok) setKeys(drives.map(drive => drive.key.publicKey))
     }
 
     fetchInitalData()
 
-    return () => unsubscribe()
+    return () => {
+      unsubscribeKeyAdd()
+      unsubscribeKeyRemove()
+    }
   }, [])
 
   return (
     <div className={classes.root}>
       <div className={classes.drives}>
         <DriveItemHeader />
-        {Object.keys(keys).map(key => <DriveItem key={key} driveKey={key} />)}
+        {keys.map(key => <DriveItem key={key} driveKey={key} />)}
       </div>
       <div className={classes.hostStats}>
         <HostStats />
