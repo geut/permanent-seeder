@@ -36,12 +36,12 @@ function DrivePeers ({ peers, driveSizeBlocks }) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {Object.entries(peers).map(([address, { downloadedBytes, downloadedBlocks, uploadedBytes, uploadedBlocks }]) => {
+          {peers.map(({ remoteAddress, downloadedBytes, downloadedBlocks, uploadedBytes, uploadedBlocks }) => {
             const downloadedPercent = Math.round(downloadedBlocks * 100 / (driveSizeBlocks || 1))
             const uploadedPercent = Math.round(uploadedBlocks * 100 / (driveSizeBlocks || 1))
             return (
-              <TableRow key={address}>
-                <TableCell className={classes.address}>{address}</TableCell>
+              <TableRow key={remoteAddress}>
+                <TableCell className={classes.address}>{remoteAddress}</TableCell>
                 <TableCell align='center'><strong>{downloadedPercent}%</strong></TableCell>
                 <TableCell align='right'>{humanizedBytes(downloadedBytes).pretty}</TableCell>
                 <TableCell align='right'>{downloadedBlocks}</TableCell>

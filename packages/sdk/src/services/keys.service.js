@@ -76,7 +76,6 @@ module.exports = {
         return this.database.getAll()
       }
     }
-
   },
 
   methods: {
