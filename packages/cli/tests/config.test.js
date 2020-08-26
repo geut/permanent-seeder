@@ -5,17 +5,9 @@ const tomlParse = require('@iarna/toml/parse')
 const tempy = require('tempy')
 
 const ConfigInitCommand = require('../src/commands/config/init')
+const ConfigGetCommand = require('../src/commands/config/get')
 
-let cwd
-let configFilePath
-
-// Mock process cwd
-process.cwd = () => cwd
-
-async function checkCreatedFile () {
-  const content = await readFile(configFilePath, { encoding: 'utf-8' })
-  const config = tomlParse(content)
-
+function checkConfig (config) {
   expect(config.security.secret).toHaveLength(64)
   expect(config.keys.db.path).toBe(join(cwd, 'keys.db'))
   expect(config.metrics.db.path).toBe(join(cwd, 'metrics.db'))
@@ -23,8 +15,19 @@ async function checkCreatedFile () {
   expect(config.vault.key_fetch_frequency).toBe(5)
 }
 
+let cwd
+let configFilePath
+
+async function checkCreatedFile () {
+  const content = await readFile(configFilePath, { encoding: 'utf-8' })
+  const config = tomlParse(content)
+
+  checkConfig(config)
+}
+
 beforeEach(async () => {
-  cwd = tempy.directory()
+  cwd = tempy.directory({ prefix: 'permanent-seeder-tests-' })
+  process.chdir(cwd)
   configFilePath = join(cwd, 'permanent-seeder.toml')
 })
 
@@ -81,5 +84,20 @@ describe('Config commands (cwd)', () => {
     ;(await fdPromise).close()
 
     await checkCreatedFile()
+  })
+
+  it('Config: get all config', async () => {
+    await ConfigInitCommand.run([])
+
+    let config
+    jest
+      .spyOn(process.stdout, 'write')
+      .mockImplementation(val => {
+        config = JSON.parse(val)
+      })
+
+    await ConfigGetCommand.run([])
+
+    checkConfig(config)
   })
 })

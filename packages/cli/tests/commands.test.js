@@ -56,14 +56,11 @@ const AddCommand = require('../src/commands/key/add')
 const RemoveCommand = require('../src/commands/key/remove')
 const GetCommand = require('../src/commands/key/get')
 
-jest.setTimeout(30000)
+jest.setTimeout(10000)
 
 let cwd
 let result
 const insertedKeys = []
-
-// Mock process cwd
-process.cwd = () => cwd
 
 async function addKey (
   key = randomBytes(32).toString('hex'),
@@ -76,15 +73,21 @@ async function addKey (
 }
 
 beforeAll(async () => {
-  cwd = tempy.directory()
+  cwd = tempy.directory({ prefix: 'permanent-seeder-tests-' })
+  process.chdir(cwd)
+
   await ConfigInitCommand.run([])
+
   await StartCommand.run(['--restart'])
+
+  // Wait for start complete
+  await new Promise(resolve => setTimeout(resolve, 2000))
 })
 
 afterAll(async () => {
   await StopCommand.run([])
   await rmdir(cwd, { recursive: true })
-}, 10000)
+})
 
 beforeEach(async () => {
   result = []
@@ -98,16 +101,6 @@ beforeEach(async () => {
 afterEach(() => jest.restoreAllMocks())
 
 describe('Test Commands', () => {
-//   let result
-//   beforeAll(async () => {
-//     // NOTE(dk): we need a way to pass a custom directory for testing
-//     // We can pass a custom dir to config.init
-//     // but the config.get command is merging two totally different configs
-//     await StopCommand.run([])
-//     await ConfigInitCommand.run([`-t=${config.tmpDir}`])
-//     await StartCommand.run(['--restart'])
-//   })
-
   it('Add: should work with key and title', async () => {
     const { key, title } = await addKey()
     insertedKeys.push({ key, title })
@@ -133,7 +126,7 @@ describe('Test Commands', () => {
       title
     }
 
-    expect(result[0]).toContain(JSON.stringify(expected, null, 2))
+    expect(JSON.parse(result[0])).toStrictEqual(expected)
   })
 
   it('get: use prefix', async () => {
@@ -147,13 +140,20 @@ describe('Test Commands', () => {
       title
     }
 
-    expect(result[0]).toContain(JSON.stringify(expected, null, 2))
+    expect(JSON.parse(result[0])).toStrictEqual(expected)
   })
 
   it('get: all', async () => {
     await GetCommand.run([])
 
-    expect(result[0]).toContain(JSON.stringify(insertedKeys, null, 2))
+    const expected = JSON.parse(result[0])
+    expected.sort((a, b) => a.key < b.key ? -1 : 1)
+    insertedKeys.sort((a, b) => a.key < b.key ? -1 : 1)
+
+    expect(expected).toHaveLength(2)
+    expect(insertedKeys).toHaveLength(2)
+
+    expect(expected).toEqual(insertedKeys)
   })
 
   test('remove: key', async () => {
