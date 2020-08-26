@@ -12,7 +12,7 @@ const Drive = require('./drive')
 
 const DEFAULT_OPTS = {
   announce: true,
-  lookup: false, // https://github.com/hyperswarm/hyperswarm#swarmjointopic-options-onjoin`
+  lookup: true,
   storageLocation: join(homedir(), 'permanent-seeder'),
   corestoreOpts: {
     stats: true,
