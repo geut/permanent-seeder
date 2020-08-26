@@ -35,11 +35,12 @@
     "prepack": "oclif-dev manifest && oclif-dev readme",
     "postpack": "rm -f oclif.manifest.json",
     "prepublishOnly": "npm test",
-    "test": "jest --passWithNoTests",
+    "test": "jest --passWithNoTests --runInBand --detectOpenHandles",
     "posttest": "npm run lint",
     "version": "chan release --allow-yanked ${npm_package_version} && git add ."
   },
   "jest": {
+    "testEnvironment": "node",
     "testMatch": [
       "**/tests/**/*.test.js"
     ]

@@ -19,14 +19,14 @@ const messageHandlers = {
   [MESSAGE_TOPIC_KEY_ADD]: handleAddKeyMessage
 }
 
-function handleAddKeyMessage (packet) {
-  sdk.addKey(packet.data)
+async function handleAddKeyMessage (packet) {
+  await sdk.addKey(packet.data)
 }
 
-function handleMessage (packet) {
+async function handleMessage (packet) {
   if (!messageHandlers[packet.topic]) return
 
-  return messageHandlers[packet.topic](packet)
+  await messageHandlers[packet.topic](packet)
 }
 
 process.on('message', handleMessage)

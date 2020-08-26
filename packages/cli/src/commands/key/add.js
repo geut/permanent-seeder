@@ -6,23 +6,25 @@ const BaseCommand = require('../../base-command')
 
 const KeyCommand = require('.')
 
+const MESSAGE_TOPIC_KEY_ADD = 'keys:add'
+
 class AddCommand extends KeyCommand {
   async run () {
     const { flags: { key, title } } = this.parse(AddCommand)
 
-    try {
-      await this.runOnDaemon(async daemonProcess => {
+    await this.runOnDaemon(async daemonProcess => {
+      try {
         await pm2SendDataToProcessId(daemonProcess.pm_id, {
-          topic: 'keys:add',
+          topic: MESSAGE_TOPIC_KEY_ADD,
           data: {
             key,
             title
           }
         })
-      })
-    } catch (error) {
-      this.error(error.message)
-    }
+      } catch (error) {
+        this.error(error.message)
+      }
+    })
 
     this.log('Key added!')
   }
