@@ -2,7 +2,6 @@ const { EventEmitter } = require('events')
 const { promisify } = require('util')
 
 const hyperdrive = require('@geut/hyperdrive-promise')
-// const debounce = require('lodash.debounce')
 
 const DEFAULT_OPTIONS = {
   sparse: false,
@@ -31,10 +30,6 @@ class Drive extends EventEmitter {
     this._onUpload = this._onUpload.bind(this)
     this._onUpdate = this._onUpdate.bind(this)
     this._onReady = this._onReady.bind(this)
-
-    // Debounced
-    // this._onDownloadDebounced = debounce(this._onDownload, 100, { maxWait: 500 })
-    // this._onUploadDebounced = debounce(this._onUpload, 100, { maxWait: 500 })
 
     this._hyperdrive.on('update', this._onUpdate)
   }
@@ -111,16 +106,16 @@ class Drive extends EventEmitter {
   }
 
   async _updateStats () {
-    this._stats = await promisify(this._hyperdrive.stats)('/')
+    this._stats = await this._hyperdrive.stats('/')
   }
 
   async _updateLstat () {
-    this._lstat = await promisify(this._hyperdrive.lstat)('/')
+    this._lstat = await this._hyperdrive.lstat('/')
   }
 
   async ready () {
     if (!this._ready) {
-      await promisify(this._hyperdrive.ready)()
+      await this._hyperdrive.ready()
       this._ready = true
       this._onReady()
     }
@@ -132,7 +127,7 @@ class Drive extends EventEmitter {
     this._contentFeed.off('download', this._onDownload)
     this._contentFeed.off('upload', this._onUpload)
 
-    await promisify(this._hyperdrive.close)()
+    await this._hyperdrive.close()
   }
 
   async getContentFeed () {
