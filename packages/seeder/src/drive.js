@@ -8,6 +8,9 @@ const DEFAULT_OPTIONS = {
   latest: true
 }
 
+// TODO(dk): check support for mounts
+// const mounts = await drive.getAllMounts({ memory: true, recursive: !!opts.recursive })
+
 /**
  * Drive class
  */

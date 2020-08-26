@@ -62,31 +62,6 @@ module.exports = {
         return this.seeder.getSwarmStats()
       }
     }
-
-    // stats: {
-    //   async handler (ctx) {
-    //     return this.seeder.allStats()
-    //   }
-    // },
-
-    // stat: {
-    //   params: {
-    //     key: { type: 'string' }
-    //   },
-    //   async handler (ctx) {
-    //     return this.seeder.stat(ctx.params.key)
-    //   }
-    // },
-
-    // readdir: {
-    //   params: {
-    //     key: { type: 'string' },
-    //     path: { type: 'string', default: '/' }
-    //   },
-    //   async handler (ctx) {
-    //     return this.seeder.drives.get(ctx.params.key).readdir(ctx.params.path)
-    //   }
-    // }
   },
 
   methods: {
