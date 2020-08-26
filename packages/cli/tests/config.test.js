@@ -1,8 +1,9 @@
-const { promises: { open, readFile, rmdir } } = require('fs')
+const { promises: { open, readFile } } = require('fs')
 const { join } = require('path')
 
 const tomlParse = require('@iarna/toml/parse')
 const tempy = require('tempy')
+const del = require('del')
 
 const ConfigInitCommand = require('../src/commands/config/init')
 
@@ -29,7 +30,7 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-  await rmdir(cwd, { recursive: true })
+  await del(cwd, { force: true })
 })
 
 describe('Config commands (cwd)', () => {

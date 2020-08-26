@@ -1,4 +1,3 @@
-
 // jest.mock('../src/config', () => {
 //   const moduleMock = jest.requireActual('../src/config')
 //   const { join, resolve } = require('path')
@@ -43,11 +42,11 @@
 
 // const config = require('../src/config')
 
-const { promises: { rmdir } } = require('fs')
 const { randomBytes } = require('crypto')
 
 const { encode } = require('dat-encoding')
 const tempy = require('tempy')
+const del = require('del')
 
 const ConfigInitCommand = require('../src/commands/config/init')
 const StartCommand = require('../src/commands/start')
@@ -56,7 +55,7 @@ const AddCommand = require('../src/commands/key/add')
 const RemoveCommand = require('../src/commands/key/remove')
 const GetCommand = require('../src/commands/key/get')
 
-jest.setTimeout(30000)
+jest.setTimeout(3000)
 
 let cwd
 let result
@@ -83,7 +82,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await StopCommand.run([])
-  await rmdir(cwd, { recursive: true })
+  await del(cwd, { force: true })
 }, 10000)
 
 beforeEach(async () => {
@@ -98,16 +97,6 @@ beforeEach(async () => {
 afterEach(() => jest.restoreAllMocks())
 
 describe('Test Commands', () => {
-//   let result
-//   beforeAll(async () => {
-//     // NOTE(dk): we need a way to pass a custom directory for testing
-//     // We can pass a custom dir to config.init
-//     // but the config.get command is merging two totally different configs
-//     await StopCommand.run([])
-//     await ConfigInitCommand.run([`-t=${config.tmpDir}`])
-//     await StartCommand.run(['--restart'])
-//   })
-
   it('Add: should work with key and title', async () => {
     const { key, title } = await addKey()
     insertedKeys.push({ key, title })

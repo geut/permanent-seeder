@@ -1,7 +1,7 @@
-const { promises: { rmdir } } = require('fs')
 const { randomBytes } = require('crypto')
 
 const tempy = require('tempy')
+const del = require('del')
 
 const ConfigInitCommand = require('../src/commands/config/init')
 const AddCommand = require('../src/commands/key/add')
@@ -22,7 +22,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await StopCommand.run([])
-  await rmdir(cwd, { recursive: true })
+  await del(cwd, { force: true })
 })
 
 beforeEach(async () => {
