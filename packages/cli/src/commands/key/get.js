@@ -1,4 +1,5 @@
 const BaseCommand = require('../../base-command')
+const { encode } = require('dat-encoding')
 
 const KeyCommand = require('.')
 
@@ -9,7 +10,7 @@ class GetCommand extends KeyCommand {
     const result = await (key ? this.keysDatabase.get(key) : this.keysDatabase.getAll())
 
     if (!result) {
-      this.log('Key not present')
+      this.log('Key not found on local db')
       return
     }
 
@@ -20,7 +21,7 @@ class GetCommand extends KeyCommand {
 GetCommand.description = 'Shows a key entry'
 
 GetCommand.args = [
-  { name: 'key', description: 'Key to show\nIf not present shows all config entries' }
+  { name: 'key', parse: key => encode(key), description: 'Key to show\nIf not present shows all config entries' }
 ]
 
 GetCommand.flags = {

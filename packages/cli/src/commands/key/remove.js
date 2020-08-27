@@ -1,4 +1,5 @@
 const KeyCommand = require('.')
+const { encode } = require('dat-encoding')
 
 const BaseCommand = require('../../base-command')
 
@@ -15,7 +16,7 @@ class RemoveCommand extends KeyCommand {
 RemoveCommand.description = 'Removes a key'
 
 RemoveCommand.args = [
-  { name: 'key', required: true, description: 'Key to remove' }
+  { name: 'key', parse: key => encode(key), required: true, description: 'Key to remove' }
 ]
 
 RemoveCommand.flags = {

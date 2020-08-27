@@ -58,7 +58,7 @@ module.exports = {
         title: { type: 'string', empty: 'false' }
       },
       async handler (ctx) {
-        this.updateKeys([ctx.params])
+        return this.updateKeys([ctx.params])
       }
     },
 

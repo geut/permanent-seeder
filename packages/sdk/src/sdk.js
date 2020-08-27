@@ -44,7 +44,7 @@ class SDK {
     return this._broker.repl()
   }
 
-  addKey (keyRecord) {
+  async addKey (keyRecord) {
     return this._broker.call('keys.add', keyRecord)
   }
 }
