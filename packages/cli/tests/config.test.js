@@ -60,7 +60,7 @@ describe('Config commands (cwd)', () => {
 
     const errorMessage = `Config file ${configFilePath} already exists.`
 
-    await expect(() => ConfigInitCommand.run([])).rejects.toBeTruthy()
+    expect(() => ConfigInitCommand.run([])).rejects.toBeTruthy()
 
     try {
       await ConfigInitCommand.run([])

@@ -111,14 +111,14 @@ describe('Test Commands', () => {
     expect(expected).toEqual(insertedKeys)
   })
 
-  test('remove: key', async () => {
+  it('remove: key', async () => {
     const { key } = insertedKeys[0]
     await RemoveCommand.run([key])
 
     expect(result[0]).toContain('Key removed')
   })
 
-  test('remove: prefixed key', async () => {
+  it('remove: prefixed key', async () => {
     const { key } = insertedKeys[0]
     const prefixedKey = `hyper://${key}`
     await RemoveCommand.run([prefixedKey])
