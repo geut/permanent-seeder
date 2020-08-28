@@ -13,6 +13,10 @@ module.exports = {
     networkStatsInterval: 2000
   },
 
+  dependencies: [
+    'seeder'
+  ],
+
   mixins: [Config],
 
   events: {
