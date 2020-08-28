@@ -64,6 +64,7 @@ class Seeder extends EventEmitter {
     await this.store.ready()
 
     this.networker = new Networker(this.store)
+    await this.networker.listen()
     this.ready = true
   }
 
