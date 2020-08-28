@@ -30,6 +30,15 @@ module.exports = {
       }
     },
 
+    driveInfo: {
+      params: {
+        key: { type: 'string', length: '64', hex: true }
+      },
+      async handler (ctx) {
+        return this.driveInfo(ctx.params.key)
+      }
+    },
+
     driveSize: {
       params: {
         key: { type: 'string', length: '64', hex: true }
@@ -72,6 +81,10 @@ module.exports = {
 
     async unseed (key) {
       return this.seeder.unseed(key)
+    },
+
+    async driveInfo (key) {
+      return this.seeder.driveInfo(key)
     },
 
     driveSize (key) {
