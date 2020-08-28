@@ -3,6 +3,7 @@ const { randomBytes } = require('crypto')
 const { encode } = require('dat-encoding')
 const tempy = require('tempy')
 const del = require('del')
+const { mockProcessExit } = require('jest-mock-process')
 
 const ConfigInitCommand = require('../src/commands/config/init')
 const StartCommand = require('../src/commands/start')
@@ -15,6 +16,7 @@ jest.setTimeout(10000)
 
 let cwd
 let result
+let mockExit
 const insertedKeys = []
 
 async function addKey (
@@ -46,6 +48,9 @@ afterAll(async () => {
 
 beforeEach(async () => {
   result = []
+
+  mockExit = mockProcessExit()
+
   jest
     .spyOn(process.stdout, 'write')
     .mockImplementation(val => {
@@ -53,7 +58,10 @@ beforeEach(async () => {
     })
 })
 
-afterEach(() => jest.restoreAllMocks())
+afterEach(() => {
+  mockExit.mockRestore()
+  jest.restoreAllMocks()
+})
 
 describe('Test Commands', () => {
   it('Add: should work with key and title', async () => {

@@ -1,32 +1,26 @@
 const { flags } = require('@oclif/command')
 const { encode } = require('dat-encoding')
 
-const { pm2SendDataToProcessId } = require('../../pm2-async')
+const { sendMessage } = require('../../pm2-async')
 const BaseCommand = require('../../base-command')
 
 const KeyCommand = require('.')
 
-const MESSAGE_TOPIC_KEY_ADD = 'keys:add'
+const MESSAGE_KEY_ADD = 'keys:add'
+const SEEDER_DAEMON = 'seeder-daemon'
 
 class AddCommand extends KeyCommand {
   async run () {
     const { flags: { key, title } } = this.parse(AddCommand)
 
-    await this.runOnDaemon(async daemonProcess => {
-      try {
-        await pm2SendDataToProcessId(daemonProcess.pm_id, {
-          topic: MESSAGE_TOPIC_KEY_ADD,
-          data: {
-            key,
-            title
-          }
-        })
-      } catch (error) {
-        this.error(error.message)
-      }
-    })
+    try {
+      await sendMessage(SEEDER_DAEMON, MESSAGE_KEY_ADD, { key, title })
+    } catch (error) {
+      this.error(error.message)
+    }
 
     this.log('Key added!')
+    process.exit(0)
   }
 }
 

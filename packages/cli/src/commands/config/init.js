@@ -7,10 +7,10 @@ const ConfigCommand = require('.')
 
 class InitCommand extends ConfigCommand {
   async run () {
-    const { flags: { global, force, testDir } } = this.parse(InitCommand)
+    const { flags: { global, force } } = this.parse(InitCommand)
     const configFolderPath = global ? this.globalConfigFolderPath : this.localConfigFolderPath
 
-    config.init(testDir || configFolderPath, { force })
+    config.init(configFolderPath, { force })
   }
 
   async catch (error) {
@@ -26,7 +26,6 @@ InitCommand.description = 'Creates a default config file'
 
 InitCommand.flags = {
   force: flags.boolean({ char: 'f', description: 'Force', default: false }),
-  testDir: flags.string({ char: 't', description: 'Set a custom path for the config', default: false }),
   ...ConfigCommand.flags,
   ...BaseCommand.flags
 }
