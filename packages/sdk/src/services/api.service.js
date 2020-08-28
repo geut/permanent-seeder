@@ -37,7 +37,7 @@ module.exports = {
         'GET api/drives/:key/peers': 'api.drives.peers',
         'GET api/drives/:key/stats': 'api.drives.stats',
         'GET api/stats/host': 'api.stats.host',
-        'GET api/stats/swarm': 'api.stats.swarm'
+        'GET api/stats/network': 'api.stats.network'
       }
     }],
 
@@ -67,6 +67,14 @@ module.exports = {
 
     'seeder.drive.peer.remove' (ctx) {
       this.io.emit(`drive.${ctx.params.key}.peer.remove`, ctx.params.key)
+    },
+
+    'stats.host' (ctx) {
+      this.io.emit('stats.host', ctx.params.stats)
+    },
+
+    'stats.network' (ctx) {
+      this.io.emit('stats.network', ctx.params.stats)
     }
   },
 
@@ -95,15 +103,15 @@ module.exports = {
       }
     },
 
-    'stats.swarm': {
+    'stats.network': {
       async handler (ctx) {
-        return ctx.call('seeder.getSwarmStats')
+        return ctx.call('metrics.getNetworkStats')
       }
     },
 
     'stats.host': {
       async handler (ctx) {
-        return ctx.call('metrics.getHostInfo')
+        return ctx.call('metrics.getHostStats')
       }
     }
   },

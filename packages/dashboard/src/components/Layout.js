@@ -9,6 +9,7 @@ import CssBaseline from '@material-ui/core/CssBaseline'
 import DashboardIcon from '@material-ui/icons/Dashboard'
 import Divider from '@material-ui/core/Divider'
 import Drawer from '@material-ui/core/Drawer'
+import Grid from '@material-ui/core/Grid'
 import IconButton from '@material-ui/core/IconButton'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
@@ -20,6 +21,7 @@ import { DRAWER_WITH } from '../constants'
 import { useLeftSidebar } from '../hooks/layout'
 
 import AppBar from './AppBar'
+import NetworkIndicator from './NetworkIndicator'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -39,7 +41,8 @@ const useStyles = makeStyles((theme) => ({
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen
-    })
+    }),
+    overflowX: 'hidden'
   },
   drawerPaperClose: {
     overflowX: 'hidden',
@@ -74,6 +77,12 @@ const useStyles = makeStyles((theme) => ({
   },
   fixedHeight: {
     height: 240
+  },
+
+  containerDrawerLists: {
+    '& > ul': {
+      paddingLeft: theme.spacing()
+    }
   }
 }))
 
@@ -103,14 +112,30 @@ function Layout ({ children }) {
           </IconButton>
         </div>
         <Divider />
-        <List>
-          <ListItem button>
-            <ListItemIcon>
-              <DashboardIcon />
-            </ListItemIcon>
-            <ListItemText primary='Dashboard' />
-          </ListItem>
-        </List>
+        <Grid
+          item
+          xs
+          container
+          direction='column'
+          justify='space-between'
+          className={classes.containerDrawerLists}
+        >
+          <List>
+            <ListItem button>
+              <ListItemIcon>
+                <DashboardIcon />
+              </ListItemIcon>
+              <ListItemText primary='Dashboard' />
+            </ListItem>
+          </List>
+          <List>
+            <ListItem>
+              <ListItemIcon>
+                <NetworkIndicator />
+              </ListItemIcon>
+            </ListItem>
+          </List>
+        </Grid>
       </Drawer>
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />

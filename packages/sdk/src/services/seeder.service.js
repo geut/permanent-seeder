@@ -58,7 +58,7 @@ module.exports = {
     },
 
     getSwarmStats: {
-      handler () {
+      async handler () {
         return this.seeder.getSwarmStats()
       }
     }

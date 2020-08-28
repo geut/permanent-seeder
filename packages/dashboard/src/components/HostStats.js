@@ -2,14 +2,12 @@ import React, { useEffect, useState } from 'react'
 import useFetch from 'use-http'
 import { useLastMessage } from 'use-socketio'
 
-import { makeStyles, withStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import Avatar from '@material-ui/core/Avatar'
 import BottomNavigation from '@material-ui/core/BottomNavigation'
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction'
-import Button from '@material-ui/core/Button'
-import ClickAwayListener from '@material-ui/core/ClickAwayListener'
+// import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
-import Tooltip from '@material-ui/core/Tooltip'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemText from '@material-ui/core/ListItemText'
@@ -20,6 +18,8 @@ import CircularProgress from './CircularProgress'
 
 import { API_URL } from '../config'
 import { useMilisecondsToHms } from '../hooks/unit'
+
+import Tooltip from './Tooltip'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -40,18 +40,7 @@ function Uptime ({ uptime }) {
   )
 }
 
-const HtmlTooltip = withStyles((theme) => ({
-  tooltip: {
-    backgroundColor: '#f5f5f9',
-    color: 'rgba(0, 0, 0, 0.87)',
-    maxWidth: 220,
-    fontSize: theme.typography.pxToRem(12),
-    border: '1px solid #dadde9'
-  }
-}))(Tooltip)
-
 const DiskData = ({ disks = [] }) => {
-  const [open, setOpen] = useState(false)
   const diskItem = (datum, i) => (
     <ListItem key={i}>
       <ListItemAvatar>
@@ -62,38 +51,27 @@ const DiskData = ({ disks = [] }) => {
       <ListItemText primary={datum._filesystem} secondary={datum._capacity} />
     </ListItem>
   )
-  const handleTooltipClose = () => {
-    setOpen(false)
-  }
 
-  const handleTooltipOpen = () => {
-    setOpen(true)
-  }
+  // console.log(disks.map(d => d._capacity))
+  const total = disks.map(d => parseFloat(d._capacity)).reduce((total, current) => total + current, 0)
+  const avg = (total || 0) / disks.length || 1
+  const percent = Math.round(avg)
 
   return (
-    <ClickAwayListener onClickAway={handleTooltipClose}>
-      <div>
-        <HtmlTooltip
-          PopperProps={{
-            disablePortal: true
-          }}
-          onClose={handleTooltipClose}
-          open={open}
-          disableFocusListener
-          disableHoverListener
-          disableTouchListener
-          title={
-            <>
-              <List>
-                {disks.map((d, idx) => diskItem(d, idx))}
-              </List>
-            </>
-          }
-        >
-          <Button onClick={handleTooltipOpen}>FS</Button>
-        </HtmlTooltip>
-      </div>
-    </ClickAwayListener>
+    <Tooltip
+      interactive
+      title={
+        <>
+          <List>
+            {disks.map((d, idx) => diskItem(d, idx))}
+          </List>
+        </>
+      }
+    >
+      <Typography style={{ verticalAlign: 'center' }} variant='h6' component='div' color='textSecondary' gutterBottom>
+        {percent}%
+      </Typography>
+    </Tooltip>
   )
 }
 
@@ -102,7 +80,7 @@ function HostStats () {
 
   const { get, response } = useFetch(API_URL)
   const [stats, setStats] = useState({ cpu: 0, mem: 0, uptime: 0, loadavg: [0, 0, 0], disk: [] })
-  const { data: liveHostStat, unsubscribe } = useLastMessage('host.stats')
+  const { data: liveHostStat, unsubscribe } = useLastMessage('stats.host')
 
   useEffect(() => {
     async function fetchInitalData () {

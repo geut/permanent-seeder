@@ -38,7 +38,10 @@
     ]
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": "react-app",
+    "rules": {
+      "react-hooks/exhaustive-deps": "off"
+    }
   },
   "dependencies": {
     "@material-ui/core": "^4.11.0",
