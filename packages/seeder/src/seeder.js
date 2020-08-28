@@ -1,6 +1,7 @@
 const { EventEmitter } = require('events')
 const { homedir } = require('os')
 const { join } = require('path')
+const { promisify } = require('util')
 
 const { encode, decode } = require('dat-encoding')
 const Corestore = require('corestore')
@@ -65,6 +66,9 @@ class Seeder extends EventEmitter {
 
     this.networker = new Networker(this.store)
     await this.networker.listen()
+
+    this.connectivity = promisify(this.networker.swarm.connectivity).bind(this.networker.swarm)
+
     this.ready = true
   }
 
@@ -147,7 +151,7 @@ class Seeder extends EventEmitter {
 
   async driveNetwork (key) {
     const drive = this.getDrive(key)
-    return await this.networker.status(drive.discoveryKey)
+    return this.networker.status(drive.discoveryKey)
   }
 
   /**
@@ -160,16 +164,17 @@ class Seeder extends EventEmitter {
     *   currentPeers
     * }}
     */
-  getSwarmStats () {
-    if (!this.ready) return {}
+  async getSwarmStats () {
+    await this.init()
 
-    const holepunchable = this.networker.swarm.holepunchable()
+    const { holepunched, bootstrapped } = await this.connectivity()
     const ra = this.networker.swarm.remoteAddress()
     const remoteAddress = ra ? `${ra.host}:${ra.port}` : ''
     const currentPeers = this.networker.peers
 
     return {
-      holepunchable,
+      holepunchable: holepunched,
+      bootstrapped,
       remoteAddress,
       currentPeers
     }
