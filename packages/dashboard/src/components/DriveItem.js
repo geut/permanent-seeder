@@ -4,7 +4,10 @@ import { useSocket } from 'use-socketio'
 import { CopyToClipboard } from 'react-copy-to-clipboard'
 
 import { makeStyles } from '@material-ui/core'
-import Button from '@material-ui/core/Button'
+import IconButton from '@material-ui/core/IconButton'
+import InfoIcon from '@material-ui/icons/Info'
+import FoldIcon from '@material-ui/icons/UnfoldLess'
+import UnfoldIcon from '@material-ui/icons/UnfoldMore'
 import Grid from '@material-ui/core/Grid'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import Paper from '@material-ui/core/Paper'
@@ -19,6 +22,7 @@ import { useHumanizedBytes } from '../hooks/unit'
 import DriveItemGridContainer from './DriveItemGridContainer'
 import DriveFiles from './DriveFiles'
 import DrivePeers from './DrivePeers'
+import DriveInfoDialog from './DriveInfo'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -49,6 +53,15 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
+const Fold = (props) =>
+  (
+    <FoldIcon />
+  )
+
+const Unfold = (props) => (
+  <UnfoldIcon />
+)
+
 function DriveItem ({ driveKey }) {
   const classes = useStyles()
 
@@ -58,7 +71,9 @@ function DriveItem ({ driveKey }) {
   const [downloadedBlocks, setDownloadedBlocks] = useState(0)
   const [files, setFiles] = useState({})
   const [peers, setPeers] = useState([])
+  const [driveInfo, setDriveInfo] = useState({})
   const [showInfo, setShowInfo] = useState(false)
+  const [showDetails, setShowDetails] = React.useState(false)
 
   const { get, response, error } = useFetch(API_URL)
 
@@ -99,12 +114,18 @@ function DriveItem ({ driveKey }) {
         return
       }
 
+      const driveInfo = await get(`/drives/${driveKey}/info`)
+      if (!response.ok) {
+        console.warn(error)
+        return
+      }
       setTitle(drive.key.title)
       setSizeBlocks(drive.size.blocks)
       setSizeBytes(drive.size.bytes)
       setDownloadedBlocks(drive.size.downloadedBlocks)
       setFiles(drive.stats)
       setPeers(drive.peers)
+      setDriveInfo(driveInfo)
     }
 
     fetchInitalData()
@@ -123,6 +144,13 @@ function DriveItem ({ driveKey }) {
   const bytesPerBlock = sizeBytes / (sizeBlocks || 1)
   const [size, sizeUnit] = useHumanizedBytes(sizeBytes)
   const [download, downloadUnit] = useHumanizedBytes(downloadedBlocks * bytesPerBlock)
+
+  const openDetails = () => {
+    setShowDetails(true)
+  }
+  const closeDetails = () => {
+    setShowDetails(false)
+  }
 
   return (
     <Paper className={classes.root} elevation={5}>
@@ -143,7 +171,11 @@ function DriveItem ({ driveKey }) {
                   </Tooltip>
                 </CopyToClipboard>
               </div>
-              <Button color='primary' onClick={() => setShowInfo(showInfo => !showInfo)}>{showInfo ? 'Hide' : 'Show'} info</Button>
+              <Grid container alignItems='flex-start'>
+                <IconButton onClick={() => setShowInfo(showInfo => !showInfo)}>{showInfo ? <Fold /> : <Unfold />}</IconButton>
+                <IconButton aria-label='drive details' onClick={openDetails}><InfoIcon /></IconButton>
+                <DriveInfoDialog open={showDetails} onClose={closeDetails} info={driveInfo} />
+              </Grid>
             </Grid>
           </DriveItemGridContainer>
 
