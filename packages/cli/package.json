@@ -67,6 +67,7 @@
     "@oclif/dev-cli": "^1.22.2",
     "globby": "^10.0.2",
     "jest": "^26.1.0",
+    "jest-mock-process": "^1.4.0",
     "standard": "^14.3.4",
     "tempy": "^0.6.0"
   },

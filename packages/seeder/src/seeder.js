@@ -113,8 +113,8 @@ class Seeder extends EventEmitter {
       // Store drive
       this.drives.set(keyString, drive)
 
-      // Notify new drive
-      this.emit('drive-add', keyString)
+      // Wait for readyness
+      await drive.ready()
 
       // Register event listeners
       drive.on('update', () => this.emit('drive-update', keyString))
@@ -123,13 +123,13 @@ class Seeder extends EventEmitter {
       drive.on('peer-add', () => this.emit('drive-peer-add', keyString))
       drive.on('peer-remove', () => this.emit('drive-peer-remove', keyString))
 
-      // Wait for readyness
-      await drive.ready()
-
       // Connect to network
       if (!this.networker.status(drive.discoveryKey)) {
         await this.networker.configure(drive.discoveryKey, { announce: this.opts.announce, lookup: this.opts.lookup })
       }
+
+      // Notify new drive
+      this.emit('drive-add', keyString)
     }
   }
 
