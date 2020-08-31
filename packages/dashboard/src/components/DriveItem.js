@@ -53,15 +53,6 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const Fold = (props) =>
-  (
-    <FoldIcon />
-  )
-
-const Unfold = (props) => (
-  <UnfoldIcon />
-)
-
 function DriveItem ({ driveKey }) {
   const classes = useStyles()
 
@@ -73,7 +64,7 @@ function DriveItem ({ driveKey }) {
   const [peers, setPeers] = useState([])
   const [driveInfo, setDriveInfo] = useState({})
   const [showInfo, setShowInfo] = useState(false)
-  const [showDetails, setShowDetails] = React.useState(false)
+  const [showDetails, setShowDetails] = useState(false)
 
   const { get, response, error } = useFetch(API_URL)
 
@@ -114,17 +105,19 @@ function DriveItem ({ driveKey }) {
         return
       }
 
-      const driveInfo = await get(`/drives/${driveKey}/info`)
-      if (!response.ok) {
-        console.warn(error)
-        return
-      }
       setTitle(drive.key.title)
       setSizeBlocks(drive.size.blocks)
       setSizeBytes(drive.size.bytes)
       setDownloadedBlocks(drive.size.downloadedBlocks)
       setFiles(drive.stats)
       setPeers(drive.peers)
+
+      const driveInfo = await get(`/drives/${driveKey}/info`)
+      if (!response.ok) {
+        console.warn(error)
+        return
+      }
+
       setDriveInfo(driveInfo)
     }
 
@@ -172,7 +165,7 @@ function DriveItem ({ driveKey }) {
                 </CopyToClipboard>
               </div>
               <Grid container alignItems='flex-start'>
-                <IconButton onClick={() => setShowInfo(showInfo => !showInfo)}>{showInfo ? <Fold /> : <Unfold />}</IconButton>
+                <IconButton onClick={() => setShowInfo(showInfo => !showInfo)}>{showInfo ? <FoldIcon /> : <UnfoldIcon />}</IconButton>
                 <IconButton aria-label='drive details' onClick={openDetails}><InfoIcon /></IconButton>
                 <DriveInfoDialog open={showDetails} onClose={closeDetails} info={driveInfo} />
               </Grid>
