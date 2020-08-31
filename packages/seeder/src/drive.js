@@ -35,7 +35,7 @@ class Drive extends EventEmitter {
     this._onReady = this._onReady.bind(this)
     this._hyperdrive.on('update', this._onUpdate)
 
-    this.getContentAsync = promisify(this._hyperdrive.getContent)
+    this._getContentAsync = promisify(this._hyperdrive.getContent)
   }
 
   get discoveryKey () {
@@ -130,11 +130,15 @@ class Drive extends EventEmitter {
     if (!this._ready) {
       return {}
     }
+
     let indexJSON = {}
+
     try {
       indexJSON = JSON.parse(await this._hyperdrive.readFile('index.json', 'utf-8'))
     } catch (_) {}
+
     const version = this._hyperdrive.version
+
     return {
       version,
       indexJSON
@@ -152,7 +156,7 @@ class Drive extends EventEmitter {
 
   async getContentFeed () {
     if (!this._contentFeed) {
-      this._contentFeed = await this.getContentAsync()
+      this._contentFeed = await this._getContentAsync()
     }
 
     return this._contentFeed
