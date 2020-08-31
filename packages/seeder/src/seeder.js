@@ -128,6 +128,9 @@ class Seeder extends EventEmitter {
         await this.networker.configure(drive.discoveryKey, { announce: this.opts.announce, lookup: this.opts.lookup })
       }
 
+      // Wait for content ready
+      await drive.getContentFeed()
+
       // Notify new drive
       this.emit('drive-add', keyString)
     }
