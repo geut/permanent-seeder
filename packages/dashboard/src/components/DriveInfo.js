@@ -1,11 +1,11 @@
 import React from 'react'
 
-import { withStyles, makeStyles, useTheme } from '@material-ui/core/styles'
+import { makeStyles, useTheme } from '@material-ui/core/styles'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
 import Chip from '@material-ui/core/Chip'
 import Dialog from '@material-ui/core/Dialog'
 import MuiDialogTitle from '@material-ui/core/DialogTitle'
-import MuiDialogContent from '@material-ui/core/DialogContent'
+import DialogContent from '@material-ui/core/DialogContent'
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
 import Typography from '@material-ui/core/Typography'
@@ -14,15 +14,10 @@ import ReactJson from 'react-json-view'
 
 const useStyles = makeStyles(theme => ({
   root: {
-    minWidth: '500px'
-  },
-  indexJSON: {
-  }
-}))
-
-const styles = (theme) => ({
-  root: {
     margin: 0,
+    padding: theme.spacing(2)
+  },
+  dialogContent: {
     padding: theme.spacing(2)
   },
   closeButton: {
@@ -31,10 +26,11 @@ const styles = (theme) => ({
     top: theme.spacing(1),
     color: theme.palette.grey[500]
   }
-})
+}))
 
-const DialogTitle = withStyles(styles)((props) => {
-  const { children, classes, onClose, ...other } = props
+const DialogTitle = (props) => {
+  const classes = useStyles()
+  const { children, onClose, ...other } = props
   return (
     <MuiDialogTitle disableTypography className={classes.root} {...other}>
       <Typography variant='h6'>{children}</Typography>
@@ -45,13 +41,7 @@ const DialogTitle = withStyles(styles)((props) => {
       ) : null}
     </MuiDialogTitle>
   )
-})
-
-const DialogContent = withStyles((theme) => ({
-  root: {
-    padding: theme.spacing(2)
-  }
-}))(MuiDialogContent)
+}
 
 function DriveInfo ({ info = {}, onClose, open }) {
   const theme = useTheme()
@@ -84,7 +74,7 @@ function DriveInfo ({ info = {}, onClose, open }) {
       <DialogTitle id='drive-details-title' onClose={onClose}>
         Drive Info{indexJSON.title ? ':' : ''} {titleLabel(indexJSON.title)}
       </DialogTitle>
-      <DialogContent className={classes.root} dividers>
+      <DialogContent className={classes.dialogContent} dividers>
         <div style={{ marginBottom: '1em' }}>
           <Typography variant='overline' style={{ fontWeight: 'bold' }} display='block'>
         Version
@@ -95,8 +85,14 @@ function DriveInfo ({ info = {}, onClose, open }) {
           <Typography variant='overline' style={{ fontWeight: 'bold' }} display='block'>
           index.json
           </Typography>
-          <div className={classes.indexJSON}>
-            <ReactJson src={indexJSON} style={{ minWidth: '500px' }} displayDataTypes={false} indentWidth={2} collapseStringsAfterLength={15} />
+          <div>
+            <ReactJson
+              src={indexJSON}
+              style={{ minWidth: '500px' }}
+              displayDataTypes={false}
+              indentWidth={2}
+              collapseStringsAfterLength={15}
+            />
           </div>
         </div>
       </DialogContent>
