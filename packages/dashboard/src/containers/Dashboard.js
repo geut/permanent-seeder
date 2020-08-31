@@ -72,7 +72,7 @@ function Dashboard () {
   }, [])
 
   return (
-    <div className={classes.root}>
+    <div id='dashboard' className={classes.root}>
       <div className={classes.drives}>
         <DriveItemHeader />
         {keys.map(key => <DriveItem key={key} driveKey={key} />)}
