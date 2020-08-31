@@ -52,6 +52,7 @@
     "@testing-library/user-event": "^7.1.2",
     "buffer": "^5.6.0",
     "clsx": "^1.1.1",
+    "gsap": "^2.0.1",
     "lodash.debounce": "^4.0.8",
     "pretty-bytes": "^5.3.0",
     "react-copy-to-clipboard": "^5.0.2",
@@ -59,6 +60,7 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.1",
     "react": "^16.13.1",
+    "react-transition-group": "^4.4.1",
     "socket.io-client": "^2.3.0",
     "use-http": "^1.0.13",
     "use-socketio": "^2.0.3"
