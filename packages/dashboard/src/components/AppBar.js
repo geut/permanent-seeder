@@ -7,11 +7,10 @@ import MuiAppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 import IconButton from '@material-ui/core/IconButton'
-import Badge from '@material-ui/core/Badge'
 import MenuIcon from '@material-ui/icons/Menu'
-import NotificationsIcon from '@material-ui/icons/Notifications'
 
 import { DRAWER_WITH } from '../constants'
+import PSIcon from './PSIcon'
 
 import { useLeftSidebar, useAppBarTitle } from '../hooks/layout'
 
@@ -69,10 +68,8 @@ function AppBar ({ drawerWith }) {
         <Typography component='h1' variant='h6' color='inherit' noWrap className={classes.title}>
           {appBarTitle}
         </Typography>
-        <IconButton color='inherit'>
-          <Badge badgeContent={4} color='secondary'>
-            <NotificationsIcon />
-          </Badge>
+        <IconButton color='inherit' size='small' disableRipple disableFocusRipple>
+          <PSIcon fontSize='large' />
         </IconButton>
       </Toolbar>
     </MuiAppBar>
