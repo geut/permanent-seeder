@@ -6,14 +6,15 @@ import { Transition, TransitionGroup } from 'react-transition-group'
 import { ThemeProvider, unstable_createMuiStrictModeTheme as createMuiTheme } from '@material-ui/core'
 import CssBaseline from '@material-ui/core/CssBaseline'
 
-import Layout from '../components/Layout'
+import { play, exit } from '../timeline'
 
 import { AppStateProvider } from '../context/app-state'
 
-import Dashboard from './Dashboard'
-import SplashScreen from '../components/SplashScreen'
+import Layout from '../components/Layout'
 import NoMatch from '../components/NoMatch'
-import { play, exit } from '../timeline'
+import SplashScreen from '../components/SplashScreen'
+
+import Dashboard from './Dashboard'
 
 import EthSansTTF from '../fonts/eth-sans/EthRomainEthon.ttf'
 
