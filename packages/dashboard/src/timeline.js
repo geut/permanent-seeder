@@ -1,14 +1,11 @@
-import { TimelineMax as Timeline, Power1, Back } from 'gsap'
+import { TimelineMax as Timeline, Power1, Power2, Back } from 'gsap'
 
 const getDefaultTimeline = (node, delay) => {
   if (!node) return
   const timeline = new Timeline({ paused: true })
-  const content = node.querySelector('#dashboard')
-  if (!content) return
 
   timeline
-    .from(node, 0.3, { display: 'none', autoAlpha: 0, delay, ease: Power1.easeIn })
-    .from(content, 0.45, { autoAlpha: 0, y: 25, ease: Power1.easeInOut })
+    .from(node, 0.3, { display: 'none', autoAlpha: 0, delay, ease: Power2.easeIn })
 
   return timeline
 }
@@ -18,26 +15,37 @@ const getHomeTimeline = (node, delay) => {
   const timeline = new Timeline({ paused: true })
   const texts = node.querySelectorAll('.by-geut')
   timeline
-    .from(node, 0.15, { display: 'none', autoAlpha: 0, delay })
-    .staggerFrom(texts, 0.375, { autoAlpha: 0, y: 25, ease: Back.easeOut.config(1.7), delay: 0.3 }, 0.125)
+    .from(node, 0.15, { display: 'none', autoAlpha: 0, delay, ease: Back.easeOut.config(0.7) })
+    .staggerFrom(texts, 0.375, { autoAlpha: 0, y: 25, ease: Power2.easeOut }, 0.125)
 
   return timeline
 }
 
 export const play = (pathname, node, appears) => {
   if (!node) return
+
   const delay = appears ? 0 : 0.5
   let timeline
 
-  if (pathname === '/') { timeline = getHomeTimeline(node, delay) } else { timeline = getDefaultTimeline(node, delay) }
+  if (pathname === '/') {
+    timeline = getHomeTimeline(node, delay)
+  } else {
+    timeline = getDefaultTimeline(node, delay)
+  }
 
-  window
-    .loadPromise
-    .then(() => window.requestAnimationFrame(() => {
-      if (timeline) {
-        timeline.play()
-      }
-    }))
+  const loadPromise = new Promise(function (resolve) {
+    if (document.readyState === 'loading') { // Loading hasn't finished yet
+      window.addEventListener('DOMContentLoaded', resolve)
+    } else { // `DOMContentLoaded` has already fired
+      return resolve()
+    }
+  })
+
+  loadPromise.then(() => window.requestAnimationFrame(() => {
+    if (timeline) {
+      timeline.play()
+    }
+  }))
 }
 
 export const exit = (node) => {
