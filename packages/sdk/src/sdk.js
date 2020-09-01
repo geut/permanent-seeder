@@ -12,7 +12,12 @@ class SDK {
   _createBroker (name, options = {}) {
     this._broker = new ServiceBroker({
       nodeID: name ? `${name}-${Date.now()}` : undefined,
-      transporter: 'TCP',
+      transporter: {
+        type: 'TCP',
+        options: {
+          udpDiscovery: false
+        }
+      },
       ...options
     })
   }

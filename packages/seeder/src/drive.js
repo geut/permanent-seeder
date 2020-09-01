@@ -34,6 +34,8 @@ class Drive extends EventEmitter {
     this._onUpdate = this._onUpdate.bind(this)
 
     this._hyperdrive.on('update', this._onUpdate)
+
+    this._getContentAsync = promisify(this._hyperdrive.getContent)
   }
 
   get discoveryKey () {
@@ -49,7 +51,7 @@ class Drive extends EventEmitter {
   }
 
   get peers () {
-    return this._contentFeed.peers
+    return this._contentFeed ? this._contentFeed.peers : []
   }
 
   get size () {
@@ -106,6 +108,26 @@ class Drive extends EventEmitter {
     return this._hyperdrive.ready()
   }
 
+  async info () {
+    // returns drive info, ie: { version, index.json }
+    if (!this._ready) {
+      return {}
+    }
+
+    let indexJSON = {}
+
+    try {
+      indexJSON = JSON.parse(await this._hyperdrive.readFile('index.json', 'utf-8'))
+    } catch (_) {}
+
+    const version = this._hyperdrive.version
+
+    return {
+      version,
+      indexJSON
+    }
+  }
+
   async destroy () {
     this._hyperdrive.off('update', this._onUpdate)
 
@@ -117,7 +139,7 @@ class Drive extends EventEmitter {
 
   async getContentFeed () {
     if (!this._contentFeed) {
-      this._contentFeed = await (promisify(this._hyperdrive.getContent)())
+      this._contentFeed = await this._getContentAsync()
 
       this._contentFeed.on('download', this._onDownload)
       this._contentFeed.on('upload', this._onUpload)
