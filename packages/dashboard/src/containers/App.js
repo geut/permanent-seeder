@@ -81,7 +81,7 @@ function AppContainer () {
                       appear
                       onEnter={(node, appears) => play(pathname, node, appears)}
                       onExit={(node, appears) => exit(node, appears)}
-                      timeout={{ enter: 1750, exit: 250 }}
+                      timeout={{ enter: 750, exit: 250 }}
                     >
                       <Switch>
                         <Route exact path='/'>
