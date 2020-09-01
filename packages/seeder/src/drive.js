@@ -32,7 +32,7 @@ class Drive extends EventEmitter {
     this._onDownload = this._onDownload.bind(this)
     this._onUpload = this._onUpload.bind(this)
     this._onUpdate = this._onUpdate.bind(this)
-    this._onReady = this._onReady.bind(this)
+
     this._hyperdrive.on('update', this._onUpdate)
 
     this._getContentAsync = promisify(this._hyperdrive.getContent)
@@ -70,19 +70,6 @@ class Drive extends EventEmitter {
     return totalSize
   }
 
-  async _onReady () {
-    this._contentFeed = await this.getContentFeed()
-    this._contentFeed.on('download', this._onDownload)
-    this._contentFeed.on('upload', this._onUpload)
-    this._contentFeed.on('close', () => {
-      this._contentFeed.off('download', this._onDownload)
-      this._contentFeed.off('upload', this._onUpload)
-    })
-
-    await this._updateStats()
-    await this._updateLstat()
-  }
-
   async _onUpdate () {
     await this._updateStats()
     await this._updateLstat()
@@ -118,11 +105,7 @@ class Drive extends EventEmitter {
   }
 
   async ready () {
-    if (!this._ready) {
-      await this._hyperdrive.ready()
-      this._ready = true
-      this._onReady()
-    }
+    return this._hyperdrive.ready()
   }
 
   async info () {
@@ -157,6 +140,16 @@ class Drive extends EventEmitter {
   async getContentFeed () {
     if (!this._contentFeed) {
       this._contentFeed = await this._getContentAsync()
+
+      this._contentFeed.on('download', this._onDownload)
+      this._contentFeed.on('upload', this._onUpload)
+      this._contentFeed.on('close', () => {
+        this._contentFeed.off('download', this._onDownload)
+        this._contentFeed.off('upload', this._onUpload)
+      })
+
+      await this._updateStats()
+      await this._updateLstat()
     }
 
     return this._contentFeed
