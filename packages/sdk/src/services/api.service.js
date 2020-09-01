@@ -36,6 +36,7 @@ module.exports = {
         'GET api/drives/:key/size': 'api.drives.size',
         'GET api/drives/:key/peers': 'api.drives.peers',
         'GET api/drives/:key/stats': 'api.drives.stats',
+        'GET api/drives/:key/info': 'api.drives.info',
         'GET api/stats/host': 'api.stats.host',
         'GET api/stats/network': 'api.stats.network'
       }
@@ -91,6 +92,12 @@ module.exports = {
       }
     },
 
+    'drives.info': {
+      async handler (ctx) {
+        return this.driveInfo(ctx.params.key)
+      }
+    },
+
     'drives.peers': {
       async handler (ctx) {
         return this.drivePeers(ctx.params.key)
@@ -121,6 +128,13 @@ module.exports = {
       async handler (key) {
         const size = await this.broker.call('seeder.driveSize', { key })
         return size
+      }
+    },
+
+    driveInfo: {
+      async handler (key) {
+        const info = await this.broker.call('seeder.driveInfo', { key })
+        return info
       }
     },
 
