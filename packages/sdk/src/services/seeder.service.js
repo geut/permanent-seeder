@@ -87,7 +87,7 @@ module.exports = {
       return this.seeder.driveInfo(key)
     },
 
-    driveSize (key) {
+    async driveSize (key) {
       return this.seeder.driveSize(key)
     },
 
@@ -100,8 +100,9 @@ module.exports = {
       }))
     },
 
-    driveStats (key) {
-      return Object.fromEntries(this.seeder.driveStats(key))
+    async driveStats (key) {
+      const stats = await this.seeder.driveStats(key)
+      return Object.fromEntries(stats)
     },
 
     onDriveAdd (key) {

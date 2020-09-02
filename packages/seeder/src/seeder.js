@@ -136,16 +136,16 @@ class Seeder extends EventEmitter {
     }
   }
 
-  driveSize (key) {
-    return this.getDrive(key).size
+  async driveSize (key) {
+    return this.getDrive(key).getSize()
   }
 
-  driveStats (key) {
-    return this.getDrive(key).stats
+  async driveStats (key) {
+    return this.getDrive(key).getStats()
   }
 
-  driveLstat (key) {
-    return this.getDrive(key).lstat
+  async driveLstat (key) {
+    return this.getDrive(key).getLstat()
   }
 
   drivePeers (key) {
