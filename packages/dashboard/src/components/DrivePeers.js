@@ -18,7 +18,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-function DrivePeers ({ peers, driveSizeBlocks }) {
+function DrivePeers ({ peers, driveSize }) {
   const classes = useStyles()
 
   return (
@@ -37,8 +37,8 @@ function DrivePeers ({ peers, driveSizeBlocks }) {
         </TableHead>
         <TableBody>
           {peers.map(({ remoteAddress, downloadedBytes, downloadedBlocks, uploadedBytes, uploadedBlocks }) => {
-            const downloadedPercent = Math.round(downloadedBlocks * 100 / (driveSizeBlocks || 1))
-            const uploadedPercent = Math.round(uploadedBlocks * 100 / (driveSizeBlocks || 1))
+            const downloadedPercent = Math.round(downloadedBytes * 100 / (driveSize || 1))
+            const uploadedPercent = Math.round(downloadedBytes * 100 / (driveSize || 1))
             return (
               <TableRow key={remoteAddress}>
                 <TableCell className={classes.address}>{remoteAddress}</TableCell>

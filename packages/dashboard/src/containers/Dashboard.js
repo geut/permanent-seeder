@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme) => ({
 function Dashboard () {
   const classes = useStyles()
   const [, setAppBarTitle] = useAppBarTitle()
-  const [keys, setKeys] = useState([])
+  const [keys, setKeys] = useState({})
 
   useEffect(() => {
     setAppBarTitle('Permanent Seeder')
@@ -43,15 +43,13 @@ function Dashboard () {
 
   // New keys
   const { unsubscribe: unsubscribeKeyAdd } = useSocket('drive.add', key => {
-    setKeys(keys => [...keys, key])
+    setKeys(keys => ({ ...keys, [key]: key }))
   })
 
   // Removed keys
   const { unsubscribe: unsubscribeKeyRemove } = useSocket('drive.remove', key => {
     setKeys(keys => {
-      const newKeys = [...keys]
-      const keyIndex = newKeys.findIndex(k => k === key)
-      newKeys.splice(keyIndex, 1)
+      const { [key]: deletedKey, ...newKeys } = keys
       return newKeys
     })
   })
@@ -60,7 +58,12 @@ function Dashboard () {
   useEffect(() => {
     async function fetchInitalData () {
       const drives = await get('/drives')
-      if (response.ok) setKeys(drives.map(drive => drive.key.publicKey))
+      if (response.ok) {
+        setKeys(drives.reduce((keys, drive) => {
+          keys[drive.key.publicKey] = drive.key.publicKey
+          return keys
+        }, {}))
+      }
     }
 
     fetchInitalData()
@@ -75,7 +78,7 @@ function Dashboard () {
     <div id='dashboard' className={classes.root}>
       <div className={classes.drives}>
         <DriveItemHeader />
-        {keys.map(key => <DriveItem key={key} driveKey={key} />)}
+        {Object.values(keys).map(key => <DriveItem key={key} driveKey={key} />)}
       </div>
       <div className={classes.hostStats}>
         <HostStats />
