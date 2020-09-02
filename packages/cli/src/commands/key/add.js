@@ -3,11 +3,9 @@ const { encode } = require('dat-encoding')
 
 const { sendMessage } = require('../../pm2-async')
 const BaseCommand = require('../../base-command')
+const { SEEDER_DAEMON, MESSAGE_KEY_ADD } = require('../../constants')
 
 const KeyCommand = require('.')
-
-const MESSAGE_KEY_ADD = 'keys:add'
-const SEEDER_DAEMON = 'seeder-daemon'
 
 class AddCommand extends KeyCommand {
   async run () {
