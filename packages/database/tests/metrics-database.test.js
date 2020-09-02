@@ -13,6 +13,7 @@ const createRandomKeyData = () => {
   return {
     key,
     timestamp: Date.now(),
+    event: 'test.event',
     drive: {
       size: 1024,
       atime: '2017-04-10T18:59:00.147Z',

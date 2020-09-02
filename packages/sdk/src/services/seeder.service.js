@@ -102,7 +102,7 @@ module.exports = {
 
     async driveStats (key) {
       const stats = await this.seeder.driveStats(key)
-      this.broker.broadcast('seeder.drive.stats', { key, stats })
+      this.broker.broadcast('seeder.drive.stats', { key, stats, event: 'drive.stats' })
       return Object.fromEntries(stats)
     },
 

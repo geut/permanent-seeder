@@ -23,9 +23,13 @@ module.exports = {
     'seeder.drive.stats': {
       async handler (ctx) {
         console.log(ctx)
-        await this.database.add(ctx.params)
+        const timestamp = Date.now()
+        const { key, ...data } = ctx.params
+        const event = ctx.eventName
+        await this.database.add({ key, timestamp, event, data })
       }
     }
+
   },
 
   actions: {
