@@ -8,8 +8,7 @@ const deepExtend = require('deep-extend')
 const tomlParse = require('@iarna/toml/parse')
 const tomlStringify = require('@iarna/toml/stringify')
 
-const CONFIG_FILENAME = 'permanent-seeder.toml'
-const CONFIG_EXAMPLE_FILENAME = 'permanent-seeder.example.toml'
+const { CONFIG_FILENAME, CONFIG_EXAMPLE_FILENAME } = require('./constants')
 
 const getConfigFileContent = (folderPath) => {
   const filePath = resolve(join(folderPath, CONFIG_FILENAME))

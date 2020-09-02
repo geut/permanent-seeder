@@ -1,7 +1,5 @@
-
-const { SEEDER_DAEMON } = require('./start')
-
 const BaseCommand = require('../base-command')
+const { SEEDER_DAEMON } = require('../constants')
 const { pm2Connect, pm2Stop, pm2Disconnect } = require('../pm2-async')
 
 class StopCommand extends BaseCommand {

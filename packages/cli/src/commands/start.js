@@ -6,8 +6,7 @@ const ReplCommand = require('./repl')
 
 const BaseCommand = require('../base-command')
 const { pm2Connect, pm2List, pm2Restart, pm2Start, pm2Disconnect } = require('../pm2-async')
-
-const SEEDER_DAEMON = 'seeder-daemon'
+const { SEEDER_DAEMON } = require('../constants')
 
 class StartCommand extends BaseCommand {
   async run () {
@@ -64,4 +63,3 @@ StartCommand.flags = {
 }
 
 module.exports = StartCommand
-module.exports.SEEDER_DAEMON = SEEDER_DAEMON
