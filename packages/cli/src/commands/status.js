@@ -106,7 +106,7 @@ class StatusCommand extends BaseCommand {
       return setInterval(async () => {
         console.clear()
         await this.logStatus()
-      }, 1000)
+      }, 5000)
     }
   }
 }
