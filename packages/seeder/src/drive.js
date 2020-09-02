@@ -110,9 +110,7 @@ class Drive extends EventEmitter {
 
   async info () {
     // returns drive info, ie: { version, index.json }
-    if (!this._ready) {
-      return {}
-    }
+    await this.ready()
 
     let indexJSON = {}
 
