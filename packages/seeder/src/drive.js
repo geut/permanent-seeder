@@ -26,8 +26,6 @@ class Drive extends EventEmitter {
     this._hyperdrive = hyperdrive(store, key, this._opts)
     this._download = null
     this._contentFeed = null
-    this._stats = new Map()
-    this._lstat = new Map()
 
     this._onDownload = this._onDownload.bind(this)
     this._onUpload = this._onUpload.bind(this)
@@ -42,49 +40,19 @@ class Drive extends EventEmitter {
     return this._hyperdrive.discoveryKey
   }
 
-  get stats () {
-    return this._stats
-  }
-
-  get lstat () {
-    return this._lstat
-  }
-
   get peers () {
     return this._contentFeed ? this._contentFeed.peers : []
   }
 
-  get size () {
-    const totalSize = Array.from(this.stats.entries()).reduce((all, [fileName, { blocks, size: bytes, downloadedBlocks }]) => {
-      all.blocks += blocks
-      all.bytes += bytes
-      all.downloadedBlocks += downloadedBlocks
-
-      return all
-    }, {
-      blocks: 0,
-      bytes: 0,
-      downloadedBlocks: 0
-    })
-
-    return totalSize
-  }
-
   async _onUpdate () {
-    await this._updateStats()
-    await this._updateLstat()
     this.emit('update')
   }
 
   async _onDownload () {
-    await this._updateStats()
-    await this._updateLstat()
     this.emit('download')
   }
 
   async _onUpload () {
-    await this._updateStats()
-    await this._updateLstat()
     this.emit('upload')
   }
 
@@ -94,14 +62,6 @@ class Drive extends EventEmitter {
 
   async _onPeerRemove () {
     this.emit('peer-remove')
-  }
-
-  async _updateStats () {
-    this._stats = await this._hyperdrive.stats('/')
-  }
-
-  async _updateLstat () {
-    this._lstat = await this._hyperdrive.lstat('/')
   }
 
   async ready () {
@@ -145,12 +105,35 @@ class Drive extends EventEmitter {
         this._contentFeed.off('download', this._onDownload)
         this._contentFeed.off('upload', this._onUpload)
       })
-
-      await this._updateStats()
-      await this._updateLstat()
     }
 
     return this._contentFeed
+  }
+
+  async getStats () {
+    return this._hyperdrive.stats('/')
+  }
+
+  async getLstat () {
+    return this._hyperdrive.lstat('/')
+  }
+
+  async getSize () {
+    const stats = await this.getStats()
+
+    const totalSize = Array.from(stats.entries()).reduce((all, [fileName, { blocks, size: bytes, downloadedBlocks }]) => {
+      all.blocks += blocks
+      all.bytes += bytes
+      all.downloadedBlocks += downloadedBlocks
+
+      return all
+    }, {
+      blocks: 0,
+      bytes: 0,
+      downloadedBlocks: 0
+    })
+
+    return totalSize
   }
 }
 
