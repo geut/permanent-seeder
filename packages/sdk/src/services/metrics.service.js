@@ -20,8 +20,9 @@ module.exports = {
   mixins: [Config],
 
   events: {
-    'seeder.stats': {
+    'seeder.drive.stats': {
       async handler (ctx) {
+        console.log(ctx)
         await this.database.add(ctx.params)
       }
     }

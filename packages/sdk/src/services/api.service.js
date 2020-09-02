@@ -39,8 +39,10 @@ module.exports = {
         'GET api/drives/:key/info': 'api.drives.info',
         'GET api/stats/host': 'api.stats.host',
         'GET api/stats/network': 'api.stats.network',
-
         'POST api/drives': 'api.drives.add'
+
+        'GET api/raw/:key': 'api.raw',
+        'GET api/raw/:key/:event': 'api.raw.event'
       }
     }],
 
@@ -136,6 +138,16 @@ module.exports = {
     'stats.host': {
       async handler (ctx) {
         return ctx.call('metrics.getHostStats')
+      }
+    },
+    raw: {
+      async handler (ctx) {
+        return this.raw(ctx.params.key)
+      }
+    },
+    'raw.event': {
+      async handler (ctx) {
+        return this.raw(ctx.params.key, ctx.params.event)
       }
     }
   },

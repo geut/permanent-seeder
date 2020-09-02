@@ -10,11 +10,15 @@ class MetricsDatabase extends Database {
     this.metrics = sub(this._db, 'metrics', { valueEncoding: 'json' })
     this.idx = {
       key: sub(this._db, 'metrics-key'),
-      timestamp: sub(this._db, 'metrics-timestamp')
+      timestamp: sub(this._db, 'metrics-timestamp'),
+      event: sub(this._db, 'metrics-event')
     }
     this.by = {}
     this.by.timestamp = AutoIndex(this.metrics, this.idx.timestamp, (datum = {}) => {
       return datum.key + '!' + datum.timestamp
+    })
+    this.by.event = AutoIndex(this.metrics, this.idx.timestamp, (datum = {}) => {
+      return datum.key + '!' + datum.event
     })
   }
 
