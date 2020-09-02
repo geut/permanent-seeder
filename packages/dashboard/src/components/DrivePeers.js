@@ -18,7 +18,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-function DrivePeers ({ peers, driveSize }) {
+function DrivePeers ({ peers }) {
   const classes = useStyles()
 
   return (
@@ -27,25 +27,19 @@ function DrivePeers ({ peers, driveSize }) {
         <TableHead>
           <TableRow>
             <TableCell>Peers</TableCell>
-            <TableCell align='center'>Download Percent</TableCell>
             <TableCell align='right'>Download Size</TableCell>
             <TableCell align='right'>Download Blocks</TableCell>
-            <TableCell align='center'>Upload Percent</TableCell>
             <TableCell align='right'>Upload Size</TableCell>
             <TableCell align='right'>Upload Blocks</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {peers.map(({ remoteAddress, downloadedBytes, downloadedBlocks, uploadedBytes, uploadedBlocks }) => {
-            const downloadedPercent = Math.round(downloadedBytes * 100 / (driveSize || 1))
-            const uploadedPercent = Math.round(downloadedBytes * 100 / (driveSize || 1))
             return (
               <TableRow key={remoteAddress}>
                 <TableCell className={classes.address}>{remoteAddress}</TableCell>
-                <TableCell align='center'><strong>{downloadedPercent}%</strong></TableCell>
                 <TableCell align='right'>{humanizedBytes(downloadedBytes).pretty}</TableCell>
                 <TableCell align='right'>{downloadedBlocks}</TableCell>
-                <TableCell align='center'><strong>{uploadedPercent}%</strong></TableCell>
                 <TableCell align='right'>{humanizedBytes(uploadedBytes).pretty}</TableCell>
                 <TableCell align='right'>{uploadedBlocks}</TableCell>
               </TableRow>
