@@ -202,7 +202,7 @@ function DriveItem ({ driveKey }) {
         <Grid container>
           <Grid item xs className={classes.infoItem}>
             {peers.length === 0 && <Typography key='peers-header-empty' className={classes.noItems} variant='h6'>No peers to show</Typography>}
-            {peers.length > 0 && <DrivePeers peers={peers} driveSizeBlocks={sizeBlocks} />}
+            {peers.length > 0 && <DrivePeers peers={peers} driveSize={sizeBytes} />}
           </Grid>
           <Grid item xs={4} className={classes.infoItem}>
             {Object.values(files).length === 0 && <Typography key='files-header-empty' className={classes.noItems} variant='h6'>No files to show</Typography>}
