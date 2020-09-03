@@ -14,7 +14,7 @@ const useStyles = makeStyles(() => ({
   }
 }))
 
-function AddKeyDialog ({ open, error, onClose, onAdd }) {
+function AddKeyDialog ({ open, keyToAdd = '', error, onClose, onAdd }) {
   const classes = useStyles()
   const [key, setKey] = useState('')
 
@@ -27,8 +27,9 @@ function AddKeyDialog ({ open, error, onClose, onAdd }) {
   }
 
   useEffect(() => {
-    setKey('')
-  }, [open])
+    console.log('kta', typeof keyToAdd, keyToAdd)
+    setKey(keyToAdd)
+  }, [keyToAdd])
 
   return (
     <Dialog
