@@ -27,7 +27,6 @@ function AddKeyDialog ({ open, keyToAdd = '', error, onClose, onAdd }) {
   }
 
   useEffect(() => {
-    console.log('kta', typeof keyToAdd, keyToAdd)
     setKey(keyToAdd)
   }, [keyToAdd])
 
