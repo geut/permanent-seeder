@@ -52,6 +52,7 @@
     "@testing-library/user-event": "^7.1.2",
     "buffer": "^5.6.0",
     "clsx": "^1.1.1",
+    "dat-encoding": "^5.0.1",
     "gsap": "^2.0.1",
     "lodash.debounce": "^4.0.8",
     "pretty-bytes": "^5.3.0",
