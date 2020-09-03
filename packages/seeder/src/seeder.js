@@ -124,15 +124,13 @@ class Seeder extends EventEmitter {
       drive.on('peer-remove', () => this.emit('drive-peer-remove', keyString))
 
       // Connect to network
-      if (!this.networker.status(drive.discoveryKey)) {
-        await this.networker.configure(drive.discoveryKey, { announce: this.opts.announce, lookup: this.opts.lookup })
-      }
-
-      // Wait for content ready
-      await drive.getContentFeed()
+      await this.networker.configure(drive.discoveryKey, { announce: this.opts.announce, lookup: this.opts.lookup })
 
       // Notify new drive
       this.emit('drive-add', keyString)
+
+      // Wait for content ready
+      await drive.getContentFeed()
     }
   }
 
