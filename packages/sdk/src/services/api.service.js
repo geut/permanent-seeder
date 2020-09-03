@@ -38,9 +38,17 @@ module.exports = {
         'GET api/drives/:key/stats': 'api.drives.stats',
         'GET api/drives/:key/info': 'api.drives.info',
         'GET api/stats/host': 'api.stats.host',
-        'GET api/stats/network': 'api.stats.network'
+        'GET api/stats/network': 'api.stats.network',
+
+        'POST api/drives': 'api.drives.add'
       }
     }],
+
+    onError (req, res, err) {
+      res.setHeader('Content-Type', 'text/plain')
+      res.writeHead(501)
+      res.end(err.message)
+    },
 
     cors: true
   },
@@ -107,6 +115,15 @@ module.exports = {
     'drives.stats': {
       async handler (ctx) {
         return this.driveStats(ctx.params.key)
+      }
+    },
+
+    'drives.add': {
+      async handler (ctx) {
+        await ctx.call('keys.add', {
+          key: ctx.params.key,
+          title: Date.now().toString()
+        })
       }
     },
 

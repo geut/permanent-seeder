@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSocket } from 'use-socketio'
 import useFetch from 'use-http'
+import { HotKeys } from 'react-hotkeys'
 
 import { makeStyles } from '@material-ui/core'
 
@@ -10,6 +11,7 @@ import { useAppBarTitle } from '../hooks/layout'
 import DriveItem from '../components/DriveItem'
 import DriveItemHeader from '../components/DriveItemHeader'
 import HostStats from '../components/HostStats'
+import AddKeyDialog from '../components/AddKeyDialog'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -34,12 +36,14 @@ function Dashboard () {
   const classes = useStyles()
   const [, setAppBarTitle] = useAppBarTitle()
   const [keys, setKeys] = useState({})
+  const [addKeyDialogOpen, setAddKeyDialogOpen] = useState(false)
+  const [addKeyDialogError, setAddKeyDialogError] = useState(null)
 
   useEffect(() => {
     setAppBarTitle('Permanent Seeder')
   }, [setAppBarTitle])
 
-  const { get, response } = useFetch(API_URL)
+  const { get, post, response } = useFetch(API_URL)
 
   // New keys
   const { unsubscribe: unsubscribeKeyAdd } = useSocket('drive.add', key => {
@@ -74,16 +78,55 @@ function Dashboard () {
     }
   }, [])
 
+  function handleKeyAddDialogClose () {
+    setAddKeyDialogOpen(false)
+  }
+
+  function handleKeyAddDialogOpen () {
+    setAddKeyDialogOpen(true)
+  }
+
+  async function handleKeyAdd (key) {
+    await post('/drives', { key })
+    if (response.ok) {
+      handleKeyAddDialogClose()
+      setAddKeyDialogError(null)
+    } else {
+      setAddKeyDialogError(response.data)
+    }
+  }
+
+  const keyMap = {
+    PASTE_KEY: 'ctrl+v'
+  }
+
+  const handlers = {
+    PASTE_KEY: async event => {
+      const key = await navigator.clipboard.readText()
+      handleKeyAdd(key)
+    }
+  }
+
   return (
-    <div id='dashboard' className={classes.root}>
-      <div className={classes.drives}>
-        <DriveItemHeader />
-        {Object.values(keys).map(key => <DriveItem key={key} driveKey={key} />)}
-      </div>
-      <div className={classes.hostStats}>
-        <HostStats />
-      </div>
-    </div>
+    <HotKeys keyMap={keyMap}>
+      <HotKeys handlers={handlers}>
+        <AddKeyDialog
+          open={addKeyDialogOpen}
+          onAdd={handleKeyAdd}
+          onClose={handleKeyAddDialogClose}
+          error={addKeyDialogError}
+        />
+        <div id='dashboard' className={classes.root}>
+          <div className={classes.drives}>
+            <DriveItemHeader onKeyAdd={handleKeyAddDialogOpen} />
+            {Object.values(keys).map(key => <DriveItem key={key} driveKey={key} />)}
+          </div>
+          <div className={classes.hostStats}>
+            <HostStats />
+          </div>
+        </div>
+      </HotKeys>
+    </HotKeys>
   )
 }
 
