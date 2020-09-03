@@ -22,7 +22,6 @@ module.exports = {
   events: {
     'seeder.drive.stats': {
       async handler (ctx) {
-        console.log(ctx)
         const timestamp = Date.now()
         const { key, ...data } = ctx.params
         const event = ctx.eventName
