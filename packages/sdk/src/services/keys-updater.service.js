@@ -1,17 +1,16 @@
-// const { resolve, join } = require('path')
-
-const { CronTime } = require('cron')
-const Cron = require('moleculer-cron')
+const cron = require('cron')
 const got = require('got')
 
 const { Config } = require('../mixins/config.mixin')
 
-const UPDATER_JOB = 'keys-updater.update-keys-job'
+async function defaultHook (response) {
+  return response.json()
+}
 
 module.exports = {
   name: 'keys-updater',
 
-  mixins: [Config, Cron],
+  mixins: [Config],
 
   dependencies: [
     'keys',
@@ -27,54 +26,60 @@ module.exports = {
     }
   },
 
-  crons: [
-    {
-      name: UPDATER_JOB,
-      manualStart: true,
-      cronTime: '* * * * *', // Use config
-      onTick: async function () {
-        await this.getLocalService('keys-updater')
-          .actions
-          .updateKeys()
-      }
-    }
-  ],
-
-  actions: {
-    updateKeys: {
-      async handler () {
-        const keys = await this.fetchKeys()
-
-        // Note(dk): this might need an update when we consume the real endpoint
-        this.updateKeys(keys.data)
-      }
-    }
-  },
-
   methods: {
-    async fetchKeys () {
+    async runUpdate (endpoint) {
+      let hook = defaultHook
+
+      if (endpoint.hook) {
+        try {
+          hook = require(endpoint.hook)
+        } catch (error) {
+          this.logger.error(error)
+        }
+      }
+
       try {
-        return got(this.config.endpoint_url).json()
+        const response = got(endpoint.url)
+
+        const keys = await hook(response)
+
+        await this.broker.call('keys.updateAll', { keys })
       } catch (error) {
         this.logger.error(error)
       }
-
-      return []
-    },
-
-    async updateKeys (keys) {
-      await this.broker.call('keys.updateAll', { keys })
     }
   },
 
   created () {
-    this.config = {
-      ...this.settings.config.vault
-    }
+    const { endpoints } = this.settings.config.keys
 
-    // Set time based on config
-    const updateKeysJob = this.getJob(UPDATER_JOB)
-    updateKeysJob.setTime(new CronTime(`*/${this.config.key_fetch_frequency} * * * *`))
-    updateKeysJob.start()
+    this.crons = endpoints.map((endpoint, index) => {
+      const job = new cron.CronJob({
+        name: `update-keys-job-${index}`,
+        cronTime: `*/${endpoint.frequency} * * * *`,
+        onTick: () => {
+          this.runUpdate(endpoint)
+        }
+      })
+
+      return {
+        ...endpoint,
+        job
+      }
+    })
+  },
+
+  started () {
+    this.crons.forEach(cron => {
+      cron.job.start()
+      this.logger.info(`Job for key update started - ${cron.url}`)
+    })
+  },
+
+  stopped () {
+    this.crons.forEach(cron => {
+      cron.job.stop()
+      this.logger.info(`Job for key update stopped - ${cron.url}`)
+    })
   }
 }

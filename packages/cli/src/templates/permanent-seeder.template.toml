@@ -1,0 +1,26 @@
+[security]
+secret = 'YOUR_SECRET_HERE'
+
+# keys.endpoints = array of configs per endpoint
+[[keys.endpoints]]
+
+  # Where to fetch keys
+  url = 'http://localhost:3000'
+
+  # Frequency between fetchs (in minutes)
+  frequency = 5
+
+  # Hook to parse response
+  hook = '/path/to/hook.js'
+
+## To add another endpoint, uncomment and complete next lines:
+# [[keys.endpoints]]
+#   url =
+#   frequency =
+#   hook
+
+[keys.db]
+path = 'keys.db'
+
+[metrics.db]
+path = 'metrics.db'

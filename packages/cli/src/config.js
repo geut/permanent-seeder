@@ -8,7 +8,7 @@ const deepExtend = require('deep-extend')
 const tomlParse = require('@iarna/toml/parse')
 const tomlStringify = require('@iarna/toml/stringify')
 
-const { CONFIG_FILENAME, CONFIG_EXAMPLE_FILENAME } = require('./constants')
+const { CONFIG_FILENAME, TEMPLATE_CONFIG_FILE_PATH, TEMPLATE_ENDPOINT_HOOK, ENDPOINT_HOOK_FILENAME } = require('./constants')
 
 const getConfigFileContent = (folderPath) => {
   const filePath = resolve(join(folderPath, CONFIG_FILENAME))
@@ -36,15 +36,23 @@ const getConfig = (folderPath, fallbackValue) => {
 module.exports.init = (configFolderPath, options = {}) => {
   mkdirSync(configFolderPath, { recursive: true })
 
-  const filePath = resolve(join(configFolderPath, CONFIG_FILENAME))
+  const configFilePath = resolve(join(configFolderPath, CONFIG_FILENAME))
+  const endpointHookFilePath = resolve(join(configFolderPath, ENDPOINT_HOOK_FILENAME))
 
   copyFileSync(
-    resolve(__dirname, CONFIG_EXAMPLE_FILENAME),
-    filePath,
+    TEMPLATE_CONFIG_FILE_PATH,
+    configFilePath,
+    options.force ? null : COPYFILE_EXCL
+  )
+
+  copyFileSync(
+    TEMPLATE_ENDPOINT_HOOK,
+    endpointHookFilePath,
     options.force ? null : COPYFILE_EXCL
   )
 
   // Set initial runtime config
+  this.set('keys.endpoints[0].hook', endpointHookFilePath, { configFolderPath })
   this.set('keys.db.path', resolve(configFolderPath, 'keys.db'), { configFolderPath })
   this.set('metrics.db.path', resolve(configFolderPath, 'metrics.db'), { configFolderPath })
   this.set('security.secret', randomBytes(32).toString('hex'), { configFolderPath })
