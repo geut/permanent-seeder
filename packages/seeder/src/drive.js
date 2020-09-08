@@ -110,28 +110,36 @@ class Drive extends EventEmitter {
     return this._contentFeed
   }
 
-  async getStats () {
-    return this._hyperdrive.stats('/')
+  async getStat (path = '/') {
+    return this._hyperdrive.stat(path)
   }
 
-  async getLstat () {
-    return this._hyperdrive.lstat('/')
+  async getStats (path = '/') {
+    return this._hyperdrive.stats(path)
+  }
+
+  async getLstat (path = '/') {
+    return this._hyperdrive.lstat(path)
   }
 
   async getSize () {
-    const stats = await this.getStats()
+    const stats = await this.getStats('/', { file: true })
 
-    const totalSize = Array.from(stats.entries()).reduce((all, [fileName, { blocks, size: bytes, downloadedBlocks }]) => {
-      all.blocks += blocks
-      all.bytes += bytes
-      all.downloadedBlocks += downloadedBlocks
-
-      return all
-    }, {
+    const totalSize = {
       blocks: 0,
       bytes: 0,
       downloadedBlocks: 0
-    })
+    }
+
+    for (const [filePath, { blocks, size: bytes, downloadedBlocks }] of stats.entries()) {
+      const stat = await this.getStat(filePath)
+
+      if (!stat[0].isDirectory()) {
+        totalSize.blocks += blocks
+        totalSize.bytes += bytes
+        totalSize.downloadedBlocks += downloadedBlocks
+      }
+    }
 
     return totalSize
   }

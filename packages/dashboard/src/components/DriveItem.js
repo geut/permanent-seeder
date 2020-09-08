@@ -70,10 +70,6 @@ function DriveItem ({ driveKey }) {
 
   const { socket } = useSocket()
 
-  const { unsubscribe: unsubscribeDriveUpadte } = useSocket(`drive.${driveKey}.update`, () => {
-    socket.emit('drive.stats', driveKey, setFiles)
-  })
-
   const { unsubscribe: unsubscribeDriveDownload } = useSocket(`drive.${driveKey}.download`, () => {
     socket.emit('drive.size', driveKey, size => {
       setSizeBlocks(size.blocks)
@@ -124,7 +120,6 @@ function DriveItem ({ driveKey }) {
     fetchInitalData()
 
     return () => {
-      unsubscribeDriveUpadte()
       unsubscribeDriveDownload()
       unsubscribeDriveUpload()
       unsubscribeDrivePeerAdd()
