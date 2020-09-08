@@ -17,7 +17,7 @@ class MetricsDatabase extends Database {
     this.by.timestamp = AutoIndex(this.metrics, this.idx.timestamp, (datum = {}) => {
       return datum.key + '!' + datum.timestamp
     })
-    this.by.event = AutoIndex(this.metrics, this.idx.timestamp, (datum = {}) => {
+    this.by.event = AutoIndex(this.metrics, this.idx.event, (datum = {}) => {
       return datum.key + '!' + datum.event
     })
   }
@@ -95,6 +95,30 @@ class MetricsDatabase extends Database {
             }
           } else {
             if (data.key.toString('hex') === key && data.timestamp >= query) {
+              out.push(data)
+            }
+          }
+        })
+        .on('end', () => resolve(out))
+        .on('error', reject)
+    })
+  }
+
+  async filterByEvent (key, query) {
+    assert(key, 'key is required')
+    return new Promise((resolve, reject) => {
+      const stream = this.by.event.createValueStream({
+        gte: key
+      })
+      const out = []
+      stream
+        .on('data', data => {
+          if (!query) {
+            if (data.key.toString('hex') === key) {
+              out.push(data)
+            }
+          } else {
+            if (data.key.toString('hex') === key && data.event === query) {
               out.push(data)
             }
           }
