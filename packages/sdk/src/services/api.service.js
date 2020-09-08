@@ -39,10 +39,9 @@ module.exports = {
         'GET api/drives/:key/info': 'api.drives.info',
         'GET api/stats/host': 'api.stats.host',
         'GET api/stats/network': 'api.stats.network',
+        'GET api/raw/:key': 'api.raw',
         'POST api/drives': 'api.drives.add'
 
-        'GET api/raw/:key': 'api.raw',
-        'GET api/raw/:key/:event': 'api.raw.event'
       }
     }],
 
@@ -205,6 +204,13 @@ module.exports = {
         }
 
         return key ? drives[0] : drives
+      }
+    },
+    raw: {
+      async handler (key, timestamp) {
+        // get all keys from timestamp (optional)
+        const stats = await this.broker.call('metrics.get', { key, timestamp })
+        return stats
       }
     }
   },
