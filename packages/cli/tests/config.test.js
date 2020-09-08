@@ -8,12 +8,18 @@ const del = require('del')
 const ConfigInitCommand = require('../src/commands/config/init')
 const ConfigGetCommand = require('../src/commands/config/get')
 
+const { ENDPOINT_HOOK_FILENAME } = require('../src/constants')
+
 function checkConfig (config) {
   expect(config.security.secret).toHaveLength(64)
   expect(config.keys.db.path).toBe(join(cwd, 'keys.db'))
+  expect(config.keys.endpoints).toHaveLength(1)
+  expect(config.keys.endpoints[0]).toStrictEqual({
+    url: 'http://localhost:3000',
+    frequency: 5,
+    hook: join(cwd, ENDPOINT_HOOK_FILENAME)
+  })
   expect(config.metrics.db.path).toBe(join(cwd, 'metrics.db'))
-  expect(config.vault.endpoint_url).toBe('http://localhost:3000')
-  expect(config.vault.key_fetch_frequency).toBe(5)
 }
 
 let cwd
