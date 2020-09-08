@@ -147,7 +147,7 @@ class Seeder extends EventEmitter {
   }
 
   drivePeers (key) {
-    return this.getDrive(key).peers
+    return this.getDrive(key).peers()
   }
 
   async driveInfo (key) {
@@ -175,7 +175,17 @@ class Seeder extends EventEmitter {
     const { holepunched, bootstrapped } = await this.connectivity()
     const ra = this.networker.swarm.remoteAddress()
     const remoteAddress = ra ? `${ra.host}:${ra.port}` : ''
-    const currentPeers = this.networker.peers
+    const currentPeers = Array
+      .from(this.networker.peers.values())
+      .reduce((acc, curr) => {
+        acc.push({
+          remoteAddress: curr.remoteAddress,
+          type: curr.type,
+          bytesSent: curr.stream.bytesSent,
+          bytesReceived: curr.stream.bytesReceived
+        })
+        return acc
+      }, [])
 
     return {
       holepunchable: holepunched,
