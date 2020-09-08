@@ -7,7 +7,7 @@
  *   key: '....'
  * }
  *
- * @param {Respnse} response response from endpoint
+ * @param {Response} The endpoint response
  *
  * @returns {object[]} key records to update
  */
