@@ -23,7 +23,7 @@ const useNetworkIconStyles = makeStyles(theme => ({
 
 function NetworkIndicator () {
   const networkIconClasses = useNetworkIconStyles()
-  const [network, setNetwork] = useState({ swarm: {} })
+  const [network, setNetwork] = useState({ swarm: { currentPeers: [] } })
   const { data: lastMessageNetwork, unsubscribe } = useLastMessage('stats.network')
 
   useEffect(() => {
@@ -65,6 +65,12 @@ function NetworkIndicator () {
               label='Address'
               value={
                 <StatusChip label={network.swarm.remoteAddress} />
+              }
+            />
+            <TooltipInfoItem
+              label='Peers'
+              value={
+                <StatusChip label={network.swarm.currentPeers.length} />
               }
             />
           </Grid>
