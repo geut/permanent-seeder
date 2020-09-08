@@ -42,7 +42,7 @@ class Drive extends EventEmitter {
     return this._hyperdrive.discoveryKey
   }
 
-  peers () {
+  get peers () {
     return this._hyperdrive.peers
   }
 
