@@ -62,6 +62,10 @@ function DriveInfo ({ info = {}, onClose, open }) {
     </Typography>
   )
 
+  const handleCopy = (copy) => {
+    navigator.clipboard.writeText(JSON.stringify(copy.src, null, '\t'))
+  }
+
   return (
     <Dialog
       scroll='paper'
@@ -92,6 +96,7 @@ function DriveInfo ({ info = {}, onClose, open }) {
               displayDataTypes={false}
               indentWidth={2}
               collapseStringsAfterLength={15}
+              enableClipboard={handleCopy}
             />
           </div>
         </div>
