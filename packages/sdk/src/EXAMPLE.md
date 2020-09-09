@@ -22,7 +22,7 @@ node creator.js # Get the generated key = hyper://
 
 # TERMINAL 1
 # Add previous creator key to database
-./bin/run key:add --key 559750bc1b667e11c43472e7e2de45c6ba61852d08abfb140cae21d71b795e65 --title dk-key
+./bin/run key:add 559750bc1b667e11c43472e7e2de45c6ba61852d08abfb140cae21d71b795e65
 
 # Start seeder
 ./bin/run start

@@ -84,7 +84,6 @@ test('get/add key', async () => {
 
   expect(metricsDB.add(data)).rejects.toBeTruthy()
 
-  data.title = 'updated-key'
   await metricsDB.add(data, true)
 
   const dataKey = [data.key.toString('hex'), data.timestamp]

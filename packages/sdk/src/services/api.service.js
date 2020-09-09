@@ -121,8 +121,7 @@ module.exports = {
     'drives.add': {
       async handler (ctx) {
         await ctx.call('keys.add', {
-          key: ctx.params.key,
-          title: Date.now().toString()
+          key: ctx.params.key
         })
       }
     },
@@ -180,12 +179,9 @@ module.exports = {
         }
 
         const drives = []
-        for (const { key: publicKey, title } of keys) {
+        for (const { key: publicKey } of keys) {
           drives.push({
-            key: {
-              publicKey,
-              title
-            },
+            key: { publicKey },
             size: await this.driveSize(publicKey),
             stats: await this.driveStats(publicKey),
             peers: await this.drivePeers(publicKey)

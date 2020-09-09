@@ -12,8 +12,7 @@ const createRandomKeyData = () => {
   const key = randomBytes(32).toString('hex')
 
   return {
-    key,
-    title: `key-title-${key}`
+    key
   }
 }
 
@@ -44,7 +43,6 @@ test('get/add key', async () => {
 
   expect(keysDB.add(data)).rejects.toBeTruthy()
 
-  data.title = 'updated-key'
   await keysDB.add(data, true)
 
   expect(cleanDataMethod).toHaveBeenCalledTimes(2)
@@ -72,8 +70,6 @@ test('update key', async () => {
 
   await keysDB.add(data)
   const createdKey = await keysDB.get(data.key)
-
-  createdKey.title = 'updated-key'
 
   await keysDB.update(createdKey)
   const updatedKey = await keysDB.get(data.key)
