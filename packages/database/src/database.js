@@ -3,7 +3,6 @@ const levelup = require('levelup')
 const encode = require('encoding-down')
 const memdown = require('memdown')
 const level = require('level-party')
-
 const { v4: uuid } = require('uuid')
 
 class Database {

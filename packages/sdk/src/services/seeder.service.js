@@ -80,6 +80,7 @@ module.exports = {
     },
 
     async unseed (key) {
+      this.logger.info(`Unseed key: ${key}`)
       return this.seeder.unseed(key)
     },
 

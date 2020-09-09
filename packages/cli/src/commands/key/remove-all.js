@@ -2,6 +2,8 @@ const { cli } = require('cli-ux')
 
 const KeyCommand = require('.')
 
+const { sendMessage } = require('../../pm2-async')
+const { SEEDER_DAEMON, MESSAGE_SEEDER_UNSEED } = require('../../constants')
 const BaseCommand = require('../../base-command')
 
 class RemoveCommand extends KeyCommand {
@@ -12,6 +14,11 @@ class RemoveCommand extends KeyCommand {
 
         for await (const { key } of keys) {
           await this.keysDatabase.remove(key)
+          try {
+            await sendMessage(SEEDER_DAEMON, MESSAGE_SEEDER_UNSEED, { key })
+          } catch (error) {
+            this.error(error.message)
+          }
         }
 
         this.log('Keys removed')
