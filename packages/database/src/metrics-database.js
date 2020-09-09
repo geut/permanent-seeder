@@ -50,15 +50,7 @@ class MetricsDatabase extends Database {
    * @returns {boolean} true if existent and key was updated
    */
   async add (data, updateIfExists = false) {
-    const existent = await this.get(data.key, data.timestamp, data.event)
-
-    if (existent && !updateIfExists) {
-      throw new Error('Key already exists')
-    }
-
     await this.set(data.key, data.timestamp, data.event, data)
-
-    return !!existent
   }
 
   /**

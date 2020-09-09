@@ -83,8 +83,6 @@ test('get/add key', async () => {
 
   await metricsDB.add(data)
 
-  expect(metricsDB.add(data)).rejects.toBeTruthy()
-
   data.title = 'updated-key'
   await metricsDB.add(data, true)
 
