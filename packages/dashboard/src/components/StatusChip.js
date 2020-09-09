@@ -17,7 +17,7 @@ const useStyles = makeStyles(theme => ({
 
 const useChipStyles = makeStyles(theme => ({
   label: {
-    color: theme.palette.common.black
+    color: theme.palette.type === 'light' ? theme.palette.common.black : theme.palette.common.white
   },
 
   colorPrimary: {
