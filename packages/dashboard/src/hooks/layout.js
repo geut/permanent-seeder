@@ -27,3 +27,16 @@ export function useAppBarTitle () {
     setAppBarTitle
   ]
 }
+
+export function useDarkMode () {
+  const { state: { ui: { darkMode } }, dispatch } = useContext(AppStateContext)
+
+  const setDarkMode = (dark) => {
+    dispatch({ type: 'ui.darkMode', payload: dark })
+  }
+
+  return [
+    darkMode,
+    setDarkMode
+  ]
+}
