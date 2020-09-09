@@ -24,6 +24,8 @@ class Drive extends EventEmitter {
     }
 
     this._hyperdrive = hyperdrive(store, key, this._opts)
+    this._key = key
+    this._store = store
     this._download = null
     this._contentFeed = null
 
@@ -41,7 +43,7 @@ class Drive extends EventEmitter {
   }
 
   get peers () {
-    return this._contentFeed ? this._contentFeed.peers : []
+    return this._hyperdrive.peers
   }
 
   async _onUpdate () {

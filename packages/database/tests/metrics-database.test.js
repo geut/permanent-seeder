@@ -13,6 +13,7 @@ const createRandomKeyData = () => {
   return {
     key,
     timestamp: Date.now(),
+    event: 'test.event',
     drive: {
       size: 1024,
       atime: '2017-04-10T18:59:00.147Z',
@@ -82,12 +83,10 @@ test('get/add key', async () => {
 
   await metricsDB.add(data)
 
-  expect(metricsDB.add(data)).rejects.toBeTruthy()
-
   data.title = 'updated-key'
   await metricsDB.add(data, true)
 
-  const dataKey = [data.key.toString('hex'), data.timestamp]
+  const dataKey = [data.key.toString('hex'), data.timestamp, data.event]
   const createdKey = await metricsDB.get(...dataKey)
   expect(createdKey).toMatchObject(data)
 })
@@ -109,7 +108,7 @@ test('get all keys', async () => {
 test('update key', async () => {
   const data = createRandomKeyData()
 
-  const dataKey = [data.key, data.timestamp]
+  const dataKey = [data.key, data.timestamp, data.event]
   await metricsDB.add(data)
   const createdKey = await metricsDB.get(...dataKey)
 
@@ -129,7 +128,7 @@ test('remove key', async () => {
 
   await metricsDB.add(data)
 
-  const dataKey = [data.key, data.timestamp]
+  const dataKey = [data.key, data.timestamp, data.event]
   await metricsDB.remove(...dataKey)
   await metricsDB.remove('not-present')
 

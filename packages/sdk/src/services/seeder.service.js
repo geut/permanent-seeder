@@ -88,11 +88,22 @@ module.exports = {
     },
 
     async driveSize (key) {
-      return this.seeder.driveSize(key)
+      let size = {}
+      try {
+        size = await this.seeder.driveSize(key)
+      } catch (err) {
+        this.logger.error(err)
+      }
+      return size
     },
 
-    drivePeers (key) {
-      const peers = this.seeder.drivePeers(key)
+    async drivePeers (key) {
+      let peers = []
+      try {
+        peers = await this.seeder.drivePeers(key)
+      } catch (err) {
+        this.logger.error(err)
+      }
 
       return peers.map(peer => ({
         remoteAddress: peer.remoteAddress,
@@ -101,12 +112,21 @@ module.exports = {
     },
 
     async driveStats (key) {
-      const stats = await this.seeder.driveStats(key)
+      let stats = new Map()
+      try {
+        stats = await this.seeder.driveStats(key)
+      } catch (err) {
+        this.logger.error(err)
+      }
       return Object.fromEntries(stats)
     },
 
     onDriveAdd (key) {
       this.broker.broadcast('seeder.drive.add', { key })
+    },
+
+    onDriveUpdate (key) {
+      this.broker.broadcast('seeder.drive.update', { key })
     },
 
     onDriveRemove (key) {
@@ -140,6 +160,7 @@ module.exports = {
     const keys = await this.broker.call('keys.getAll')
 
     this.seeder.on('drive-add', this.onDriveAdd)
+    this.seeder.on('drive-update', this.onDriveUpdate)
     this.seeder.on('drive-remove', this.onDriveRemove)
     this.seeder.on('drive-download', this.onDriveDownload)
     this.seeder.on('drive-upload', this.onDriveUpload)

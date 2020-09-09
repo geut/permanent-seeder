@@ -12,7 +12,7 @@ import MenuIcon from '@material-ui/icons/Menu'
 import { DRAWER_WITH } from '../constants'
 import PSIcon from './PSIcon'
 
-import { useLeftSidebar, useAppBarTitle } from '../hooks/layout'
+import { useLeftSidebar, useAppBarTitle, useDarkMode } from '../hooks/layout'
 
 const useStyles = makeStyles((theme) => ({
   toolbar: {
@@ -49,10 +49,16 @@ function AppBar ({ drawerWith }) {
 
   const [open, setOpen] = useLeftSidebar()
   const [appBarTitle] = useAppBarTitle()
+  const [darkMode, setDarkMode] = useDarkMode()
 
   const handleDrawerOpen = () => {
     setOpen(true)
   }
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode)
+  }
+
   return (
     <MuiAppBar position='absolute' className={clsx(classes.appBar, open && classes.appBarShift)}>
       <Toolbar className={classes.toolbar}>
@@ -68,7 +74,7 @@ function AppBar ({ drawerWith }) {
         <Typography component='h1' variant='h6' color='inherit' noWrap className={classes.title}>
           {appBarTitle}
         </Typography>
-        <IconButton color='inherit' size='small' disableRipple disableFocusRipple>
+        <IconButton color='inherit' size='small' disableRipple disableFocusRipple onClick={toggleDarkMode}>
           <PSIcon fontSize='large' />
         </IconButton>
       </Toolbar>

@@ -7,8 +7,13 @@ import Button from '@material-ui/core/Button'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
+import InputAdornment from '@material-ui/core/InputAdornment'
+import KeyIcon from '@material-ui/icons/VpnKey'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
+  title: {
+    color: theme.palette.text.primary
+  },
   input: {
     fontFamily: 'monospace'
   }
@@ -38,10 +43,9 @@ function AddKeyDialog ({ open, keyToAdd = '', error, onClose, onAdd }) {
       fullWidth
       aria-labelledby='form-dialog-title'
     >
-      <DialogTitle id='form-dialog-title'>Add key</DialogTitle>
+      <DialogTitle id='form-dialog-title' className={classes.title}>Add Key</DialogTitle>
       <DialogContent>
         <TextField
-          label='Key'
           value={key}
           onChange={handleKeyChange}
           error={Boolean(error)}
@@ -53,13 +57,22 @@ function AddKeyDialog ({ open, keyToAdd = '', error, onClose, onAdd }) {
           fullWidth
           margin='dense'
           type='text'
+          color='primary'
+          variant='outlined'
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position='start'>
+                <KeyIcon />
+              </InputAdornment>
+            )
+          }}
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color='primary'>
+        <Button onClick={onClose}>
           Cancel
         </Button>
-        <Button onClick={handleAdd} color='primary'>
+        <Button onClick={handleAdd}>
           Add
         </Button>
       </DialogActions>

@@ -3,6 +3,7 @@ const path = require('path')
 const ApiGatewayService = require('moleculer-web')
 const IO = require('socket.io')
 const compression = require('compression')
+const { encode } = require('dat-encoding')
 
 module.exports = {
   name: 'api',
@@ -39,8 +40,9 @@ module.exports = {
         'GET api/drives/:key/info': 'api.drives.info',
         'GET api/stats/host': 'api.stats.host',
         'GET api/stats/network': 'api.stats.network',
-
+        'GET api/raw/:key': 'api.raw',
         'POST api/drives': 'api.drives.add'
+
       }
     }],
 
@@ -121,7 +123,7 @@ module.exports = {
     'drives.add': {
       async handler (ctx) {
         await ctx.call('keys.add', {
-          key: ctx.params.key,
+          key: encode(ctx.params.key),
           title: Date.now().toString()
         })
       }
@@ -136,6 +138,16 @@ module.exports = {
     'stats.host': {
       async handler (ctx) {
         return ctx.call('metrics.getHostStats')
+      }
+    },
+    raw: {
+      async handler (ctx) {
+        return this.raw(ctx.params.key)
+      }
+    },
+    'raw.event': {
+      async handler (ctx) {
+        return this.raw(ctx.params.key, ctx.params.event)
       }
     }
   },
@@ -193,6 +205,13 @@ module.exports = {
         }
 
         return key ? drives[0] : drives
+      }
+    },
+    raw: {
+      async handler (key, timestamp) {
+        // get all keys from timestamp (optional)
+        const stats = await this.broker.call('metrics.get', { key, timestamp })
+        return stats
       }
     }
   },
