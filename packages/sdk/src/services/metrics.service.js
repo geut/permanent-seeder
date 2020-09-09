@@ -5,14 +5,6 @@ const isOnline = require('is-online')
 
 const { Config } = require('../mixins/config.mixin')
 
-const EVENTS = {
-  'seeder.drive.download': 'drive.download',
-  'seeder.drive.upload': 'drive.upload',
-  'seeder.drive.update': 'drive.update',
-  'seeder.drive.peer.add': 'drive.peeradd',
-  'seeder.drive.peer.remove': 'drive.peerremove'
-}
-
 module.exports = {
   name: 'metrics',
 
@@ -28,66 +20,14 @@ module.exports = {
   mixins: [Config],
 
   events: {
-    'seeder.drive.update': {
-      throttle: 1000,
+    'seeder.drive.*': {
+      throttle: 100,
       async handler (ctx) {
         const timestamp = Date.now()
-        const { eventName, params: { key } } = ctx
-        const stats = await this.broker.call('seeder.driveStats', { key })
-        const size = await this.broker.call('seeder.driveSize', { key })
-        const peers = await this.broker.call('seeder.drivePeers', { key })
-        const event = await this.getEventName(eventName)
-        const host = await this.getHostStats()
-        await this.saveStats({ key, timestamp, event, stats, size, peers, host })
-      }
-    },
-    'seeder.drive.download': {
-      throttle: 1000,
-      async handler (ctx) {
-        const timestamp = Date.now()
-        const { eventName, params: { key } } = ctx
-        const peers = await this.broker.call('seeder.drivePeers', { key })
-        const event = await this.getEventName(eventName)
-        const host = await this.getHostStats()
-        await this.saveStats({ key, timestamp, event, peers, host })
-      }
-    },
-    'seeder.drive.upload': {
-      throttle: 1000,
-      async handler (ctx) {
-        const timestamp = Date.now()
-        const { eventName, params: { key } } = ctx
-        const peers = await this.broker.call('seeder.drivePeers', { key })
-        const event = await this.getEventName(eventName)
-        const host = await this.getHostStats()
-        await this.saveStats({ key, timestamp, event, peers, host })
-      }
-    },
-    'seeder.drive.peer.add': {
-      throttle: 1000,
-      async handler (ctx) {
-        const timestamp = Date.now()
-        const { eventName, params: { key } } = ctx
-        const peers = await this.broker.call('seeder.drivePeers', { key })
-        const event = await this.getEventName(eventName)
-        const host = await this.getHostStats()
-        const swarm = await this.getNetworkStats()
-        await this.saveStats({ key, timestamp, event, peers, host, swarm })
-      }
-    },
-    'seeder.drive.peer.remove': {
-      throttle: 1000,
-      async handler (ctx) {
-        const timestamp = Date.now()
-        const { eventName, params: { key } } = ctx
-        const peers = await this.broker.call('seeder.drivePeers', { key })
-        const event = await this.getEventName(eventName)
-        const host = await this.getHostStats()
-        const swarm = await this.getNetworkStats()
-        await this.saveStats({ key, timestamp, event, peers, host, swarm })
+        const { eventName: event, params: { key } } = ctx
+        await this.saveStats({ key, timestamp, event })
       }
     }
-
   },
 
   actions: {
@@ -153,13 +93,6 @@ module.exports = {
       }
     },
 
-    getEventName: {
-      handler (systemEvent) {
-        console.log({ systemEvent })
-        return EVENTS[systemEvent]
-      }
-    },
-
     saveStats: {
       async handler (data) {
         // persists stats on metrics db B-)
@@ -167,6 +100,8 @@ module.exports = {
           return
         }
 
+        data.host = await this.getHostStats()
+        data.peers = await this.broker.call('seeder.drivePeers', { key: data.key })
         return this.database.add(data)
       }
     }
