@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react'
 
 import { makeStyles } from '@material-ui/core'
-import Button from '@material-ui/core/Button'
+import IconButton from '@material-ui/core/IconButton'
+import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline'
 import Grid from '@material-ui/core/Grid'
 import Typography from '@material-ui/core/Typography'
 
@@ -43,15 +44,16 @@ function DriveItemHeader ({ onKeyAdd }) {
     ['Drive Key', {
       className: classes.driveKeyHeader,
       extra: (
-        <Button
+        <IconButton
+          aria-label='add key'
           onClick={onKeyAdd}
           color='primary'
           variant='outlined'
           size='small'
           className={classes.addKeyButton}
         >
-          Add key
-        </Button>
+          <AddCircleOutlineIcon />
+        </IconButton>
       )
     }],
     ['Size', { }],
