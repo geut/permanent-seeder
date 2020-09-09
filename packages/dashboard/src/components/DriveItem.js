@@ -105,7 +105,7 @@ function DriveItem ({ driveKey }) {
         return
       }
 
-      setTitle(drive.info.indexJSON?.title || driveKey.substr(0, 5))
+      setTitle(drive.info.indexJSON?.title || `Drive-${driveKey.substring(0, 6)}`)
       setSizeBlocks(drive.size.blocks)
       setSizeBytes(drive.size.bytes)
       setDownloadedBlocks(drive.size.downloadedBlocks)
