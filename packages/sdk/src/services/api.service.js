@@ -3,6 +3,7 @@ const path = require('path')
 const ApiGatewayService = require('moleculer-web')
 const IO = require('socket.io')
 const compression = require('compression')
+const { encode } = require('dat-encoding')
 
 module.exports = {
   name: 'api',
@@ -122,7 +123,7 @@ module.exports = {
     'drives.add': {
       async handler (ctx) {
         await ctx.call('keys.add', {
-          key: ctx.params.key,
+          key: encode(ctx.params.key),
           title: Date.now().toString()
         })
       }
