@@ -88,50 +88,57 @@ class Seeder extends EventEmitter {
   }
 
   /**
-   * seed.
+   * Seeds a key
+   *
+   * @param {string|Buffer} key key to seed
+   */
+  async seedKey (key) {
+    const keyString = encode(key)
+
+    // Check if drive present
+    let drive = this.drives.get(keyString)
+
+    // Already downloading
+    if (drive) return
+
+    console.log('\n-----------------------------SEEDING------------------------------\n', keyString)
+    console.log('------------------------------------------------------------------\n')
+
+    // Create drive
+    drive = new Drive(key, this.store)
+
+    // Store drive
+    this.drives.set(keyString, drive)
+
+    // Wait for readyness
+    await drive.ready()
+
+    // Register event listeners
+    drive.on('update', () => this.emit('drive-update', keyString))
+    drive.on('download', () => this.emit('drive-download', keyString))
+    drive.on('upload', () => this.emit('drive-upload', keyString))
+    drive.on('peer-add', () => this.emit('drive-peer-add', keyString))
+    drive.on('peer-remove', () => this.emit('drive-peer-remove', keyString))
+
+    // Connect to network
+    await this.networker.configure(drive.discoveryKey, { announce: this.opts.announce, lookup: this.opts.lookup })
+
+    // Notify new drive
+    this.emit('drive-add', keyString)
+
+    // Wait for content ready
+    await drive.getContentFeed()
+  }
+
+  /**
+   * Seed multiple keys.
    *
    * @param {} keys
    */
   async seed (keys = []) {
     await this.init()
 
-    for (const key of keys) {
-      const keyString = encode(key)
-
-      // Check if drive present
-      let drive = this.drives.get(keyString)
-
-      // Already downloading
-      if (drive) return
-
-      console.log('\n-----------------------------SEEDING------------------------------\n', keyString)
-      console.log('------------------------------------------------------------------\n')
-
-      // Create drive
-      drive = new Drive(key, this.store)
-
-      // Store drive
-      this.drives.set(keyString, drive)
-
-      // Wait for readyness
-      await drive.ready()
-
-      // Register event listeners
-      drive.on('update', () => this.emit('drive-update', keyString))
-      drive.on('download', () => this.emit('drive-download', keyString))
-      drive.on('upload', () => this.emit('drive-upload', keyString))
-      drive.on('peer-add', () => this.emit('drive-peer-add', keyString))
-      drive.on('peer-remove', () => this.emit('drive-peer-remove', keyString))
-
-      // Connect to network
-      await this.networker.configure(drive.discoveryKey, { announce: this.opts.announce, lookup: this.opts.lookup })
-
-      // Notify new drive
-      this.emit('drive-add', keyString)
-
-      // Wait for content ready
-      await drive.getContentFeed()
-    }
+    await Promise.all(keys.map(this.seedKey.bind(this)))
   }
 
   async driveSize (key) {
