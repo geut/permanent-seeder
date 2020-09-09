@@ -4,9 +4,12 @@ import ReactDOM from 'react-dom'
 import * as serviceWorker from './serviceWorker'
 
 import App from './containers/App'
+import { AppStateProvider } from './context/app-state'
 
 ReactDOM.render(
-  <App />
+  <AppStateProvider>
+    <App />
+  </AppStateProvider>
   ,
   document.getElementById('root')
 )
