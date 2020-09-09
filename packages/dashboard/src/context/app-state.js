@@ -1,9 +1,20 @@
 import React, { useReducer, useMemo } from 'react'
 
+const getLocalStorage = (key) => {
+  if (!window.localStorage) return false
+  return (window.localStorage.getItem(key, false)) === 'true'
+}
+
+const setLocalStorage = (key, value) => {
+  if (!window.localStorage) return
+  window.localStorage.setItem(key, value)
+}
+
 const initialState = {
   ui: {
     leftSidebarOpen: false,
-    appBarTitle: 'Home'
+    appBarTitle: 'Home',
+    darkMode: getLocalStorage('permanent-seeder.darkMode')
   }
 }
 
@@ -16,6 +27,10 @@ function reducer (state, action) {
       break
     case 'ui.appBar.title':
       newState.ui.appBarTitle = action.payload
+      break
+    case 'ui.darkMode':
+      setLocalStorage('permanent-seeder.darkMode', action.payload)
+      newState.ui.darkMode = action.payload
       break
     default:
       throw new Error()
