@@ -33,6 +33,10 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(2)
   },
 
+  driveTitle: {
+    fontFamily: 'monospace'
+  },
+
   driveKey: {
     fontFamily: 'monospace',
     fontSize: '1.2rem',
@@ -101,7 +105,7 @@ function DriveItem ({ driveKey }) {
         return
       }
 
-      setTitle(drive.key.title)
+      setTitle(drive.info.indexJSON.title || `Drive-${driveKey.substring(0, 6)}`)
       setSizeBlocks(drive.size.blocks)
       setSizeBytes(drive.size.bytes)
       setDownloadedBlocks(drive.size.downloadedBlocks)
