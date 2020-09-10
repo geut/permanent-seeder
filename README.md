@@ -4,56 +4,99 @@
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
+<div style="text-align: center">
+<img alt="Permanent Seeder logo, a cool seed surrounded with a round and exquisite black border" src="packages/dashboard/public/permanent-seeder-192.png"/>
+</div>
+
 ## <a name="install"></a> Install
 
 ```
-npm i
-npm run bootstrap
+npm i @geut/permanent-seeder
 ```
+
+Or from a [tarball](/dist)
 
 ## <a name="usage"></a> Usage
 
-### Create config for dashboard
+First, create a base config file, you can tweak it later ;-)
 ```
-cd packages/dashboard
-cp .env.example .env
-```
-
-### Build dashboard app before start services with:
-```
-npm run build
+$ permanent-seeder config:init
 ```
 
-### Start services
+Then, start the Permanent Seeder daemon
 ```
-cd ../cli
-./bin/run config:init
-./bin/run start
+$ permanent-seeder start
 ```
+:rocket:
 
-Dashboard will run on `http://localhost:3001`
-
-### Optional: Start Dashboard in DEV mode
+## <a name="commands"></a> Commands
 ```
-cd ../dashboard
-npm start
+$ permanent-seeder [COMMAND] [--OPTIONS]
 ```
-
-Dashboard will run on `http://localhost:3000`
-
-### Logs:
-
-- Out: `tail -f ~/.pm2/logs/seeder-daemon-out.log`
-- Errors: `tail -f ~/.pm2/logs/seeder-daemon-error.log`
-
-
-### Stop services
+### Config
 ```
-cd ../cli
-./bin/run stop
+$ permanent-seeder config:[init|get]
 ```
+- `init`: creates the base config file for the Permanent Seeder. This is a `.toml` file that will live in `~/permanent-seeder/settings.toml`.
+- `get`: returns the settings from the CLI. Useful when you are changing values and want to be sure they are pick up by the Permanent Seeder.
 
-Dashboard will run on `http://localhost:3001`
+### Start
+
+```
+$ permanent-seeder start
+```
+Bootstrap a Permanent Seeder instance that will keep up running in the background. If you change settings, you will need to call `start` command again.
+
+### Status
+```
+$ permanent-seeder status
+```
+It will return instance status. If it is running and some basic stats.
+
+### Stop
+```
+$ permanent-seeder stop
+```
+Stops the current instance.
+
+### Dashboard
+```
+$ permanent-seeder dashboard
+```
+Opens the dashboard app in a browser. If you want to manually access the dashboard, it can be found in: `localhost:3001`
+
+### Key Management :key:
+```
+$ permanent-seeder key:[add|remove|remove-all]
+```
+- `add`: Insert a new key Permanent Seeder db, it will start downloading and seeding ASAP.
+- `remove`: Removes a single key from the seeder db and also stops seeding it (e.g.: no more announcing to other peers)
+- `remove-all`: Removes and unnanounce all the keys in the db.
+
+### Logs
+
+```
+$ permanent-seeder logs --[live|all|error]
+```
+- `live`: like doing a `tail -f` of the logs.
+- `all`: Show all the logs stored.
+- `error`: Display only error logs.
+
+### repl
+```
+$ permanent-seeder repl
+```
+Useful to inspect the Permanent Seeder under the hood. :microscope:
+
+## Design
+
+The Permanent Seeder is a CLI tool that can starts a daemon which will [seed](https://en.wikipedia.org/wiki/Seeding_(computing)) [hyperdrive's](https://hypercore-protocol.org/#hyperdrive) keys that you pass into it.
+Using the CLI you can add, remove keys, check the status and inspect logs.
+
+It also contains a [`dashboard`](#dashboard) that you can use to have a visual reference of what is going on with your hyperdrives.
+
+As you can see the project does a couple of things. To do this we decided to use a microservices based approach. We choose to use [moleculer](https://moleculer.services/) as the structural framework behind the Permanent Seeder. This enables multiples processes to communicate each other and at the same time each of these will have a single responsibility/scope. This also give us some room to scale things up if needed.
+:sunglasses:
 
 ## <a name="issues"></a> Issues
 
@@ -62,6 +105,12 @@ Dashboard will run on `http://localhost:3001`
 ## <a name="contribute"></a> Contributing
 
 :busts_in_silhouette: Ideas and contributions to the project are welcome. You must follow this [guideline](https://github.com/geut/permanent-seeder/blob/master/CONTRIBUTING.md).
+
+## Built in collaboration with Liberate Science
+
+<a href="https://libscie.org" rel="nofollow">
+<img src="https://github.com/libscie.png" alt="Liberate Science" width="200px" style="max-width:100%;">
+</a>
 
 ## License
 
