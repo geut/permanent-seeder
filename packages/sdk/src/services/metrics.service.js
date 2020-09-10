@@ -20,9 +20,12 @@ module.exports = {
   mixins: [Config],
 
   events: {
-    'seeder.stats': {
+    'seeder.drive.*': {
+      throttle: 100,
       async handler (ctx) {
-        await this.database.add(ctx.params)
+        const timestamp = Date.now()
+        const { eventName: event, params: { key } } = ctx
+        await this.saveStats({ key, timestamp, event })
       }
     }
   },
@@ -87,6 +90,19 @@ module.exports = {
           online,
           swarm: swarmStats
         }
+      }
+    },
+
+    saveStats: {
+      async handler (data) {
+        // persists stats on metrics db B-)
+        if (!this.config.save_stats) {
+          return
+        }
+
+        data.host = await this.getHostStats()
+        data.peers = await this.broker.call('seeder.drivePeers', { key: data.key })
+        return this.database.add(data)
       }
     }
   },

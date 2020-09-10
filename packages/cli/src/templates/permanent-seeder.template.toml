@@ -24,3 +24,4 @@ path = 'keys.db'
 
 [metrics.db]
 path = 'metrics.db'
+save_stats = true

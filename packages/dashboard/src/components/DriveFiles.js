@@ -1,5 +1,6 @@
 import React from 'react'
 
+import { makeStyles } from '@material-ui/core/styles'
 import Paper from '@material-ui/core/Paper'
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
@@ -10,13 +11,28 @@ import TableRow from '@material-ui/core/TableRow'
 
 import { humanizedBytes } from '../format'
 
+const useStyles = makeStyles({
+  container: {
+    maxHeight: 440
+  },
+  table: {
+    width: '100%',
+    tableLayout: 'fixed'
+  },
+  cellFile: {
+    width: '65%'
+  }
+})
+
 function DriveFiles ({ files }) {
+  const classes = useStyles()
+
   return (
-    <TableContainer square component={Paper}>
-      <Table aria-label='simple table'>
+    <TableContainer square component={Paper} className={classes.container}>
+      <Table stickyHeader aria-label="drive's file contents table" className={classes.table}>
         <TableHead>
           <TableRow>
-            <TableCell>File</TableCell>
+            <TableCell className={classes.cellFile}>File</TableCell>
             <TableCell align='right'>Size</TableCell>
             <TableCell align='right'>Blocks</TableCell>
           </TableRow>
@@ -24,7 +40,7 @@ function DriveFiles ({ files }) {
         <TableBody>
           {Object.entries(files).map(([fileName, { size, blocks }]) => (
             <TableRow key={fileName}>
-              <TableCell>{fileName}</TableCell>
+              <TableCell size='small' className={classes.cellFile}>{fileName}</TableCell>
               <TableCell align='right'>{humanizedBytes(size).pretty}</TableCell>
               <TableCell align='right'>{blocks}</TableCell>
             </TableRow>

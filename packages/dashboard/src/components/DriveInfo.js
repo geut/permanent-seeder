@@ -6,6 +6,7 @@ import Chip from '@material-ui/core/Chip'
 import Dialog from '@material-ui/core/Dialog'
 import MuiDialogTitle from '@material-ui/core/DialogTitle'
 import DialogContent from '@material-ui/core/DialogContent'
+import Paper from '@material-ui/core/Paper'
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
 import Typography from '@material-ui/core/Typography'
@@ -13,9 +14,13 @@ import Typography from '@material-ui/core/Typography'
 import ReactJson from 'react-json-view'
 
 const useStyles = makeStyles(theme => ({
-  root: {
+  dialogTitle: {
     margin: 0,
     padding: theme.spacing(2)
+  },
+  dialogSubTitle: {
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2)
   },
   dialogContent: {
     padding: theme.spacing(2)
@@ -28,11 +33,27 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
+const TitleLabel = props => (
+  <Typography
+    variant='h6'
+    color='textSecondary'
+    component='span'
+    style={{
+      textTransform: 'capitalize',
+      textOverflow: 'ellipsis'
+    }}
+    noWrap
+    className={props.className}
+  >
+    {props.title || ''}
+  </Typography>
+)
+
 const DialogTitle = (props) => {
   const classes = useStyles()
   const { children, onClose, ...other } = props
   return (
-    <MuiDialogTitle disableTypography className={classes.root} {...other}>
+    <MuiDialogTitle disableTypography className={classes.dialogTitle} {...other}>
       <Typography variant='h6'>{children}</Typography>
       {onClose ? (
         <IconButton aria-label='close' className={classes.closeButton} onClick={onClose}>
@@ -56,11 +77,9 @@ function DriveInfo ({ info = {}, onClose, open }) {
     />
   )
 
-  const titleLabel = (title = '') => (
-    <Typography variant='h5' color='primary' component='span' style={{ textTransform: 'capitalize' }} noWrap gutterBottom>
-      {title}
-    </Typography>
-  )
+  const handleCopy = (copy) => {
+    navigator.clipboard.writeText(JSON.stringify(copy.src, null, '\t'))
+  }
 
   return (
     <Dialog
@@ -71,9 +90,10 @@ function DriveInfo ({ info = {}, onClose, open }) {
       open={open}
       fullWidth
     >
-      <DialogTitle id='drive-details-title' onClose={onClose}>
-        Drive Info{indexJSON.title ? ':' : ''} {titleLabel(indexJSON.title)}
+      <DialogTitle id='drive-details-title' className={classes.dialogTitle} onClose={onClose}>
+        Drive Info
       </DialogTitle>
+      <TitleLabel title={indexJSON.title} className={classes.dialogSubTitle} />
       <DialogContent className={classes.dialogContent} dividers>
         <div style={{ marginBottom: '1em' }}>
           <Typography variant='overline' style={{ fontWeight: 'bold' }} display='block'>
@@ -85,15 +105,18 @@ function DriveInfo ({ info = {}, onClose, open }) {
           <Typography variant='overline' style={{ fontWeight: 'bold' }} display='block'>
           index.json
           </Typography>
-          <div>
+
+          <Paper>
             <ReactJson
               src={indexJSON}
-              style={{ minWidth: '500px' }}
+              style={{ minWidth: '500px', borderRadius: theme.shape.borderRadius, padding: theme.spacing(1), fontSize: theme.typography.fontSize }}
               displayDataTypes={false}
               indentWidth={2}
               collapseStringsAfterLength={15}
+              enableClipboard={handleCopy}
+              theme='solarized'
             />
-          </div>
+          </Paper>
         </div>
       </DialogContent>
     </Dialog>

@@ -10,11 +10,15 @@ class MetricsDatabase extends Database {
     this.metrics = sub(this._db, 'metrics', { valueEncoding: 'json' })
     this.idx = {
       key: sub(this._db, 'metrics-key'),
-      timestamp: sub(this._db, 'metrics-timestamp')
+      timestamp: sub(this._db, 'metrics-timestamp'),
+      event: sub(this._db, 'metrics-event')
     }
     this.by = {}
     this.by.timestamp = AutoIndex(this.metrics, this.idx.timestamp, (datum = {}) => {
       return datum.key + '!' + datum.timestamp
+    })
+    this.by.event = AutoIndex(this.metrics, this.idx.event, (datum = {}) => {
+      return datum.key + '!' + datum.event
     })
   }
 
@@ -46,15 +50,7 @@ class MetricsDatabase extends Database {
    * @returns {boolean} true if existent and key was updated
    */
   async add (data, updateIfExists = false) {
-    const existent = await this.get(data.key, data.timestamp)
-
-    if (existent && !updateIfExists) {
-      throw new Error('Key already exists')
-    }
-
-    await this.set(data.key, data.timestamp, data)
-
-    return !!existent
+    await this.set(data.key, data.timestamp, data.event, data)
   }
 
   /**
@@ -65,13 +61,13 @@ class MetricsDatabase extends Database {
    * @returns {boolean} true if not existent and key was created
    */
   async update (data, createIfNotExists = false) {
-    const existent = await this.get(data.key, data.timestamp)
+    const existent = await this.get(data.key, data.timestamp, data.event)
 
     if (!existent && !createIfNotExists) {
       throw new Error('Key not created')
     }
 
-    await this.set(data.key, data.timestamp, data)
+    await this.set(data.key, data.timestamp, data.event, data)
 
     return !existent
   }
@@ -91,6 +87,30 @@ class MetricsDatabase extends Database {
             }
           } else {
             if (data.key.toString('hex') === key && data.timestamp >= query) {
+              out.push(data)
+            }
+          }
+        })
+        .on('end', () => resolve(out))
+        .on('error', reject)
+    })
+  }
+
+  async filterByEvent (key, query) {
+    assert(key, 'key is required')
+    return new Promise((resolve, reject) => {
+      const stream = this.by.event.createValueStream({
+        gte: key
+      })
+      const out = []
+      stream
+        .on('data', data => {
+          if (!query) {
+            if (data.key.toString('hex') === key) {
+              out.push(data)
+            }
+          } else {
+            if (data.key.toString('hex') === key && data.event === query) {
               out.push(data)
             }
           }
