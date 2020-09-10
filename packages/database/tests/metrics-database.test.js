@@ -83,9 +83,6 @@ test('get/add key', async () => {
 
   await metricsDB.add(data)
 
-  data.title = 'updated-key'
-  await metricsDB.add(data, true)
-
   const dataKey = [data.key.toString('hex'), data.timestamp, data.event]
   const createdKey = await metricsDB.get(...dataKey)
   expect(createdKey).toMatchObject(data)

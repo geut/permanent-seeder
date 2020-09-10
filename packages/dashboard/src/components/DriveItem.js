@@ -150,7 +150,7 @@ function DriveItem ({ driveKey }) {
         <Grid container>
           <DriveItemGridContainer xs alignItems='center' justify='center'>
             <Grid container direction='column' alignItems='flex-start'>
-              <Typography variant='h4'>{title}</Typography>
+              <Typography variant='h4' className={classes.driveTitle}>{title}</Typography>
               <div onClick={e => e.stopPropagation()}>
                 <CopyToClipboard text={driveKey}>
                   <Tooltip title='Click to copy'>

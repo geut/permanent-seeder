@@ -4,13 +4,10 @@ const Database = require('./database')
 
 class KeysDatabase extends Database {
   _cleanKeyData (data = {}) {
-    assert(typeof data.title === 'string', 'title must be a string')
-    assert(data.title.length > 0, 'title must be a valid string')
     assert(typeof data.key === 'string', 'key must be a valid string')
     assert(data.key.length === 64, 'key must be a valid 32-byte key string')
 
     return {
-      title: data.title,
       key: data.key
     }
   }

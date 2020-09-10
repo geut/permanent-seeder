@@ -45,11 +45,10 @@ class MetricsDatabase extends Database {
   /**
    *
    * @param {object} data keyRecord to add
-   * @param {boolean} updateIfExists update keyRecord if exists
    *
    * @returns {boolean} true if existent and key was updated
    */
-  async add (data, updateIfExists = false) {
+  async add (data) {
     await this.set(data.key, data.timestamp, data.event, data)
   }
 

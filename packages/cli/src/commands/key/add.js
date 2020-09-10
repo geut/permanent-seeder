@@ -1,4 +1,3 @@
-const { flags } = require('@oclif/command')
 const { encode } = require('dat-encoding')
 
 const { sendMessage } = require('../../pm2-async')
@@ -9,10 +8,10 @@ const KeyCommand = require('.')
 
 class AddCommand extends KeyCommand {
   async run () {
-    const { flags: { key, title } } = this.parse(AddCommand)
+    const { args: { key } } = this.parse(AddCommand)
 
     try {
-      await sendMessage(SEEDER_DAEMON, MESSAGE_KEY_ADD, { key, title })
+      await sendMessage(SEEDER_DAEMON, MESSAGE_KEY_ADD, { key })
     } catch (error) {
       this.error(error.message)
     }
@@ -26,9 +25,11 @@ AddCommand.description = 'Adds a key to be persisted'
 
 AddCommand.flags = {
   ...KeyCommand.flags,
-  ...BaseCommand.flags,
-  key: flags.string({ char: 'k', parse: key => encode(key), required: true, description: 'Key to add' }),
-  title: flags.string({ char: 't', required: true, description: 'Key title' })
+  ...BaseCommand.flags
 }
+
+AddCommand.args = [
+  { name: 'key', parse: key => encode(key), description: 'Key to add' }
+]
 
 module.exports = AddCommand

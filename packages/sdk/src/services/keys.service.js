@@ -33,7 +33,6 @@ module.exports = {
             type: 'object',
             props: {
               url: { type: 'string' },
-              title: { type: 'string', empty: 'false' },
               id: { type: 'number' },
               created_at: { type: 'string' }
             }
@@ -54,8 +53,7 @@ module.exports = {
 
     add: {
       params: {
-        key: { type: 'string', length: '64', hex: true },
-        title: { type: 'string', empty: 'false' }
+        key: { type: 'string', length: '64', hex: true }
       },
       async handler (ctx) {
         return this.updateKeys([ctx.params])

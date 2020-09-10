@@ -9,7 +9,6 @@ const createRandomKeyData = () => {
 
   return {
     key,
-    title: `key-title-${key}`,
     createdAt: new Date().toString()
   }
 }

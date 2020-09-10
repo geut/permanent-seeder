@@ -19,14 +19,11 @@ let result
 let mockExit
 const insertedKeys = []
 
-async function addKey (
-  key = randomBytes(32).toString('hex'),
-  title = `key-${Date.now()}`
-) {
-  await AddCommand.run([`-k=${key}`, `-t=${title}`])
+async function addKey (key = randomBytes(32).toString('hex')) {
+  await AddCommand.run([key])
   expect(result[0]).toContain('Key added!')
 
-  return { key, title }
+  return key
 }
 
 beforeAll(async () => {
@@ -64,43 +61,40 @@ afterEach(() => {
 })
 
 describe('Test Commands', () => {
-  it('Add: should work with key and title', async () => {
-    const { key, title } = await addKey()
-    insertedKeys.push({ key, title })
+  it('Add: should work with key', async () => {
+    const key = await addKey()
+    insertedKeys.push({ key })
   })
 
-  it('Add: should work with prefixed key and title', async () => {
+  it('Add: should work with prefixed key', async () => {
     const insertedKey = randomBytes(32).toString('hex')
     const key = `hyper://${insertedKey}`
-    const title = 'test 2'
 
-    await addKey(key, title)
+    await addKey(key)
 
-    insertedKeys.push({ key: insertedKey, title })
+    insertedKeys.push({ key: insertedKey })
   })
 
   it('get: key', async () => {
-    const { key, title } = insertedKeys[1]
+    const { key } = insertedKeys[1]
 
     await GetCommand.run([key])
 
     const expected = {
-      key,
-      title
+      key
     }
 
     expect(JSON.parse(result[0])).toStrictEqual(expected)
   })
 
   it('get: use prefix', async () => {
-    const { key, title } = insertedKeys[0]
+    const { key } = insertedKeys[0]
     const prefixedKey = `hyper://${key}`
 
     await GetCommand.run([prefixedKey])
 
     const expected = {
-      key: encode(prefixedKey),
-      title
+      key: encode(prefixedKey)
     }
 
     expect(JSON.parse(result[0])).toStrictEqual(expected)

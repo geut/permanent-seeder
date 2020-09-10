@@ -123,8 +123,7 @@ module.exports = {
     'drives.add': {
       async handler (ctx) {
         await ctx.call('keys.add', {
-          key: encode(ctx.params.key),
-          title: Date.now().toString()
+          key: encode(ctx.params.key)
         })
       }
     },
