@@ -193,7 +193,10 @@ module.exports = {
         const drives = []
         for (const { key: publicKey } of keys) {
           drives.push({
-            key: { publicKey },
+            key: {
+              publicKey
+            },
+            info: await this.driveInfo(publicKey),
             size: await this.driveSize(publicKey),
             stats: await this.driveStats(publicKey),
             peers: await this.drivePeers(publicKey)

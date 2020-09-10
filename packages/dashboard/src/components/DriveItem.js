@@ -60,6 +60,7 @@ const useStyles = makeStyles(theme => ({
 function DriveItem ({ driveKey }) {
   const classes = useStyles()
 
+  const [title, setTitle] = useState('')
   const [sizeBlocks, setSizeBlocks] = useState(0)
   const [sizeBytes, setSizeBytes] = useState(0)
   const [downloadedBlocks, setDownloadedBlocks] = useState(0)
@@ -104,6 +105,7 @@ function DriveItem ({ driveKey }) {
         return
       }
 
+      setTitle(drive.info.indexJSON.title || `Drive-${driveKey.substring(0, 6)}`)
       setSizeBlocks(drive.size.blocks)
       setSizeBytes(drive.size.bytes)
       setDownloadedBlocks(drive.size.downloadedBlocks)
@@ -148,7 +150,7 @@ function DriveItem ({ driveKey }) {
         <Grid container>
           <DriveItemGridContainer xs alignItems='center' justify='center'>
             <Grid container direction='column' alignItems='flex-start'>
-              <Typography variant='h4' className={classes.driveTitle}>{driveKey.substr(0, 5)}</Typography>
+              <Typography variant='h4' className={classes.driveTitle}>{title}</Typography>
               <div onClick={e => e.stopPropagation()}>
                 <CopyToClipboard text={driveKey}>
                   <Tooltip title='Click to copy'>
