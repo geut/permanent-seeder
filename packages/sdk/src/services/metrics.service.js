@@ -101,7 +101,9 @@ module.exports = {
         }
 
         data.host = await this.getHostStats()
-        data.peers = await this.broker.call('seeder.drivePeers', { key: data.key })
+        if (data.event !== 'seeder.drive.remove') {
+          data.peers = await this.broker.call('seeder.drivePeers', { key: data.key })
+        }
         return this.database.add(data)
       }
     }

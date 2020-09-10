@@ -52,6 +52,10 @@ class SDK {
   async addKey (keyRecord) {
     return this._broker.call('keys.add', keyRecord)
   }
+
+  async unseed (keyRecord) {
+    return this._broker.call('seeder.unseed', keyRecord)
+  }
 }
 
 module.exports = SDK
