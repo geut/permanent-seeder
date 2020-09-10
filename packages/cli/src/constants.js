@@ -2,11 +2,11 @@ const { resolve } = require('path')
 
 const SEEDER_DAEMON = 'seeder-daemon'
 
-const CONFIG_FILENAME = 'permanent-seeder.toml'
+const CONFIG_FILENAME = 'settings.toml'
 
-const ENDPOINT_HOOK_FILENAME = 'permanent-seeder-endpoint-hook.js'
+const ENDPOINT_HOOK_FILENAME = 'endpoint-hook.js'
 
-const TEMPLATE_CONFIG_FILE_PATH = resolve(__dirname, 'templates', 'permanent-seeder.template.toml')
+const TEMPLATE_CONFIG_FILE_PATH = resolve(__dirname, 'templates', 'settings.template.toml')
 const TEMPLATE_ENDPOINT_HOOK = resolve(__dirname, 'templates', 'endpoint-hook.template.js')
 
 const MESSAGE_KEY_ADD = 'keys:add'

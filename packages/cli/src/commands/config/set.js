@@ -5,10 +5,9 @@ const ConfigCommand = require('.')
 
 class SetCommand extends ConfigCommand {
   async run () {
-    const { args: { key, value }, flags: { global } } = this.parse(SetCommand)
-    const configFolderPath = global ? this.globalConfigFolderPath : this.localConfigFolderPath
+    const { args: { key, value } } = this.parse(SetCommand)
 
-    config.set(key, value, { configFolderPath })
+    config.set(key, value, { configFolderPath: this.configFolderPath })
   }
 
   async catch (error) {

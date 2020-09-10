@@ -4,7 +4,6 @@ const { randomBytes } = require('crypto')
 
 const lodashGet = require('lodash.get')
 const lodashSet = require('lodash.set')
-const deepExtend = require('deep-extend')
 const tomlParse = require('@iarna/toml/parse')
 const tomlStringify = require('@iarna/toml/stringify')
 
@@ -64,20 +63,16 @@ module.exports.init = (configFolderPath, options = {}) => {
  *
  * @param {string} key Config key
  * @param {object} options Options
- * @param {string} options.globalConfigFolderPath Path to the folder where config file resides (global)
- * @param {string} options.localConfigFolderPath Path to the folder where config file resides (local)
+ * @param {string} options.configFolderPath Path to the folder where config file resides
  */
 module.exports.get = (key, options = {}) => {
-  const globalConfig = getConfig(options.globalConfigFolderPath)
-  const localConfig = getConfig(options.localConfigFolderPath)
-
-  const mergedConfig = deepExtend(globalConfig, localConfig)
+  const config = getConfig(options.configFolderPath, false)
 
   if (key) {
-    return lodashGet(mergedConfig, key)
+    return lodashGet(config, key)
   }
 
-  return mergedConfig
+  return config
 }
 
 /**

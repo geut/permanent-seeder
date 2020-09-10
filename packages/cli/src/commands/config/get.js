@@ -8,8 +8,7 @@ class GetCommand extends ConfigCommand {
     const { args: { key } } = this.parse(GetCommand)
 
     const configValues = config.get(key, {
-      globalConfigFolderPath: this.globalConfigFolderPath,
-      localConfigFolderPath: this.localConfigFolderPath
+      configFolderPath: this.configFolderPath
     })
 
     if (key && configValues === undefined) {

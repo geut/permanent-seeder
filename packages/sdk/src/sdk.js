@@ -32,6 +32,8 @@ class SDK {
       hotReload
     })
 
+    this._broker.logger.info('\nConfig: ', JSON.stringify(this._config, null, 2), '\n')
+
     this._broker.loadServices(servicesPath)
 
     await this._broker.start()

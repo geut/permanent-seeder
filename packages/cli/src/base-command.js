@@ -1,25 +1,16 @@
-const { join, resolve } = require('path')
+const { join } = require('path')
 
 const { Command } = require('@oclif/command')
 
 const config = require('./config')
 
 class BaseCommand extends Command {
-  get localConfigFolderPath () {
-    return resolve(process.cwd())
-  }
-
-  get globalConfigFolderPath () {
+  get configFolderPath () {
     return join(this.config.home, 'permanent-seeder')
   }
 
   getConfig (key) {
-    const configValues = config.get(key, {
-      globalConfigFolderPath: this.globalConfigFolderPath,
-      localConfigFolderPath: this.localConfigFolderPath
-    })
-
-    return configValues
+    return config.get(key, { configFolderPath: this.configFolderPath })
   }
 }
 
