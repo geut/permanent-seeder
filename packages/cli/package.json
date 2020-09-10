@@ -1,7 +1,7 @@
 {
   "name": "@geut/permanent-seeder",
   "version": "0.0.1",
-  "description": "Permanent Seeder cli",
+  "description": "Permanent Seeder CLI",
   "keywords": [
     "seeder",
     "geut"
@@ -32,8 +32,9 @@
   "scripts": {
     "demo": "npx http-server ./demo -p 8383",
     "lint": "xd-ns \"**/*.js\"",
-    "prepack": "oclif-dev manifest && oclif-dev readme",
+    "prepack": "oclif-dev manifest && oclif-dev readme & npm shrinkwrap",
     "postpack": "rm -f oclif.manifest.json",
+    "tarballs": "oclif-dev pack",
     "prepublishOnly": "npm test",
     "test": "jest --passWithNoTests --runInBand --detectOpenHandles --forceExit",
     "posttest": "npm run lint",
