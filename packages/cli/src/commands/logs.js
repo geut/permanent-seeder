@@ -1,5 +1,5 @@
-const { homedir } = require('os')
-const { join } = require('path')
+
+const { resolve } = require('path')
 const { promises: { readFile } } = require('fs')
 
 const { flags } = require('@oclif/command')
@@ -12,7 +12,9 @@ class TailCommand extends BaseCommand {
   async run () {
     const { flags: { error, live, all } } = this.parse(TailCommand)
 
-    const file = join(homedir(), `.pm2/logs/seeder-daemon-${error ? 'error' : 'out'}.log`)
+    const config = this.checkConfig()
+
+    const file = resolve(config.path, 'logs', `${error ? 'error' : 'output'}.log`)
 
     if (!live) {
       const data = await readFile(file, 'utf8')
