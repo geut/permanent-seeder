@@ -166,7 +166,7 @@ function DriveItem ({ driveKey }) {
               <Grid container alignItems='flex-start'>
                 <IconButton onClick={() => setShowInfo(showInfo => !showInfo)}>{showInfo ? <FoldIcon /> : <UnfoldIcon />}</IconButton>
                 <IconButton aria-label='drive details' onClick={openDetails}><InfoIcon /></IconButton>
-                <DriveInfoDialog open={showDetails} onClose={closeDetails} info={driveInfo} />
+                <DriveInfoDialog open={showDetails} onClose={closeDetails} info={driveInfo} title={title} />
               </Grid>
             </Grid>
           </DriveItemGridContainer>
