@@ -21,6 +21,8 @@ Alternatively you can `git clone` this repo and build it from source:
 ```
 npm i
 npm run bootstrap
+permanent-seeder stop
+permanent-seeder start
 ```
 
 ## <a name="usage"></a> Usage
