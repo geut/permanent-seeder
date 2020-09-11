@@ -101,6 +101,8 @@ $ permanent-seeder dashboard
 ```
 Opens the dashboard app in a browser. If you want to manually access the dashboard, it can be found in: `localhost:3001`
 
+<img src="./Dashboard.jpg" width="800px" height="auto" style="border:2px solid #fff; box-shadow: 10px 10px 5px #ccc">
+
 ### Key Management :key:
 ```
 $ permanent-seeder key:[add|remove|remove-all]
