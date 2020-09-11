@@ -1,20 +1,16 @@
-# permanent services
+# permanent-seeeder-sdk
 
-[![Build Status](https://travis-ci.com/geut/permanent-seeder/packages/permanent-seeder-sdk.svg?branch=master)](https://travis-ci.com/geut/permanent-seeder/packages/permanent-seeder-sdk)
+[![Build Status](https://travis-ci.com/geut/permanent-seeder.svg?branch=master)](https://travis-ci.com/geut/permanent-seeder)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
-> Template to create modules following the :snail: **Geut** path
+> This is the Permanent Seeder SDK repository
 
-## <a name="install"></a> Install
+The Permanent Seeder is not just a CLI tool. It does lots of things. To do this we need to coordinate different processes.
 
-```
-```
+Here you can find all of the services that make the Permanent Seeder work. They are exposed together as an SDK that the cli can consume.
 
-## <a name="usage"></a> Usage
-
-```
-```
+We are using [`moleculer`](https://moleculer.services/) internally to comunicate with this set of services.
 
 ## <a name="issues"></a> Issues
 

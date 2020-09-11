@@ -4,6 +4,7 @@
   "description": "Permanent Seeder CLI",
   "keywords": [
     "seeder",
+    "cli",
     "geut"
   ],
   "homepage": "https://github.com/geut/permanent-seeder#readme",
@@ -60,6 +61,7 @@
     "cli-ux": "^5.5.0",
     "colors": "^1.4.0",
     "dat-encoding": "^5.0.1",
+    "deep-extend": "^0.6.0",
     "humanize-duration": "^3.23.1",
     "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2",

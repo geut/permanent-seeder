@@ -1,9 +1,11 @@
 {
   "name": "@geut/permanent-seeder-core",
   "version": "0.0.1-alpha.2",
-  "description": "Permanent Seeder core",
+  "description": "Permanent Seeder Core",
   "keywords": [
     "seeder",
+    "core",
+    "hyperdrive",
     "geut"
   ],
   "homepage": "https://github.com/geut/permanent-seeder#readme",
@@ -36,7 +38,6 @@
   "dependencies": {
     "@corestore/networker": "^1.0.3",
     "@geut/hyperdrive-promise": "^3.0.1",
-    "@p2pcommons/sdk-js": "^0.6.3",
     "corestore": "^5.7.3",
     "dat-encoding": "^5.0.1",
     "hypercore-cache": "^1.0.2",

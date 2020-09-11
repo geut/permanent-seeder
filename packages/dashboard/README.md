@@ -1,20 +1,15 @@
-# permanent-seeder
+# permanent-seeder-dashboard
 
 [![Build Status](https://travis-ci.com/geut/permanent-seeder.svg?branch=master)](https://travis-ci.com/geut/permanent-seeder)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
-> Template to create modules following the :snail: **Geut** path
 
-## <a name="install"></a> Install
+> This is the Permanent Seeder dashboard repo.
 
-```
-```
+The dashboard is built using react and [`create-react-app`](https://github.com/facebook/create-react-app).
 
-## <a name="usage"></a> Usage
-
-```
-```
+A production build is included with every Permanent Seeder release.
 
 ## <a name="issues"></a> Issues
 
