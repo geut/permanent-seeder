@@ -1,4 +1,4 @@
-const path = require('path')
+const { join } = require('path')
 
 const ApiGatewayService = require('moleculer-web')
 const IO = require('socket.io')
@@ -21,7 +21,7 @@ module.exports = {
 
     // Dashboard site
     assets: {
-      folder: path.resolve(__dirname, '../../../dashboard/build')
+      folder: join(__dirname, '../', '../', 'node_modules', '@geut', 'permanent-seeder-dashboard', 'build')
     },
 
     whitelist: [

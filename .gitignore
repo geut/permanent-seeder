@@ -68,3 +68,8 @@ permanent-seeder.toml
 
 # Default DB name
 */**/keys.db
+
+# shrinkwrap
+npm-shrinkwrap.json
+
+packages/cli/tmp
