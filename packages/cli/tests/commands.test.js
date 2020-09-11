@@ -1,8 +1,6 @@
 const { randomBytes } = require('crypto')
 
 const { encode } = require('dat-encoding')
-const tempy = require('tempy')
-const del = require('del')
 const { mockProcessExit } = require('jest-mock-process')
 
 const ConfigInitCommand = require('../src/commands/config/init')
@@ -14,22 +12,19 @@ const GetCommand = require('../src/commands/key/get')
 
 jest.setTimeout(10000)
 
-let cwd
 let result
 let mockExit
 const insertedKeys = []
 
 async function addKey (key = randomBytes(32).toString('hex')) {
   await AddCommand.run([key])
+
   expect(result[0]).toContain('Key added!')
 
   return key
 }
 
 beforeAll(async () => {
-  cwd = tempy.directory({ prefix: 'permanent-seeder-tests-' })
-  process.chdir(cwd)
-
   await ConfigInitCommand.run([])
 
   await StartCommand.run(['--restart'])
@@ -40,7 +35,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await StopCommand.run([])
-  await del(cwd, { force: true })
 })
 
 beforeEach(async () => {

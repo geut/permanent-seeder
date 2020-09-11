@@ -1,3 +1,5 @@
+const { resolve } = require('path')
+
 const { Seeder } = require('@geut/permanent-seeder-core')
 
 const { Config } = require('../mixins/config.mixin')
@@ -152,7 +154,9 @@ module.exports = {
   },
 
   created () {
-    this.seeder = new Seeder()
+    this.seeder = new Seeder({
+      storageLocation: resolve(this.settings.config.path, '.hyper')
+    })
   },
 
   async started () {

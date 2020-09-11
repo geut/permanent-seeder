@@ -44,7 +44,9 @@
     "testEnvironment": "node",
     "testMatch": [
       "**/tests/**/*.test.js"
-    ]
+    ],
+    "globalSetup": "<rootDir>/tests/setup.js",
+    "globalTeardown": "<rootDir>/tests/teardown.js"
   },
   "dependencies": {
     "@geut/permanent-seeder-database": "^0.0.1",
@@ -60,7 +62,6 @@
     "cli-ux": "^5.5.0",
     "colors": "^1.4.0",
     "dat-encoding": "^5.0.1",
-    "deep-extend": "^0.6.0",
     "humanize-duration": "^3.23.1",
     "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2",

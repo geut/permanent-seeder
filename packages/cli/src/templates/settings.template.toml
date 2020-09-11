@@ -1,5 +1,8 @@
-[security]
-secret = 'YOUR_SECRET_HERE'
+# Permanent seeder path (will be completed on config:init)
+path = 'permanent-seeder'
+
+# Enable stats recording
+save_stats = true
 
 # keys.endpoints = array of configs per endpoint
 [[keys.endpoints]]
@@ -11,17 +14,10 @@ secret = 'YOUR_SECRET_HERE'
   frequency = 5
 
   # Hook to parse response
-  hook = 'permanent-seeder-endpoint-hook.js'
+  hook = 'endpoint-hook.js'
 
 ## To add another endpoint, uncomment and complete next lines:
 # [[keys.endpoints]]
 #   url =
 #   frequency =
 #   hook
-
-[keys.db]
-path = 'keys.db'
-
-[metrics.db]
-path = 'metrics.db'
-save_stats = true

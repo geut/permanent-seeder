@@ -1,3 +1,5 @@
+const { resolve } = require('path')
+
 const { MetricsDatabase } = require('@geut/permanent-seeder-database')
 const top = require('process-top')()
 const { getDiskInfo } = require('node-disk-info')
@@ -96,7 +98,7 @@ module.exports = {
     saveStats: {
       async handler (data) {
         // persists stats on metrics db B-)
-        if (!this.config.save_stats) {
+        if (!this.config.saveStats) {
           return
         }
 
@@ -123,10 +125,12 @@ module.exports = {
 
   created () {
     this.config = {
-      ...this.settings.config.metrics.db
+      saveStats: this.settings.config.save_stats
     }
 
-    this.database = new MetricsDatabase(this.config.path)
+    const metricsDbPath = resolve(this.settings.config.path, 'metrics.db')
+
+    this.database = new MetricsDatabase(metricsDbPath)
   },
 
   async stopped () {

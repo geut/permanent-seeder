@@ -27,8 +27,8 @@ npm run build
 ### Start services
 ```
 cd ../cli
-./bin/run config:init --global
-./bin/run start --restart
+./bin/run config:init
+./bin/run start
 ```
 
 Dashboard will run on `http://localhost:3001`

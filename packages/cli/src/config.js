@@ -1,10 +1,8 @@
 const { constants: { COPYFILE_EXCL }, mkdirSync, readFileSync, copyFileSync, writeFileSync } = require('fs')
 const { join, resolve } = require('path')
-const { randomBytes } = require('crypto')
 
 const lodashGet = require('lodash.get')
 const lodashSet = require('lodash.set')
-const deepExtend = require('deep-extend')
 const tomlParse = require('@iarna/toml/parse')
 const tomlStringify = require('@iarna/toml/stringify')
 
@@ -52,10 +50,8 @@ module.exports.init = (configFolderPath, options = {}) => {
   )
 
   // Set initial runtime config
+  this.set('path', configFolderPath, { configFolderPath })
   this.set('keys.endpoints[0].hook', endpointHookFilePath, { configFolderPath })
-  this.set('keys.db.path', resolve(configFolderPath, 'keys.db'), { configFolderPath })
-  this.set('metrics.db.path', resolve(configFolderPath, 'metrics.db'), { configFolderPath })
-  this.set('security.secret', randomBytes(32).toString('hex'), { configFolderPath })
 }
 
 /**
@@ -64,20 +60,16 @@ module.exports.init = (configFolderPath, options = {}) => {
  *
  * @param {string} key Config key
  * @param {object} options Options
- * @param {string} options.globalConfigFolderPath Path to the folder where config file resides (global)
- * @param {string} options.localConfigFolderPath Path to the folder where config file resides (local)
+ * @param {string} options.configFolderPath Path to the folder where config file resides
  */
 module.exports.get = (key, options = {}) => {
-  const globalConfig = getConfig(options.globalConfigFolderPath)
-  const localConfig = getConfig(options.localConfigFolderPath)
-
-  const mergedConfig = deepExtend(globalConfig, localConfig)
+  const config = getConfig(options.configFolderPath, false)
 
   if (key) {
-    return lodashGet(mergedConfig, key)
+    return lodashGet(config, key)
   }
 
-  return mergedConfig
+  return config
 }
 
 /**

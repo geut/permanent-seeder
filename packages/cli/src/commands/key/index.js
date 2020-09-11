@@ -1,3 +1,5 @@
+const { resolve } = require('path')
+
 const { flags } = require('@oclif/command')
 
 const { KeysDatabase } = require('@geut/permanent-seeder-database')
@@ -16,7 +18,14 @@ class KeyCommand extends BaseCommand {
   async init () {
     const { flags: { dbPath } } = this.parse(KeyCommand)
 
-    this._dbPath = dbPath || await this.getConfig('keys.db.path')
+    this._dbPath = dbPath
+
+    if (!this._dbPath) {
+      const path = await this.getConfig('path')
+      const keysDbPath = resolve(path, 'keys.db')
+      this._dbPath = keysDbPath
+    }
+
     this._keysDatabase = new KeysDatabase(this._dbPath)
   }
 
@@ -26,8 +35,6 @@ class KeyCommand extends BaseCommand {
 }
 
 KeyCommand.description = 'Keys commands'
-
-// KeyCommand.usage = ['key:[add|get|update|remove|stream]']
 
 KeyCommand.flags = {
   dbPath: flags.string({ description: 'Path to keys database' })

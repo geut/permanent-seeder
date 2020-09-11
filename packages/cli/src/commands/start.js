@@ -13,6 +13,11 @@ class StartCommand extends BaseCommand {
     const config = this.getConfig()
     const { flags: { restart, repl, hot } } = this.parse(StartCommand)
 
+    if (!config) {
+      this.error('Config file not found.', { suggestions: ['Run config:init command to initialize.'] })
+      return
+    }
+
     try {
       await pm2Connect()
 

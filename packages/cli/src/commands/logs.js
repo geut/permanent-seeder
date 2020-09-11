@@ -1,3 +1,4 @@
+const { homedir } = require('os')
 const { join } = require('path')
 const { promises: { readFile } } = require('fs')
 
@@ -11,7 +12,7 @@ class TailCommand extends BaseCommand {
   async run () {
     const { flags: { error, live, all } } = this.parse(TailCommand)
 
-    const file = join(this.config.home, `.pm2/logs/seeder-daemon-${error ? 'error' : 'out'}.log`)
+    const file = join(homedir(), `.pm2/logs/seeder-daemon-${error ? 'error' : 'out'}.log`)
 
     if (!live) {
       const data = await readFile(file, 'utf8')

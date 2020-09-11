@@ -2,27 +2,24 @@ const { promises: { open, readFile } } = require('fs')
 const { join } = require('path')
 
 const tomlParse = require('@iarna/toml/parse')
-const tempy = require('tempy')
 const del = require('del')
 
 const ConfigInitCommand = require('../src/commands/config/init')
 const ConfigGetCommand = require('../src/commands/config/get')
 
-const { ENDPOINT_HOOK_FILENAME } = require('../src/constants')
+const { ENDPOINT_HOOK_FILENAME, CONFIG_FILENAME } = require('../src/constants')
 
 function checkConfig (config) {
-  expect(config.security.secret).toHaveLength(64)
-  expect(config.keys.db.path).toBe(join(cwd, 'keys.db'))
+  expect(config.path).toBe(join(process.cwd(), 'permanent-seeder'))
+  expect(config.save_stats).toBeTruthy()
   expect(config.keys.endpoints).toHaveLength(1)
   expect(config.keys.endpoints[0]).toStrictEqual({
     url: 'http://localhost:3000',
     frequency: 5,
-    hook: join(cwd, ENDPOINT_HOOK_FILENAME)
+    hook: join(process.cwd(), 'permanent-seeder', ENDPOINT_HOOK_FILENAME)
   })
-  expect(config.metrics.db.path).toBe(join(cwd, 'metrics.db'))
 }
 
-let cwd
 let configFilePath
 
 async function checkCreatedFile () {
@@ -33,16 +30,15 @@ async function checkCreatedFile () {
 }
 
 beforeEach(async () => {
-  cwd = tempy.directory({ prefix: 'permanent-seeder-tests-' })
-  process.chdir(cwd)
-  configFilePath = join(cwd, 'permanent-seeder.toml')
+  await del(join(process.cwd(), 'permanent-seeder'), { force: true })
+  configFilePath = join(process.cwd(), 'permanent-seeder', CONFIG_FILENAME)
 })
 
 afterEach(async () => {
-  await del(cwd, { force: true })
+  await del(process.cwd(), { force: true })
 })
 
-describe('Config commands (cwd)', () => {
+describe('Config commands', () => {
   it('Init: should create a .toml file', async () => {
     expect(() => open(configFilePath, 'r')).rejects.toBeTruthy()
 
@@ -93,7 +89,7 @@ describe('Config commands (cwd)', () => {
     await checkCreatedFile()
   })
 
-  it('Config: get all config', async () => {
+  it('Get all config', async () => {
     await ConfigInitCommand.run([])
 
     let config
