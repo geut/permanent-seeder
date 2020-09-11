@@ -5,7 +5,7 @@
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
 <div style="text-align: center">
-<img alt="Permanent Seeder logo, a cool seed surrounded with a round and exquisite black border" src="packages/dashboard/public/permanent-seeder-192.png"/>
+  <img alt="Permanent Seeder logo, a  beautiful seed surrounded with a round and exquisite black border" src="packages/dashboard/public/permanent-seeder-192.png"/>
 </div>
 
 ## <a name="install"></a> Install
@@ -14,7 +14,14 @@
 npm i @geut/permanent-seeder
 ```
 
-Or from a [tarball](/dist)
+Or from a [tarball](/packages/cli/dist) :package:
+
+Alternatively you can `git clone` this repo and build it from source:
+
+```
+npm i
+npm run bootstrap
+```
 
 ## <a name="usage"></a> Usage
 
@@ -39,6 +46,33 @@ $ permanent-seeder config:[init|get]
 ```
 - `init`: creates the base config file for the Permanent Seeder. This is a `.toml` file that will live in `~/permanent-seeder/settings.toml`.
 - `get`: returns the settings from the CLI. Useful when you are changing values and want to be sure they are pick up by the Permanent Seeder.
+
+Default settings:
+```toml
+# Permanent seeder path (will be completed on config:init)
+path = 'permanent-seeder'
+
+# Enable stats recording
+save_stats = true
+
+# keys.endpoints = array of configs per endpoint
+[[keys.endpoints]]
+
+  # Where to fetch keys
+  url = 'http://localhost:3000'
+
+  # Frequency between fetchs (in minutes)
+  frequency = 5
+
+  # Hook to parse response
+  hook = 'endpoint-hook.js'
+
+## To add another endpoint, uncomment and complete next lines:
+# [[keys.endpoints]]
+#   url =
+#   frequency =
+#   hook
+```
 
 ### Start
 
@@ -87,6 +121,24 @@ $ permanent-seeder logs --[live|all|error]
 $ permanent-seeder repl
 ```
 Useful to inspect the Permanent Seeder under the hood. :microscope:
+
+## Keys Endpoint
+
+The Permanent Seeder can `fetch` keys from an external endpoint, i.e: perform a `GET` request against a particular endpoint. This can be useful if you maintain a service that stores hyperdrive's keys. If that is the case, then the Permament Seeder can fetch those keys regularly. You can think of this like a cron job.
+
+Whilst, we internally expect an `Array<{key}>`, you can customize and parse the fetch response the way you need it.
+
+To do this, you will need to modify `$HOME/permanent-seeder/endpoint-hook.js`.
+
+That hook will be called after `fetch` the response.
+
+You can also tweak the fetch `frequency` (defined in **minutes**) and the endpoint `url`. These options can be found in the `settings.toml` file:
+```toml
+[[keys.endpoints]]
+url = "http://localhost:3000"
+frequency = 5
+hook = "$HOME/permanent-seeder/endpoint-hook.js"
+```
 
 ## Design
 
