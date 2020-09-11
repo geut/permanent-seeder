@@ -14,7 +14,7 @@ save_stats = true
   frequency = 5
 
   # Hook to parse response
-  hook = 'permanent-seeder-endpoint-hook.js'
+  hook = 'endpoint-hook.js'
 
 ## To add another endpoint, uncomment and complete next lines:
 # [[keys.endpoints]]
