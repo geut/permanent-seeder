@@ -12,6 +12,13 @@ import TableRow from '@material-ui/core/TableRow'
 import { humanizedBytes } from '../format'
 
 const useStyles = makeStyles(theme => ({
+  container: {
+    maxHeight: 440
+  },
+  table: {
+    width: '100%',
+    tableLayout: 'fixed'
+  },
   address: {
     fontFamily: 'monospace',
     fontSize: '1.2rem'
@@ -22,8 +29,8 @@ function DrivePeers ({ peers }) {
   const classes = useStyles()
 
   return (
-    <TableContainer square component={Paper}>
-      <Table aria-label='simple table'>
+    <TableContainer square component={Paper} className={classes.container}>
+      <Table stickyHeader aria-label="drive's peers table" className={classes.table}>
         <TableHead>
           <TableRow>
             <TableCell>Peers</TableCell>
