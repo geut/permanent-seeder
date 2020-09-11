@@ -1,3 +1,5 @@
+const { resolve } = require('path')
+
 const Cron = require('moleculer-cron')
 const deepEqual = require('deep-equal')
 const { encode } = require('dat-encoding')
@@ -105,11 +107,9 @@ module.exports = {
   },
 
   created () {
-    this.config = {
-      ...this.settings.config.keys.db
-    }
+    const keysDbPath = resolve(this.settings.config.path, 'keys.db')
 
-    this.database = new KeysDatabase(this.config.path)
+    this.database = new KeysDatabase(keysDbPath)
   },
 
   async stopped () {

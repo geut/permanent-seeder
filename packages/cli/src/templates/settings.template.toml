@@ -1,5 +1,8 @@
-[security]
-secret = 'YOUR_SECRET_HERE'
+# Permanent seeder path (will be completed on config:init)
+path = 'permanent-seeder'
+
+# Enable stats recording
+save_stats = true
 
 # keys.endpoints = array of configs per endpoint
 [[keys.endpoints]]
@@ -18,10 +21,3 @@ secret = 'YOUR_SECRET_HERE'
 #   url =
 #   frequency =
 #   hook
-
-[keys.db]
-path = 'keys.db'
-
-[metrics.db]
-path = 'metrics.db'
-save_stats = true

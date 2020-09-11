@@ -1,6 +1,5 @@
 const { constants: { COPYFILE_EXCL }, mkdirSync, readFileSync, copyFileSync, writeFileSync } = require('fs')
 const { join, resolve } = require('path')
-const { randomBytes } = require('crypto')
 
 const lodashGet = require('lodash.get')
 const lodashSet = require('lodash.set')
@@ -51,10 +50,8 @@ module.exports.init = (configFolderPath, options = {}) => {
   )
 
   // Set initial runtime config
+  this.set('path', configFolderPath, { configFolderPath })
   this.set('keys.endpoints[0].hook', endpointHookFilePath, { configFolderPath })
-  this.set('keys.db.path', resolve(configFolderPath, 'keys.db'), { configFolderPath })
-  this.set('metrics.db.path', resolve(configFolderPath, 'metrics.db'), { configFolderPath })
-  this.set('security.secret', randomBytes(32).toString('hex'), { configFolderPath })
 }
 
 /**

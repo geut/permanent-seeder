@@ -43,7 +43,9 @@
     "testEnvironment": "node",
     "testMatch": [
       "**/tests/**/*.test.js"
-    ]
+    ],
+    "globalSetup": "<rootDir>/tests/setup.js",
+    "globalTeardown": "<rootDir>/tests/teardown.js"
   },
   "dependencies": {
     "@geut/permanent-seeder-database": "^0.0.1",
