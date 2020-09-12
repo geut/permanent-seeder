@@ -27,10 +27,17 @@ class BaseCommand extends Command {
   }
 
   startTask (message) {
+    if (process.env.NODE_ENV === 'test') {
+      return
+    }
+
     cli.action.start(message)
   }
 
-  async stopTask (success = true, timeout = 1000) {
+  async stopTask (success = true, timeout = 0) {
+    if (process.env.NODE_ENV === 'test') {
+      return
+    }
     await new Promise(resolve => setTimeout(resolve, timeout))
     cli.action.stop(success ? '✔'.green.bold : '✘'.red.bold)
   }

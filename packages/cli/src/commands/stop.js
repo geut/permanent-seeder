@@ -1,5 +1,3 @@
-const { cli } = require('cli-ux')
-
 const BaseCommand = require('../base-command')
 const { SEEDER_DAEMON } = require('../constants')
 const { pm2Connect, pm2Stop, pm2Disconnect } = require('../pm2-async')
@@ -7,7 +5,7 @@ const { pm2Connect, pm2Stop, pm2Disconnect } = require('../pm2-async')
 class StopCommand extends BaseCommand {
   async run () {
     try {
-      cli.action.start('Checking status')
+      this.startTask('Checking status')
 
       await pm2Connect()
 
