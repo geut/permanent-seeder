@@ -87,7 +87,7 @@
     "bin": "permanent-seeder",
     "plugins": [
       "@oclif/plugin-autocomplete",
-      "@oclif/plugin-help",
+      "@oclif/plugin-help"
     ],
     "update": {
       "s3": {
