@@ -4,6 +4,7 @@ import { makeStyles, useTheme } from '@material-ui/core/styles'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
 import Chip from '@material-ui/core/Chip'
 import Dialog from '@material-ui/core/Dialog'
+import Grid from '@material-ui/core/Grid'
 import MuiDialogTitle from '@material-ui/core/DialogTitle'
 import DialogContent from '@material-ui/core/DialogContent'
 import Paper from '@material-ui/core/Paper'
@@ -33,22 +34,6 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const TitleLabel = props => (
-  <Typography
-    variant='h6'
-    color='textSecondary'
-    component='span'
-    style={{
-      textTransform: 'capitalize',
-      textOverflow: 'ellipsis'
-    }}
-    noWrap
-    className={props.className}
-  >
-    {props.title || ''}
-  </Typography>
-)
-
 const DialogTitle = (props) => {
   const classes = useStyles()
   const { children, onClose, ...other } = props
@@ -64,7 +49,7 @@ const DialogTitle = (props) => {
   )
 }
 
-function DriveInfo ({ info = {}, onClose, open }) {
+function DriveInfo ({ info = {}, onClose, open, title }) {
   const theme = useTheme()
   const classes = useStyles()
   const { version, indexJSON = {} } = info
@@ -90,17 +75,23 @@ function DriveInfo ({ info = {}, onClose, open }) {
       open={open}
       fullWidth
     >
-      <DialogTitle id='drive-details-title' className={classes.dialogTitle} onClose={onClose}>
+
+      <DialogTitle id='drive-details-title' onClose={onClose}>
         Drive Info
       </DialogTitle>
-      <TitleLabel title={indexJSON.title} className={classes.dialogSubTitle} />
-      <DialogContent className={classes.dialogContent} dividers>
-        <div style={{ marginBottom: '1em' }}>
-          <Typography variant='overline' style={{ fontWeight: 'bold' }} display='block'>
-        Version
+      <Grid container alignItems='center' className={classes.dialogSubTitle}>
+        <Grid item xs>
+          <Typography gutterBottom color='textSecondary' variant='h6'>
+            {title}
           </Typography>
-          {versionLabel({ version })}
-        </div>
+        </Grid>
+        <Grid item>
+          <Typography gutterBottom variant='h6'>
+            {versionLabel({ version })}
+          </Typography>
+        </Grid>
+      </Grid>
+      <DialogContent className={classes.dialogContent} dividers>
         <div style={{ marginBottom: '1em' }}>
           <Typography variant='overline' style={{ fontWeight: 'bold' }} display='block'>
           index.json

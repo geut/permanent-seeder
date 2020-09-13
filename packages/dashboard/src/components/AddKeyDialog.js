@@ -25,6 +25,7 @@ function AddKeyDialog ({ open, keyToAdd = '', error, onClose, onAdd }) {
 
   function handleAdd () {
     onAdd(key)
+    setKey('')
   }
 
   function handleKeyChange (event) {
