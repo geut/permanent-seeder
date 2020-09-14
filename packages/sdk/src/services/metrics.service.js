@@ -11,8 +11,8 @@ module.exports = {
   name: 'metrics',
 
   settings: {
-    hostStatsInterval: 1500,
-    networkStatsInterval: 2000
+    hostStatsInterval: 1000 * 60, // 1min check
+    networkStatsInterval: 1000 * 60 * 60 // 1hr check
   },
 
   dependencies: [
