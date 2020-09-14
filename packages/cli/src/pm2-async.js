@@ -3,6 +3,7 @@ const { promisify } = require('util')
 const pm2 = require('pm2')
 
 const pm2Connect = promisify(pm2.connect.bind(pm2))
+const pm2Delete = promisify(pm2.delete.bind(pm2))
 const pm2Describe = promisify(pm2.describe.bind(pm2))
 const pm2Disconnect = promisify(pm2.disconnect.bind(pm2))
 const pm2List = promisify(pm2.list.bind(pm2))
@@ -40,6 +41,7 @@ async function sendMessage (processName, message, data) {
 module.exports.pm2Connect = pm2Connect
 module.exports.pm2Describe = pm2Describe
 module.exports.pm2Disconnect = pm2Disconnect
+module.exports.pm2Delete = pm2Delete
 module.exports.pm2List = pm2List
 module.exports.pm2Restart = pm2Restart
 module.exports.pm2SendDataToProcessId = pm2SendDataToProcessId

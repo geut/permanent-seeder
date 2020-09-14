@@ -3,6 +3,11 @@ const { randomBytes } = require('crypto')
 const { encode } = require('dat-encoding')
 const { mockProcessExit } = require('jest-mock-process')
 
+jest.mock('../src/constants', () => ({
+  ...jest.requireActual('../src/constants'),
+  SEEDER_DAEMON: 'seeder-daemon-test'
+}))
+
 const ConfigInitCommand = require('../src/commands/config/init')
 const StartCommand = require('../src/commands/start')
 const StopCommand = require('../src/commands/stop')

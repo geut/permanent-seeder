@@ -37,17 +37,24 @@ module.exports.init = (configFolderPath, options = {}) => {
   const configFilePath = resolve(join(configFolderPath, CONFIG_FILENAME))
   const endpointHookFilePath = resolve(join(configFolderPath, ENDPOINT_HOOK_FILENAME))
 
+  // Copy settings file
   copyFileSync(
     TEMPLATE_CONFIG_FILE_PATH,
     configFilePath,
     options.force ? null : COPYFILE_EXCL
   )
 
+  // Copy default vault endpoint hook
   copyFileSync(
     TEMPLATE_ENDPOINT_HOOK,
     endpointHookFilePath,
     options.force ? null : COPYFILE_EXCL
   )
+
+  // Create logs
+  mkdirSync(join(configFolderPath, 'logs'), { recursive: true })
+  writeFileSync(join(configFolderPath, 'logs', 'output.log'), '', { encoding: 'utf8' })
+  writeFileSync(join(configFolderPath, 'logs', 'error.log'), '', { encoding: 'utf8' })
 
   // Set initial runtime config
   this.set('path', configFolderPath, { configFolderPath })
