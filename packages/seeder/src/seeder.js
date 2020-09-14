@@ -6,6 +6,7 @@ const { promisify } = require('util')
 const { encode, decode } = require('dat-encoding')
 const Corestore = require('corestore')
 const crypto = require('hypercore-crypto')
+const HypercoreCache = require('hypercore-cache')
 const Networker = require('@corestore/networker')
 const raf = require('random-access-file')
 
@@ -21,6 +22,12 @@ const DEFAULT_OPTS = {
     eagerUpdate: true
   }
 }
+
+const TOTAL_CACHE_SIZE = 1024 * 1024 * 512
+const CACHE_RATIO = 0.5
+const TREE_CACHE_SIZE = TOTAL_CACHE_SIZE * CACHE_RATIO
+const DATA_CACHE_SIZE = TOTAL_CACHE_SIZE * (1 - CACHE_RATIO)
+const MAX_PEERS = 256
 
 /**
  * getCoreStore.
@@ -57,14 +64,31 @@ class Seeder extends EventEmitter {
   async init () {
     if (this.ready) return
 
+    const corestoreOpts = {
+      sparse: false,
+      // Collect networking statistics.
+      stats: true,
+      cache: {
+        data: new HypercoreCache({
+          maxByteSize: DATA_CACHE_SIZE,
+          estimateSize: val => val.length
+        }),
+        tree: new HypercoreCache({
+          maxByteSize: TREE_CACHE_SIZE,
+          estimateSize: val => 40
+        })
+      },
+      ifAvailable: true
+    }
+
     this.store = new Corestore(
       getCoreStore(this.opts.storageLocation, '.hyper'),
-      this.opts.corestoreOpts
+      corestoreOpts
     )
 
     await this.store.ready()
 
-    this.networker = new Networker(this.store)
+    this.networker = new Networker(this.store, { maxPeers: MAX_PEERS })
     await this.networker.listen()
 
     this.connectivity = promisify(this.networker.swarm.connectivity).bind(this.networker.swarm)
