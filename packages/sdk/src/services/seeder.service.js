@@ -121,7 +121,7 @@ module.exports = {
       } catch (err) {
         this.logger.error(err)
       }
-      return Object.fromEntries(stats)
+      return Object.entries(stats)
     },
 
     onDriveAdd (key) {
