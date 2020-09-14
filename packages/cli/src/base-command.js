@@ -34,7 +34,7 @@ class BaseCommand extends Command {
     cli.action.start(message)
   }
 
-  async stopTask (success = true, timeout = 0) {
+  async stopTask (success = true, timeout = 500) {
     if (process.env.NODE_ENV === 'test') {
       return
     }

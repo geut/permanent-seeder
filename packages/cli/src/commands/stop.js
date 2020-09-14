@@ -5,7 +5,7 @@ const { pm2Connect, pm2Stop, pm2Disconnect } = require('../pm2-async')
 class StopCommand extends BaseCommand {
   async run () {
     try {
-      this.startTask('Checking status')
+      this.startTask('Stopping')
 
       await pm2Connect()
 

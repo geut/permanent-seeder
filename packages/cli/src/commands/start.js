@@ -3,14 +3,12 @@ const { resolve } = require('path')
 const { flags } = require('@oclif/command')
 
 const BaseCommand = require('../base-command')
-const { pm2Connect, pm2List, pm2Start, pm2Disconnect, pm2Stop } = require('../pm2-async')
+const { pm2Connect, pm2List, pm2Start, pm2Disconnect, pm2Stop, pm2Delete } = require('../pm2-async')
 const { SEEDER_DAEMON } = require('../constants')
 
 class StartCommand extends BaseCommand {
   async run () {
     const { flags: { restart } } = this.parse(StartCommand)
-
-    this.startTask('Checking status')
 
     try {
       await pm2Connect()
@@ -19,13 +17,8 @@ class StartCommand extends BaseCommand {
       const daemonProcess = runningProcesses.find(proc => proc.name === SEEDER_DAEMON)
       const status = daemonProcess && daemonProcess.pm2_env.status
 
-      if (!daemonProcess) {
-        await this.stopTask()
-        await this.start()
-      } else if (status !== 'online' || restart) {
-        await this.stopTask()
-        await this.stop()
-        await this.start()
+      if (status !== 'online' || restart) {
+        await this.restart()
       } else {
         const error = new Error('Permanent Seeder daemon already running. Use --restart to force')
         error.code = 'DAEMON_RUNNING'
@@ -34,9 +27,23 @@ class StartCommand extends BaseCommand {
     } catch (error) {
       await this.stopTask(false)
       this.error(error.message || error.toString())
+      return
     } finally {
       await pm2Disconnect()
     }
+
+    await this.stopTask()
+  }
+
+  async restart () {
+    try {
+      await this.stop()
+      await pm2Delete(SEEDER_DAEMON)
+    } catch (error) {
+      this.stopTask()
+    }
+
+    await this.start()
   }
 
   async start () {
@@ -48,10 +55,11 @@ class StartCommand extends BaseCommand {
 
     await pm2Start({
       name: SEEDER_DAEMON,
-      script: resolve(__dirname, '..', SEEDER_DAEMON),
+      script: resolve(__dirname, '..', 'seeder-daemon'),
       args,
       output: resolve(config.path, 'logs', 'output.log'),
-      error: resolve(config.path, 'logs', 'error.log')
+      error: resolve(config.path, 'logs', 'error.log'),
+      force: true
     })
 
     await this.stopTask()

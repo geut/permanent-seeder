@@ -4,6 +4,11 @@ const { join } = require('path')
 const tomlParse = require('@iarna/toml/parse')
 const del = require('del')
 
+jest.mock('../src/constants', () => ({
+  ...jest.requireActual('../src/constants'),
+  SEEDER_DAEMON: 'seeder-daemon-test'
+}))
+
 const ConfigInitCommand = require('../src/commands/config/init')
 const ConfigGetCommand = require('../src/commands/config/get')
 
