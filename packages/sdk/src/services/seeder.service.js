@@ -153,6 +153,10 @@ module.exports = {
       this.broker.broadcast('seeder.drive.peer.remove', { key })
     },
 
+    onIndexJSONUpdate (key) {
+      this.broker.broadcast('seeder.drive.indexjson.update', { key })
+    },
+
     onSwarmPeerAdd (peer) {
       this.broker.broadcast('seeder.networker.peer.add', { peer })
     },
@@ -180,6 +184,7 @@ module.exports = {
     this.seeder.on('drive-upload', this.onDriveUpload)
     this.seeder.on('drive-peer-add', this.onDrivePeerAdd)
     this.seeder.on('drive-peer-remove', this.onDrivePeerRemove)
+    this.seeder.on('drive-indexjson', this.onIndexJSONUpdate)
     this.seeder.on('networker-peer-add', this.onSwarmPeerAdd)
     this.seeder.on('networker-peer-remove', this.onSwarmPeerRemove)
 
@@ -194,6 +199,7 @@ module.exports = {
     this.seeder.off('drive-upload', this.onDriveUpload)
     this.seeder.off('drive-peer-add', this.onDrivePeerAdd)
     this.seeder.off('drive-peer-remove', this.onDrivePeerRemove)
+    this.seeder.off('drive-indexjson', this.onIndexJSONUpdate)
     this.seeder.on('networker-peer-add', this.onSwarmPeerAdd)
     this.seeder.on('networker-peer-remove', this.onSwarmPeerRemove)
 
