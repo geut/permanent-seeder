@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { useLastMessage } from 'use-socketio'
+import { useSocket } from 'use-socketio'
+import useFetch from 'use-http'
+
+import { API_URL } from '../config'
 
 import { makeStyles } from '@material-ui/core'
 import Grid from '@material-ui/core/Grid'
@@ -24,15 +27,28 @@ const useNetworkIconStyles = makeStyles(theme => ({
 function NetworkIndicator () {
   const networkIconClasses = useNetworkIconStyles()
   const [network, setNetwork] = useState({ swarm: { currentPeers: [] } })
-  const { data: lastMessageNetwork, unsubscribe } = useLastMessage('stats.network')
+
+  const { get, response, error } = useFetch(API_URL)
+
+  useSocket('stats.network', (stats) => {
+    console.log({ stats })
+    setNetwork(network => ({ ...network, ...stats }))
+  })
 
   useEffect(() => {
-    if (!lastMessageNetwork) return
+    async function fetchInitalData () {
+      const networkInfo = await get('/stats/network')
+      if (!response.ok) {
+        console.warn(error)
+        return
+      }
 
-    setNetwork(network => ({ ...network, ...lastMessageNetwork }))
-  }, [lastMessageNetwork])
+      console.log({ initial: networkInfo })
+      setNetwork(network => ({ ...network, ...networkInfo }))
+    }
 
-  useEffect(() => unsubscribe, [])
+    fetchInitalData()
+  }, [])
 
   const color = !network.online
     ? 'error'
