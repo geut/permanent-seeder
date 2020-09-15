@@ -84,6 +84,10 @@ function DriveItem ({ driveKey }) {
     socket.emit('drive.peers', driveKey, setPeers)
   })
 
+  const { unsubscribe: unsubscribeDriveIndexUpdate } = useSocket(`drive.${driveKey}.indexjson.update`, () => {
+    socket.emit('drive.info', driveKey, setDriveInfo)
+  })
+
   const { unsubscribe: unsubscribeDriveUpload } = useSocket(`drive.${driveKey}.upload`, () => {
     socket.emit('drive.peers', driveKey, setPeers)
   })
@@ -128,6 +132,7 @@ function DriveItem ({ driveKey }) {
       unsubscribeDriveUpload()
       unsubscribeDrivePeerAdd()
       unsubscribeDrivePeerRemove()
+      unsubscribeDriveIndexUpdate()
     }
   }, [driveKey])
 
