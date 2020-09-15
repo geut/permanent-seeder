@@ -194,14 +194,15 @@ module.exports = {
   stopped () {
     // remove listeners
     this.seeder.off('drive-add', this.onDriveAdd)
+    this.seeder.off('drive-update', this.onDriveUpdate)
     this.seeder.off('drive-remove', this.onDriveRemove)
     this.seeder.off('drive-download', this.onDriveDownload)
     this.seeder.off('drive-upload', this.onDriveUpload)
     this.seeder.off('drive-peer-add', this.onDrivePeerAdd)
     this.seeder.off('drive-peer-remove', this.onDrivePeerRemove)
     this.seeder.off('drive-indexjson', this.onIndexJSONUpdate)
-    this.seeder.on('networker-peer-add', this.onSwarmPeerAdd)
-    this.seeder.on('networker-peer-remove', this.onSwarmPeerRemove)
+    this.seeder.off('networker-peer-add', this.onSwarmPeerAdd)
+    this.seeder.off('networker-peer-remove', this.onSwarmPeerRemove)
 
     return this.seeder.destroy()
   }
