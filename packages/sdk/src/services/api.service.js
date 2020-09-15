@@ -73,6 +73,10 @@ module.exports = {
       this.io.emit(`drive.${ctx.params.key}.upload`, ctx.params.key)
     },
 
+    'seeder.drive.indexjson.update' (ctx) {
+      this.io.emit(`drive.${ctx.params.key}.indexjson.update`, ctx.params.key)
+    },
+
     'seeder.drive.peer.add' (ctx) {
       this.io.emit(`drive.${ctx.params.key}.peer.add`, ctx.params.key)
     },
@@ -259,6 +263,11 @@ module.exports = {
       client.on('drive.stats', async (key, done) => {
         const stats = await this.driveStats(key)
         done(stats)
+      })
+
+      client.on('drive.info', async (key, done) => {
+        const info = await this.driveInfo(key)
+        done(info)
       })
     })
   }
