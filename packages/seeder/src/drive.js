@@ -46,6 +46,10 @@ class Drive extends EventEmitter {
     return this._hyperdrive.peers
   }
 
+  download (path, cb) {
+    return this._hyperdrive.download(path, cb)
+  }
+
   async _onUpdate () {
     this.emit('update')
   }
