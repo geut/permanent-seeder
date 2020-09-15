@@ -12,22 +12,33 @@ const raf = require('random-access-file')
 
 const Drive = require('./drive')
 
-const DEFAULT_OPTS = {
-  announce: true,
-  lookup: true,
-  storageLocation: join(homedir(), 'permanent-seeder'),
-  corestoreOpts: {
-    stats: true,
-    sparse: false,
-    eagerUpdate: true
-  }
-}
-
 const TOTAL_CACHE_SIZE = 1024 * 1024 * 512
 const CACHE_RATIO = 0.5
 const TREE_CACHE_SIZE = TOTAL_CACHE_SIZE * CACHE_RATIO
 const DATA_CACHE_SIZE = TOTAL_CACHE_SIZE * (1 - CACHE_RATIO)
 const MAX_PEERS = 256
+
+const DEFAULT_OPTS = {
+  announce: true,
+  lookup: true,
+  storageLocation: join(homedir(), 'permanent-seeder'),
+  corestoreOpts: {
+    sparse: false,
+    // Collect networking statistics.
+    stats: true,
+    cache: {
+      data: new HypercoreCache({
+        maxByteSize: DATA_CACHE_SIZE,
+        estimateSize: val => val.length
+      }),
+      tree: new HypercoreCache({
+        maxByteSize: TREE_CACHE_SIZE,
+        estimateSize: val => 40
+      })
+    },
+    ifAvailable: true
+  }
+}
 
 /**
  * getCoreStore.
@@ -64,43 +75,28 @@ class Seeder extends EventEmitter {
   async init () {
     if (this.ready) return
 
-    const corestoreOpts = {
-      sparse: false,
-      // Collect networking statistics.
-      stats: true,
-      cache: {
-        data: new HypercoreCache({
-          maxByteSize: DATA_CACHE_SIZE,
-          estimateSize: val => val.length
-        }),
-        tree: new HypercoreCache({
-          maxByteSize: TREE_CACHE_SIZE,
-          estimateSize: val => 40
-        })
-      },
-      ifAvailable: true
-    }
-
     this.store = new Corestore(
       getCoreStore(this.opts.storageLocation, '.hyper'),
-      corestoreOpts
+      this.opts
     )
 
     await this.store.ready()
 
-    this.networker = new Networker(this.store, { maxPeers: MAX_PEERS })
+    this.networker = new Networker(this.store, {
+      maxPeers: MAX_PEERS,
+      ephemeral: false
+    })
     await this.networker.listen()
 
     this.connectivity = promisify(this.networker.swarm.connectivity).bind(this.networker.swarm)
 
-    this.networker.on('peer-add', this.onPeerAdd)
-    this.networker.on('peer-remove', this.onPeerRemove)
+    this.networker.on('peer-add', peer => this.onPeerAdd(peer))
+    this.networker.on('peer-remove', peer => this.onPeerRemove(peer))
 
     this.ready = true
   }
 
   onPeerAdd (peer) {
-    console.log('PEER ADD', peer)
     this.emit('networker-peer-add', {
       remoteAddress: peer.remoteAddress,
       type: peer.type,
@@ -110,7 +106,6 @@ class Seeder extends EventEmitter {
   }
 
   onPeerRemove (peer) {
-    console.log('PEER REMOVE', peer)
     this.emit('networker-peer-remove', {
       remoteAddress: peer.remoteAddress,
       type: peer.type,
@@ -159,6 +154,8 @@ class Seeder extends EventEmitter {
 
     // Wait for readyness
     await drive.ready()
+
+    drive.download('/')
 
     // Register event listeners
     drive.on('update', () => this.emit('drive-update', keyString))
