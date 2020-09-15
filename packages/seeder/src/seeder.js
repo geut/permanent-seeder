@@ -175,6 +175,9 @@ class Seeder extends EventEmitter {
 
     // Wait for content ready
     await drive.getContentFeed()
+
+    // force the first fetch for drive info
+    this.emit('drive-indexjson', keyString)
   }
 
   /**
@@ -275,9 +278,13 @@ class Seeder extends EventEmitter {
    * destroy.
    */
   async destroy () {
+    // close all drives
+    await Promise.all(Array.from(this.drives.values()).map(drive => drive._hyperdrive.close()))
+
     this.networker.off('peer-add', this.onPeerAdd)
     this.networker.off('peer-remove', this.onPeerRemove)
     await this.networker.close()
+    this.logger.info('Destroy seeder OK')
   }
 }
 
