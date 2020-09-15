@@ -124,8 +124,15 @@ class Drive extends EventEmitter {
     return this._hyperdrive.lstat(path)
   }
 
+  isNumber (value) {
+    return Number.isFinite(value)
+  }
+
   async getSize () {
-    const stats = await this.getStats('/', { file: true })
+    let stats = new Map()
+    try {
+      stats = await this.getStats('/', { file: true })
+    } catch (_) {}
 
     const totalSize = {
       blocks: 0,
@@ -142,6 +149,10 @@ class Drive extends EventEmitter {
         totalSize.downloadedBlocks += downloadedBlocks
       }
     }
+
+    totalSize.blocks = this.isNumber(totalSize.blocks) ? totalSize.blocks : 0
+    totalSize.bytes = this.isNumber(totalSize.bytes) ? totalSize.bytes : 0
+    totalSize.downloadedBlocks = this.isNumber(totalSize.downloadedBlocks) ? totalSize.downloadedBlocks : 0
 
     return totalSize
   }
