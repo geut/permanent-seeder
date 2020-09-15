@@ -93,7 +93,30 @@ class Seeder extends EventEmitter {
 
     this.connectivity = promisify(this.networker.swarm.connectivity).bind(this.networker.swarm)
 
+    this.networker.on('peer-add', this.onPeerAdd)
+    this.networker.on('peer-remove', this.onPeerRemove)
+
     this.ready = true
+  }
+
+  onPeerAdd (peer) {
+    console.log('PEER ADD', peer)
+    this.emit('networker-peer-add', {
+      remoteAddress: peer.remoteAddress,
+      type: peer.type,
+      bytesSent: peer.stream.bytesSent,
+      bytesReceived: peer.stream.bytesReceived
+    })
+  }
+
+  onPeerRemove (peer) {
+    console.log('PEER REMOVE', peer)
+    this.emit('networker-peer-remove', {
+      remoteAddress: peer.remoteAddress,
+      type: peer.type,
+      bytesSent: peer.stream.bytesSent,
+      bytesReceived: peer.stream.bytesReceived
+    })
   }
 
   /**
@@ -144,11 +167,11 @@ class Seeder extends EventEmitter {
     drive.on('peer-add', () => this.emit('drive-peer-add', keyString))
     drive.on('peer-remove', () => this.emit('drive-peer-remove', keyString))
 
-    // Connect to network
-    await this.networker.configure(drive.discoveryKey, { announce: this.opts.announce, lookup: this.opts.lookup })
-
     // Notify new drive
     this.emit('drive-add', keyString)
+
+    // Connect to network
+    await this.networker.configure(drive.discoveryKey, { announce: this.opts.announce, lookup: this.opts.lookup })
 
     // Wait for content ready
     await drive.getContentFeed()
@@ -252,6 +275,8 @@ class Seeder extends EventEmitter {
    * destroy.
    */
   async destroy () {
+    this.networker.off('peer-add', this.onPeerAdd)
+    this.networker.off('peer-remove', this.onPeerRemove)
     await this.networker.close()
   }
 }
