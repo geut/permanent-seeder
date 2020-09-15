@@ -23,11 +23,18 @@ module.exports = {
 
   events: {
     'seeder.drive.*': {
-      throttle: 100,
+      throttle: 200,
       async handler (ctx) {
         const timestamp = Date.now()
         const { eventName: event, params: { key } } = ctx
         await this.saveStats({ key, timestamp, event })
+      }
+    },
+    'seeder.networker.*': {
+      debounce: 1000,
+      async handler (ctx) {
+        const stats = await this.getNetworkStats()
+        this.broker.broadcast('stats.network', { stats })
       }
     }
   },
