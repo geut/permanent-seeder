@@ -4,6 +4,7 @@ const ApiGatewayService = require('moleculer-web')
 const IO = require('socket.io')
 const compression = require('compression')
 const { encode } = require('dat-encoding')
+const heapdump = require('heapdump')
 
 module.exports = {
   name: 'api',
@@ -41,8 +42,8 @@ module.exports = {
         'GET api/stats/host': 'api.stats.host',
         'GET api/stats/network': 'api.stats.network',
         'GET api/raw/:key': 'api.raw',
+        'GET api/heapdump': 'api.heapdump',
         'POST api/drives': 'api.drives.add'
-
       }
     }],
 
@@ -87,6 +88,7 @@ module.exports = {
     'stats.network' (ctx) {
       this.io.emit('stats.network', ctx.params.stats)
     }
+
   },
 
   actions: {
@@ -147,6 +149,11 @@ module.exports = {
     'raw.event': {
       async handler (ctx) {
         return this.raw(ctx.params.key, ctx.params.event)
+      }
+    },
+    heapdump: {
+      async handler (ctx) {
+        return this.heapdump()
       }
     }
   },
@@ -211,6 +218,20 @@ module.exports = {
         // get all keys from timestamp (optional)
         const stats = await this.broker.call('metrics.get', { key, timestamp })
         return stats
+      }
+    },
+    heapdump: {
+      async handler () {
+        return new Promise((resolve, reject) => {
+          heapdump.writeSnapshot(`heapDump-${Date.now()}.heapsnapshot`, (err, filename) => {
+            if (err) {
+              this.logger.error(err)
+              return reject(err)
+            }
+
+            return resolve({ filename })
+          })
+        })
       }
     }
   },
