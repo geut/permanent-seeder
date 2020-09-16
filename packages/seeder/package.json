@@ -52,6 +52,9 @@
   "engines": {
     "node": ">=12.x"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "standard": {
     "env": [
       "jest",

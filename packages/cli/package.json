@@ -82,6 +82,9 @@
   "engines": {
     "node": ">=12.x"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "oclif": {
     "commands": "./src/commands",
     "bin": "permanent-seeder",
