@@ -1,5 +1,7 @@
 const { EventEmitter } = require('events')
 const { promisify } = require('util')
+const memoize = require('p-memoize')
+const timeout = require('p-timeout')
 
 const hyperdrive = require('@geut/hyperdrive-promise')
 
@@ -36,6 +38,9 @@ class Drive extends EventEmitter {
     this._hyperdrive.on('update', this._onUpdate)
 
     this._getContentAsync = promisify(this._hyperdrive.getContent)
+
+    this._memoGetStats = memoize(this._hyperdrive.stats, { maxAge: 1000 * 60 * 60 })
+    this._readFile = memoize(this._hyperdrive.readFile, { maxAge: 1000 * 60 * 60 })
   }
 
   get discoveryKey () {
@@ -81,8 +86,11 @@ class Drive extends EventEmitter {
     let indexJSON = {}
 
     try {
-      indexJSON = JSON.parse(await this._hyperdrive.readFile('index.json', 'utf-8'))
-    } catch (_) {}
+      const raw = await timeout(this._readFile('index.json', 'utf-8'), 200)
+      indexJSON = JSON.parse(raw)
+    } catch (err) {
+      console.error(err.message)
+    }
 
     const version = this._hyperdrive.version
 
@@ -120,8 +128,8 @@ class Drive extends EventEmitter {
     return this._hyperdrive.stat(path)
   }
 
-  async getStats (path = '/') {
-    return this._hyperdrive.stats(path)
+  async getStats (path = '/', opts) {
+    return timeout(this._memoGetStats(path, opts), 200)
   }
 
   async getLstat (path = '/') {
@@ -135,6 +143,7 @@ class Drive extends EventEmitter {
   async getSize () {
     let stats = new Map()
     try {
+      // note: use stats cache
       stats = await this.getStats('/', { file: true })
     } catch (_) {}
 
