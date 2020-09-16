@@ -1,6 +1,6 @@
 {
   "name": "@geut/permanent-seeder-database",
-  "version": "0.0.0",
+  "version": "0.0.1-alpha.0",
   "description": "Permanent Seeder database",
   "keywords": [
     "seeder",
@@ -35,12 +35,12 @@
   },
   "dependencies": {
     "encoding-down": "^6.3.0",
+    "level-auto-index": "^2.0.0",
     "level-party": "^4.0.0",
     "levelup": "^4.4.0",
     "memdown": "^5.1.0",
-    "uuid": "^8.2.0",
-    "level-auto-index": "^2.0.0",
-    "subleveldown": "^5.0.1"
+    "subleveldown": "^5.0.1",
+    "uuid": "^8.2.0"
   },
   "devDependencies": {
     "@geut/chan": "^2.2.1",

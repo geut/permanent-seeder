@@ -1,6 +1,6 @@
 {
   "name": "@geut/permanent-seeder-core",
-  "version": "0.0.0",
+  "version": "0.0.1-alpha.0",
   "description": "Permanent Seeder core",
   "keywords": [
     "seeder",
@@ -34,14 +34,14 @@
     ]
   },
   "dependencies": {
+    "@corestore/networker": "^1.0.3",
     "@geut/hyperdrive-promise": "^3.0.1",
     "@p2pcommons/sdk-js": "^0.6.3",
-    "@corestore/networker": "^1.0.3",
     "corestore": "^5.7.3",
-    "random-access-file": "^2.1.4",
-    "tempy": "latest",
     "dat-encoding": "^5.0.1",
-    "hypercore-crypto": "^2.1.1"
+    "hypercore-crypto": "^2.1.1",
+    "random-access-file": "^2.1.4",
+    "tempy": "latest"
   },
   "devDependencies": {
     "@geut/chan": "^2.2.1",
