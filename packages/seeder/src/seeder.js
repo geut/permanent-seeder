@@ -276,12 +276,20 @@ class Seeder extends EventEmitter {
    */
   async destroy () {
     // close all drives
-    await Promise.all(Array.from(this.drives.values()).map(drive => drive._hyperdrive.close()))
+    try {
+      await Promise.all(Array.from(this.drives.values()).map(drive => drive._hyperdrive.close()))
+    } catch (err) {
+      console.warn(err.message)
+    }
 
     this.networker.off('peer-add', this.onPeerAdd)
     this.networker.off('peer-remove', this.onPeerRemove)
-    await this.networker.close()
-    this.logger.info('Destroy seeder OK')
+    try {
+      await this.networker.close()
+    } catch (err) {
+      console.warn(err.message)
+    }
+    console.info('Destroy seeder OK')
   }
 }
 
