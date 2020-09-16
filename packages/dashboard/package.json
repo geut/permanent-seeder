@@ -14,14 +14,14 @@
     "type": "git",
     "url": "git+https://github.com/geut/permanent-seeder.git"
   },
-  "files": [
-    "/build"
-  ],
   "license": "MIT",
   "author": {
     "name": "GEUT",
     "email": "contact@geutstudio.com"
   },
+  "files": [
+    "/build"
+  ],
   "scripts": {
     "build": "react-scripts build",
     "eject": "react-scripts eject",

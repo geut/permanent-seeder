@@ -34,19 +34,19 @@
     "lint": "xd-ns \"**/*.js\"",
     "prepack": "oclif-dev manifest && oclif-dev readme",
     "postpack": "rm -f oclif.manifest.json",
-    "tarballs": "cp ../../package-lock.json . && oclif-dev pack",
     "prepublishOnly": "npm test",
+    "tarballs": "cp ../../package-lock.json . && oclif-dev pack",
     "test": "jest --passWithNoTests --runInBand --detectOpenHandles --forceExit",
     "posttest": "npm run lint",
     "version": "chan release --allow-yanked ${npm_package_version} && git add ."
   },
   "jest": {
+    "globalSetup": "<rootDir>/tests/setup.js",
+    "globalTeardown": "<rootDir>/tests/teardown.js",
     "testEnvironment": "node",
     "testMatch": [
       "**/tests/**/*.test.js"
-    ],
-    "globalSetup": "<rootDir>/tests/setup.js",
-    "globalTeardown": "<rootDir>/tests/teardown.js"
+    ]
   },
   "dependencies": {
     "@geut/permanent-seeder-database": "^0.0.1",
