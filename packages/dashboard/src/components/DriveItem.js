@@ -85,7 +85,13 @@ function DriveItem ({ driveKey }) {
   })
 
   const { unsubscribe: unsubscribeDriveIndexUpdate } = useSocket(`drive.${driveKey}.indexjson.update`, () => {
-    socket.emit('drive.info', driveKey, setDriveInfo)
+    socket.emit('drive.info', driveKey, info => {
+      setDriveInfo(info)
+
+      if (info.indexJSON && info.indexJSON.title) {
+        setTitle(info.indexJSON.title)
+      }
+    })
   })
 
   const { unsubscribe: unsubscribeDriveUpload } = useSocket(`drive.${driveKey}.upload`, () => {
@@ -109,7 +115,7 @@ function DriveItem ({ driveKey }) {
         return
       }
 
-      setTitle(drive.info.indexJSON.title || `Drive-${driveKey.substring(0, 6)}`)
+      setTitle(`Drive-${driveKey.substring(0, 6)}`)
       setSizeBlocks(drive.size.blocks)
       setSizeBytes(drive.size.bytes)
       setDownloadedBlocks(drive.size.downloadedBlocks)
@@ -123,6 +129,9 @@ function DriveItem ({ driveKey }) {
       }
 
       setDriveInfo(driveInfo)
+      if (driveInfo.indexJSON && driveInfo.indexJSON.title) {
+        setTitle(driveInfo.indexJSON.title)
+      }
     }
 
     fetchInitalData()
