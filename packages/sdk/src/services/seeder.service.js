@@ -1,5 +1,6 @@
 const { resolve } = require('path')
 
+const fromEntries = require('fromentries')
 const { Seeder } = require('@geut/permanent-seeder-core')
 
 const { Config } = require('../mixins/config.mixin')
@@ -121,7 +122,7 @@ module.exports = {
       } catch (err) {
         this.logger.error(err)
       }
-      return Object.entries(stats)
+      return fromEntries(stats)
     },
 
     onDriveAdd (key) {
@@ -150,6 +151,18 @@ module.exports = {
 
     onDrivePeerRemove (key) {
       this.broker.broadcast('seeder.drive.peer.remove', { key })
+    },
+
+    onIndexJSONUpdate (key) {
+      this.broker.broadcast('seeder.drive.indexjson.update', { key })
+    },
+
+    onSwarmPeerAdd (peer) {
+      this.broker.broadcast('seeder.networker.peer.add', { peer })
+    },
+
+    onSwarmPeerRemove (peer) {
+      this.broker.broadcast('seeder.networker.peer.remove', { peer })
     }
   },
 
@@ -171,6 +184,9 @@ module.exports = {
     this.seeder.on('drive-upload', this.onDriveUpload)
     this.seeder.on('drive-peer-add', this.onDrivePeerAdd)
     this.seeder.on('drive-peer-remove', this.onDrivePeerRemove)
+    this.seeder.on('drive-indexjson', this.onIndexJSONUpdate)
+    this.seeder.on('networker-peer-add', this.onSwarmPeerAdd)
+    this.seeder.on('networker-peer-remove', this.onSwarmPeerRemove)
 
     this.seed(keys.map(({ key }) => key))
   },
@@ -178,11 +194,15 @@ module.exports = {
   stopped () {
     // remove listeners
     this.seeder.off('drive-add', this.onDriveAdd)
+    this.seeder.off('drive-update', this.onDriveUpdate)
     this.seeder.off('drive-remove', this.onDriveRemove)
     this.seeder.off('drive-download', this.onDriveDownload)
     this.seeder.off('drive-upload', this.onDriveUpload)
     this.seeder.off('drive-peer-add', this.onDrivePeerAdd)
     this.seeder.off('drive-peer-remove', this.onDrivePeerRemove)
+    this.seeder.off('drive-indexjson', this.onIndexJSONUpdate)
+    this.seeder.off('networker-peer-add', this.onSwarmPeerAdd)
+    this.seeder.off('networker-peer-remove', this.onSwarmPeerRemove)
 
     return this.seeder.destroy()
   }

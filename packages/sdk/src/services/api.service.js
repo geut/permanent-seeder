@@ -4,6 +4,7 @@ const ApiGatewayService = require('moleculer-web')
 const IO = require('socket.io')
 const compression = require('compression')
 const { encode } = require('dat-encoding')
+const heapdump = require('heapdump')
 
 module.exports = {
   name: 'api',
@@ -41,8 +42,8 @@ module.exports = {
         'GET api/stats/host': 'api.stats.host',
         'GET api/stats/network': 'api.stats.network',
         'GET api/raw/:key': 'api.raw',
+        'GET api/heapdump': 'api.heapdump',
         'POST api/drives': 'api.drives.add'
-
       }
     }],
 
@@ -72,6 +73,10 @@ module.exports = {
       this.io.emit(`drive.${ctx.params.key}.upload`, ctx.params.key)
     },
 
+    'seeder.drive.indexjson.update' (ctx) {
+      this.io.emit(`drive.${ctx.params.key}.indexjson.update`, ctx.params.key)
+    },
+
     'seeder.drive.peer.add' (ctx) {
       this.io.emit(`drive.${ctx.params.key}.peer.add`, ctx.params.key)
     },
@@ -87,6 +92,7 @@ module.exports = {
     'stats.network' (ctx) {
       this.io.emit('stats.network', ctx.params.stats)
     }
+
   },
 
   actions: {
@@ -148,6 +154,11 @@ module.exports = {
       async handler (ctx) {
         return this.raw(ctx.params.key, ctx.params.event)
       }
+    },
+    heapdump: {
+      async handler (ctx) {
+        return this.heapdump()
+      }
     }
   },
 
@@ -190,18 +201,18 @@ module.exports = {
           keys = await this.broker.call('keys.getAll')
         }
 
-        const drives = []
-        for (const { key: publicKey } of keys) {
-          drives.push({
+        let drives = []
+
+        drives = await Promise.all(keys.map(async ({ key: publicKey }) => {
+          return {
             key: {
               publicKey
             },
-            info: await this.driveInfo(publicKey),
-            size: await this.driveSize(publicKey),
             stats: await this.driveStats(publicKey),
+            size: await this.driveSize(publicKey),
             peers: await this.drivePeers(publicKey)
-          })
-        }
+          }
+        }))
 
         return key ? drives[0] : drives
       }
@@ -211,6 +222,20 @@ module.exports = {
         // get all keys from timestamp (optional)
         const stats = await this.broker.call('metrics.get', { key, timestamp })
         return stats
+      }
+    },
+    heapdump: {
+      async handler () {
+        return new Promise((resolve, reject) => {
+          heapdump.writeSnapshot(`heapDump-${Date.now()}.heapsnapshot`, (err, filename) => {
+            if (err) {
+              this.logger.error(err)
+              return reject(err)
+            }
+
+            return resolve({ filename })
+          })
+        })
       }
     }
   },
@@ -238,6 +263,11 @@ module.exports = {
       client.on('drive.stats', async (key, done) => {
         const stats = await this.driveStats(key)
         done(stats)
+      })
+
+      client.on('drive.info', async (key, done) => {
+        const info = await this.driveInfo(key)
+        done(info)
       })
     })
   }

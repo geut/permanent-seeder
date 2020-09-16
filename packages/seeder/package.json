@@ -39,7 +39,10 @@
     "@p2pcommons/sdk-js": "^0.6.3",
     "corestore": "^5.7.3",
     "dat-encoding": "^5.0.1",
+    "hypercore-cache": "^1.0.2",
     "hypercore-crypto": "^2.1.1",
+    "p-memoize": "^4.0.0",
+    "p-timeout": "^3.2.0",
     "random-access-file": "^2.1.4",
     "tempy": "latest"
   },

@@ -1,5 +1,7 @@
 const { EventEmitter } = require('events')
 const { promisify } = require('util')
+const memoize = require('p-memoize')
+const timeout = require('p-timeout')
 
 const hyperdrive = require('@geut/hyperdrive-promise')
 
@@ -36,6 +38,10 @@ class Drive extends EventEmitter {
     this._hyperdrive.on('update', this._onUpdate)
 
     this._getContentAsync = promisify(this._hyperdrive.getContent)
+
+    this._memoGetStats = memoize(this._hyperdrive.stats, { maxAge: 1000 * 60 * 60 })
+    this._memoGetStat = memoize(this._hyperdrive.stat, { maxAge: 1000 * 60 * 60 })
+    this._readFile = memoize(this._hyperdrive.readFile, { maxAge: 1000 * 60 * 60 })
   }
 
   get discoveryKey () {
@@ -44,6 +50,10 @@ class Drive extends EventEmitter {
 
   get peers () {
     return this._hyperdrive.peers
+  }
+
+  download (path, cb) {
+    return this._hyperdrive.download(path, cb)
   }
 
   async _onUpdate () {
@@ -77,8 +87,11 @@ class Drive extends EventEmitter {
     let indexJSON = {}
 
     try {
-      indexJSON = JSON.parse(await this._hyperdrive.readFile('index.json', 'utf-8'))
-    } catch (_) {}
+      const raw = await timeout(this._readFile('index.json', 'utf-8'), 200)
+      indexJSON = JSON.parse(raw)
+    } catch (err) {
+      console.error(err.message)
+    }
 
     const version = this._hyperdrive.version
 
@@ -116,16 +129,24 @@ class Drive extends EventEmitter {
     return this._hyperdrive.stat(path)
   }
 
-  async getStats (path = '/') {
-    return this._hyperdrive.stats(path)
+  async getStats (path = '/', opts) {
+    return timeout(this._memoGetStats(path, opts), 200)
   }
 
   async getLstat (path = '/') {
     return this._hyperdrive.lstat(path)
   }
 
+  isNumber (value) {
+    return Number.isFinite(value)
+  }
+
   async getSize () {
-    const stats = await this.getStats('/', { file: true })
+    let stats = new Map()
+    try {
+      // note: use stats cache
+      stats = await this.getStats('/', { file: true })
+    } catch (_) {}
 
     const totalSize = {
       blocks: 0,
@@ -134,7 +155,7 @@ class Drive extends EventEmitter {
     }
 
     for (const [filePath, { blocks, size: bytes, downloadedBlocks }] of stats.entries()) {
-      const stat = await this.getStat(filePath)
+      const stat = await this._memoGetStat(filePath)
 
       if (!stat[0].isDirectory()) {
         totalSize.blocks += blocks
@@ -142,6 +163,10 @@ class Drive extends EventEmitter {
         totalSize.downloadedBlocks += downloadedBlocks
       }
     }
+
+    totalSize.blocks = this.isNumber(totalSize.blocks) ? totalSize.blocks : 0
+    totalSize.bytes = this.isNumber(totalSize.bytes) ? totalSize.bytes : 0
+    totalSize.downloadedBlocks = this.isNumber(totalSize.downloadedBlocks) ? totalSize.downloadedBlocks : 0
 
     return totalSize
   }

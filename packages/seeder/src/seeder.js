@@ -6,19 +6,37 @@ const { promisify } = require('util')
 const { encode, decode } = require('dat-encoding')
 const Corestore = require('corestore')
 const crypto = require('hypercore-crypto')
+const HypercoreCache = require('hypercore-cache')
 const Networker = require('@corestore/networker')
 const raf = require('random-access-file')
 
 const Drive = require('./drive')
+
+const TOTAL_CACHE_SIZE = 1024 * 1024 * 512
+const CACHE_RATIO = 0.5
+const TREE_CACHE_SIZE = TOTAL_CACHE_SIZE * CACHE_RATIO
+const DATA_CACHE_SIZE = TOTAL_CACHE_SIZE * (1 - CACHE_RATIO)
+const MAX_PEERS = 256
 
 const DEFAULT_OPTS = {
   announce: true,
   lookup: true,
   storageLocation: join(homedir(), 'permanent-seeder'),
   corestoreOpts: {
-    stats: true,
     sparse: false,
-    eagerUpdate: true
+    // Collect networking statistics.
+    stats: true,
+    cache: {
+      data: new HypercoreCache({
+        maxByteSize: DATA_CACHE_SIZE,
+        estimateSize: val => val.length
+      }),
+      tree: new HypercoreCache({
+        maxByteSize: TREE_CACHE_SIZE,
+        estimateSize: val => 40
+      })
+    },
+    ifAvailable: true
   }
 }
 
@@ -59,17 +77,41 @@ class Seeder extends EventEmitter {
 
     this.store = new Corestore(
       getCoreStore(this.opts.storageLocation, '.hyper'),
-      this.opts.corestoreOpts
+      this.opts
     )
 
     await this.store.ready()
 
-    this.networker = new Networker(this.store)
+    this.networker = new Networker(this.store, {
+      maxPeers: MAX_PEERS,
+      ephemeral: false
+    })
     await this.networker.listen()
 
     this.connectivity = promisify(this.networker.swarm.connectivity).bind(this.networker.swarm)
 
+    this.networker.on('peer-add', peer => this.onPeerAdd(peer))
+    this.networker.on('peer-remove', peer => this.onPeerRemove(peer))
+
     this.ready = true
+  }
+
+  onPeerAdd (peer) {
+    this.emit('networker-peer-add', {
+      remoteAddress: peer.remoteAddress,
+      type: peer.type,
+      bytesSent: peer.stream.bytesSent,
+      bytesReceived: peer.stream.bytesReceived
+    })
+  }
+
+  onPeerRemove (peer) {
+    this.emit('networker-peer-remove', {
+      remoteAddress: peer.remoteAddress,
+      type: peer.type,
+      bytesSent: peer.stream.bytesSent,
+      bytesReceived: peer.stream.bytesReceived
+    })
   }
 
   /**
@@ -113,6 +155,8 @@ class Seeder extends EventEmitter {
     // Wait for readyness
     await drive.ready()
 
+    drive.download('/')
+
     // Register event listeners
     drive.on('update', () => this.emit('drive-update', keyString))
     drive.on('download', () => this.emit('drive-download', keyString))
@@ -120,14 +164,17 @@ class Seeder extends EventEmitter {
     drive.on('peer-add', () => this.emit('drive-peer-add', keyString))
     drive.on('peer-remove', () => this.emit('drive-peer-remove', keyString))
 
-    // Connect to network
-    await this.networker.configure(drive.discoveryKey, { announce: this.opts.announce, lookup: this.opts.lookup })
-
     // Notify new drive
     this.emit('drive-add', keyString)
 
+    // Connect to network
+    await this.networker.configure(drive.discoveryKey, { announce: this.opts.announce, lookup: this.opts.lookup })
+
     // Wait for content ready
     await drive.getContentFeed()
+
+    // force the first fetch for drive info
+    this.emit('drive-indexjson', keyString)
   }
 
   /**
@@ -228,7 +275,21 @@ class Seeder extends EventEmitter {
    * destroy.
    */
   async destroy () {
-    await this.networker.close()
+    // close all drives
+    try {
+      await Promise.all(Array.from(this.drives.values()).map(drive => drive._hyperdrive.close()))
+    } catch (err) {
+      console.warn(err.message)
+    }
+
+    this.networker.off('peer-add', this.onPeerAdd)
+    this.networker.off('peer-remove', this.onPeerRemove)
+    try {
+      await this.networker.close()
+    } catch (err) {
+      console.warn(err.message)
+    }
+    console.info('Destroy seeder OK')
   }
 }
 
