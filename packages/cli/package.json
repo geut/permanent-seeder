@@ -80,7 +80,7 @@
     "tempy": "^0.6.0"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=12.x"
   },
   "oclif": {
     "commands": "./src/commands",

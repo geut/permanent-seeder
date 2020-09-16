@@ -49,6 +49,9 @@
     "jest": "^24.8.0",
     "standard": "^14.3.4"
   },
+  "engines": {
+    "node": ">=12.x"
+  },
   "standard": {
     "env": [
       "jest",
