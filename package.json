@@ -16,6 +16,7 @@
     "email": "contact@geutstudio.com"
   },
   "scripts": {
+    "build": "lerna run build",
     "bootstrap": "lerna clean && lerna bootstrap",
     "lint": "lerna run lint",
     "lint:fix": "lerna run lint -- -- --fix",
