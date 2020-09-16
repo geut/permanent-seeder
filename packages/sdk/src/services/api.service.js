@@ -201,17 +201,18 @@ module.exports = {
           keys = await this.broker.call('keys.getAll')
         }
 
-        const drives = []
-        for (const { key: publicKey } of keys) {
-          drives.push({
+        let drives = []
+
+        drives = await Promise.all(keys.map(async ({ key: publicKey }) => {
+          return {
             key: {
               publicKey
             },
             stats: await this.driveStats(publicKey),
             size: await this.driveSize(publicKey),
             peers: await this.drivePeers(publicKey)
-          })
-        }
+          }
+        }))
 
         return key ? drives[0] : drives
       }
