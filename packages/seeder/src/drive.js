@@ -40,6 +40,7 @@ class Drive extends EventEmitter {
     this._getContentAsync = promisify(this._hyperdrive.getContent)
 
     this._memoGetStats = memoize(this._hyperdrive.stats, { maxAge: 1000 * 60 * 60 })
+    this._memoGetStat = memoize(this._hyperdrive.stat, { maxAge: 1000 * 60 * 60 })
     this._readFile = memoize(this._hyperdrive.readFile, { maxAge: 1000 * 60 * 60 })
   }
 
@@ -154,7 +155,7 @@ class Drive extends EventEmitter {
     }
 
     for (const [filePath, { blocks, size: bytes, downloadedBlocks }] of stats.entries()) {
-      const stat = await this.getStat(filePath)
+      const stat = await this._memoGetStat(filePath)
 
       if (!stat[0].isDirectory()) {
         totalSize.blocks += blocks
