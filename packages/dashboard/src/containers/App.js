@@ -6,6 +6,8 @@ import { Transition, TransitionGroup } from 'react-transition-group'
 import { ThemeProvider, unstable_createMuiStrictModeTheme as createMuiTheme } from '@material-ui/core'
 import CssBaseline from '@material-ui/core/CssBaseline'
 
+import { SOCKET_URL } from '../config'
+
 import { play, exit } from '../timeline'
 
 import { useDarkMode } from '../hooks/layout'
@@ -71,7 +73,7 @@ function AppContainer () {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <SocketIOProvider url='http://localhost:3001'>
+      <SocketIOProvider url={SOCKET_URL}>
         <Router>
           <Layout>
             <Route render={({ location }) => {
