@@ -59,6 +59,7 @@ class StartCommand extends BaseCommand {
       args,
       output: resolve(config.path, 'logs', 'output.log'),
       error: resolve(config.path, 'logs', 'error.log'),
+      max_memory_restart: '1024M',
       force: true
     })
 
