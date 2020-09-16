@@ -31,7 +31,6 @@ function NetworkIndicator () {
   const { get, response, error } = useFetch(API_URL)
 
   useSocket('stats.network', (stats) => {
-    console.log({ stats })
     setNetwork(network => ({ ...network, ...stats }))
   })
 
@@ -43,7 +42,6 @@ function NetworkIndicator () {
         return
       }
 
-      console.log({ initial: networkInfo })
       setNetwork(network => ({ ...network, ...networkInfo }))
     }
 
