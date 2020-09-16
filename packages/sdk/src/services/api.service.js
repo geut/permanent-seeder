@@ -207,9 +207,8 @@ module.exports = {
             key: {
               publicKey
             },
-            info: await this.driveInfo(publicKey),
-            size: await this.driveSize(publicKey),
             stats: await this.driveStats(publicKey),
+            size: await this.driveSize(publicKey),
             peers: await this.drivePeers(publicKey)
           })
         }
