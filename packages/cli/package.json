@@ -21,11 +21,10 @@
   },
   "main": "src/index.js",
   "bin": {
-    "cli": "./bin/run"
+    "permanent-seeder": "./bin/run"
   },
   "files": [
     "/bin",
-    "/npm-shrinkwrap.json",
     "/oclif.manifest.json",
     "/src"
   ],
