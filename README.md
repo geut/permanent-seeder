@@ -16,8 +16,6 @@
 npm i @geut/permanent-seeder
 ```
 
-Or from a [tarball](/packages/cli/dist) :package:
-
 Alternatively you can `git clone` this repo and build it from source:
 
 ```
@@ -169,6 +167,10 @@ As you can see the project does a couple of things. To do this we decided to use
 <a href="https://libscie.org" rel="nofollow">
 <img src="https://github.com/libscie.png" alt="Liberate Science" width="200px" style="max-width:100%;">
 </a>
+
+## Acknowledgments
+
+:clap: Many thanks to @nicoman for offering some basic infrastructure that was used for some early testing and @krasher for his outstanding docker contribution ([PR](https://github.com/geut/permanent-seeder/pull/105))
 
 ## License
 
