@@ -59,7 +59,7 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
-describe('Test Commands', () => {
+describe.skip('Test Commands', () => {
   it('Add: should work with key', async () => {
     const key = await addKey()
     insertedKeys.push({ key })
