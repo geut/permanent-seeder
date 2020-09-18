@@ -2,10 +2,12 @@
   "packages": [
     "packages/*"
   ],
-  "version": "0.0.1-alpha.3",
+  "version": "0.0.1-alpha.4",
   "command": {
     "bootstrap": {
-      "npmClientArgs": ["--no-package-lock"],
+      "npmClientArgs": [
+        "--no-package-lock"
+      ],
       "hoist": true
     },
     "clean": {
