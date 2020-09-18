@@ -1,7 +1,6 @@
 {
-  "name": "root",
-  "private": true,
-  "description": "Permanent Seeder repository",
+  "name": "@geut/permanent-seeder",
+  "description": "Permanent Seeder monorepo",
   "homepage": "https://github.com/geut/permanent-seeder#readme",
   "bugs": {
     "url": "https://github.com/geut/permanent-seeder/issues"
@@ -22,7 +21,8 @@
     "lint:fix": "lerna run lint -- -- --fix",
     "test": "lerna run test",
     "posttest": "npm run lint",
-    "lerna": "lerna"
+    "lerna": "lerna",
+    "version": "chan release --allow-yanked --ghrelease ${npm_package_version} && git add ."
   },
   "husky": {
     "hooks": {

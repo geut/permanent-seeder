@@ -36,8 +36,7 @@
     "prepublishOnly": "npm test",
     "tarballs": "cp ../../package-lock.json . && oclif-dev pack",
     "test": "jest --passWithNoTests --runInBand --detectOpenHandles --forceExit",
-    "posttest": "npm run lint",
-    "version": "chan release --allow-yanked ${npm_package_version} && git add ."
+    "posttest": "npm run lint"
   },
   "jest": {
     "globalSetup": "<rootDir>/tests/setup.js",
