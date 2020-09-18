@@ -4,17 +4,27 @@
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
-> Template to create modules following the :snail: **Geut** path
-
 ## <a name="install"></a> Install
 
 ```
+$ npm i @geut/permanent-seeder
 ```
+
+Or using a [tarball](/dist)
 
 ## <a name="usage"></a> Usage
 
+The first time you will need to have a config file, you can create one running:
 ```
+$ permanent-seeder config:init
 ```
+Then, is as simple as:
+```
+$ permanent-seeder start
+```
+This will start a permanent-seeder daemon process ready to seed your hyperdrive keys!
+
+:page_facing_up: Check out the full docs [here](../../README.md)
 
 ## <a name="issues"></a> Issues
 
