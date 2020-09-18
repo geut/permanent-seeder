@@ -1,4 +1,4 @@
-.mk-libs
+.mk-lib
 Dockerfile
 docker-compose.yml
 Makefile
