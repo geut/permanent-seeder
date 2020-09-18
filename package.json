@@ -1,7 +1,6 @@
 {
-  "name": "root",
-  "private": true,
-  "description": "Permanent Seeder repository",
+  "name": "@geut/permanent-seeder",
+  "description": "Permanent Seeder monorepo",
   "homepage": "https://github.com/geut/permanent-seeder#readme",
   "bugs": {
     "url": "https://github.com/geut/permanent-seeder/issues"
