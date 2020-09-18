@@ -11,7 +11,8 @@ module.exports = {
   mixins: [Config],
 
   dependencies: [
-    'keys'
+    'keys',
+    'metrics'
   ],
 
   actions: {
@@ -191,7 +192,7 @@ module.exports = {
     this.seed(keys.map(({ key }) => key))
   },
 
-  stopped () {
+  async stopped () {
     // remove listeners
     this.seeder.off('drive-add', this.onDriveAdd)
     this.seeder.off('drive-update', this.onDriveUpdate)

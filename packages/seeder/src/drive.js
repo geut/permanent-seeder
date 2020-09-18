@@ -34,8 +34,12 @@ class Drive extends EventEmitter {
     this._onDownload = this._onDownload.bind(this)
     this._onUpload = this._onUpload.bind(this)
     this._onUpdate = this._onUpdate.bind(this)
+    this._onPeerAdd = this._onPeerAdd.bind(this)
+    this._onPeerRemove = this._onPeerRemove.bind(this)
 
     this._hyperdrive.on('update', this._onUpdate)
+    this._hyperdrive.on('peer-add', this._onPeerAdd)
+    this._hyperdrive.on('peer-remove', this._onPeerRemove)
 
     this._getContentAsync = promisify(this._hyperdrive.getContent)
 
@@ -56,23 +60,23 @@ class Drive extends EventEmitter {
     return this._hyperdrive.download(path, cb)
   }
 
-  async _onUpdate () {
+  _onUpdate () {
     this.emit('update')
   }
 
-  async _onDownload () {
+  _onDownload () {
     this.emit('download')
   }
 
-  async _onUpload () {
+  _onUpload () {
     this.emit('upload')
   }
 
-  async _onPeerAdd () {
+  _onPeerAdd () {
     this.emit('peer-add')
   }
 
-  async _onPeerRemove () {
+  _onPeerRemove () {
     this.emit('peer-remove')
   }
 
@@ -103,6 +107,8 @@ class Drive extends EventEmitter {
 
   async destroy () {
     this._hyperdrive.off('update', this._onUpdate)
+    this._hyperdrive.off('peer-add', this._onPeerAdd)
+    this._hyperdrive.off('peer-remove', this._onPeerRemove)
 
     this._contentFeed.off('download', this._onDownload)
     this._contentFeed.off('upload', this._onUpload)

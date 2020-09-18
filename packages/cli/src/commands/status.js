@@ -58,7 +58,7 @@ class StatusCommand extends BaseCommand {
       cli.table(data, {
         status: {
           get: row => this.statusColor(row.pm2_env.status),
-          minWidth: '30'
+          minWidth: '20'
         },
         pid: {
           header: 'PID',
@@ -71,14 +71,15 @@ class StatusCommand extends BaseCommand {
         },
         memory: {
           get: this.getValueIfRunning(data => prettyBytes(data.monit.memory)),
-          minWidth: '20'
+          minWidth: '10'
         },
         cpu: {
           get: this.getValueIfRunning(data => `${data.monit.cpu}%`),
           minWidth: '10'
         },
         instances: {
-          get: this.getValueIfRunning(data => data.pm2_env.instances)
+          get: this.getValueIfRunning(data => data.pm2_env.instances),
+          minWidth: '10'
         }
       }, {
         ...flags // parsed flags

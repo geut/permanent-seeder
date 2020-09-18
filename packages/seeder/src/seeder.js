@@ -66,6 +66,7 @@ class Seeder extends EventEmitter {
     super()
     this.opts = { ...DEFAULT_OPTS, ...opts }
     this.drives = new Map()
+    this._unlistens = []
     this.ready = false
   }
 
@@ -90,28 +91,32 @@ class Seeder extends EventEmitter {
 
     this.connectivity = promisify(this.networker.swarm.connectivity).bind(this.networker.swarm)
 
-    this.networker.on('peer-add', peer => this.onPeerAdd(peer))
-    this.networker.on('peer-remove', peer => this.onPeerRemove(peer))
+    const onPeerAdd = (peer) => {
+      this.emit('networker-peer-add', {
+        remoteAddress: peer.remoteAddress,
+        type: peer.type,
+        bytesSent: peer.stream.bytesSent,
+        bytesReceived: peer.stream.bytesReceived
+      })
+    }
+
+    const onPeerRemove = (peer) => {
+      this.emit('networker-peer-remove', {
+        remoteAddress: peer.remoteAddress,
+        type: peer.type,
+        bytesSent: peer.stream.bytesSent,
+        bytesReceived: peer.stream.bytesReceived
+      })
+    }
+
+    this.networker.on('peer-add', onPeerAdd)
+    this.networker.on('peer-remove', onPeerRemove)
+    this._unlistens.push(() => {
+      this.networker.off('peer-add', onPeerAdd)
+      this.networker.off('peer-remove', onPeerRemove)
+    })
 
     this.ready = true
-  }
-
-  onPeerAdd (peer) {
-    this.emit('networker-peer-add', {
-      remoteAddress: peer.remoteAddress,
-      type: peer.type,
-      bytesSent: peer.stream.bytesSent,
-      bytesReceived: peer.stream.bytesReceived
-    })
-  }
-
-  onPeerRemove (peer) {
-    this.emit('networker-peer-remove', {
-      remoteAddress: peer.remoteAddress,
-      type: peer.type,
-      bytesSent: peer.stream.bytesSent,
-      bytesReceived: peer.stream.bytesReceived
-    })
   }
 
   /**
@@ -157,12 +162,39 @@ class Seeder extends EventEmitter {
 
     drive.download('/')
 
+    const onDriveUpdate = () => {
+      this.emit('drive-update', keyString)
+    }
+
+    const onDriveDownload = () => {
+      this.emit('drive-download', keyString)
+    }
+
+    const onDriveUpload = () => {
+      this.emit('drive-upload', keyString)
+    }
+
+    const onDrivePeerAdd = () => {
+      this.emit('drive-peer-add', keyString)
+    }
+
+    const onDrivePeerRemove = () => {
+      this.emit('drive-peer-remove', keyString)
+    }
     // Register event listeners
-    drive.on('update', () => this.emit('drive-update', keyString))
-    drive.on('download', () => this.emit('drive-download', keyString))
-    drive.on('upload', () => this.emit('drive-upload', keyString))
-    drive.on('peer-add', () => this.emit('drive-peer-add', keyString))
-    drive.on('peer-remove', () => this.emit('drive-peer-remove', keyString))
+    drive.on('update', onDriveUpdate)
+    drive.on('download', onDriveDownload)
+    drive.on('upload', onDriveUpload)
+    drive.on('peer-add', onDrivePeerAdd)
+    drive.on('peer-remove', onDrivePeerRemove)
+
+    this._unlistens.push(() => {
+      drive.off('update', onDriveUpdate)
+      drive.off('download', onDriveDownload)
+      drive.off('upload', onDriveUpload)
+      drive.off('peer-add', onDrivePeerAdd)
+      drive.off('peer-remove', onDrivePeerRemove)
+    })
 
     // Notify new drive
     this.emit('drive-add', keyString)
@@ -275,19 +307,23 @@ class Seeder extends EventEmitter {
    * destroy.
    */
   async destroy () {
+    for (const unlisten of this._unlistens) {
+      unlisten()
+    }
+    this._unlistens = []
     // close all drives
     try {
-      await Promise.all(Array.from(this.drives.values()).map(drive => drive._hyperdrive.close()))
+      await Promise.all(Array.from(this.drives.values()).map(drive => drive.destroy()))
     } catch (err) {
       console.warn(err.message)
     }
 
-    this.networker.off('peer-add', this.onPeerAdd)
-    this.networker.off('peer-remove', this.onPeerRemove)
-    try {
-      await this.networker.close()
-    } catch (err) {
-      console.warn(err.message)
+    if (this.networker) {
+      try {
+        await this.networker.close()
+      } catch (err) {
+        console.warn(err.message)
+      }
     }
     console.info('Destroy seeder OK')
   }
