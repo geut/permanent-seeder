@@ -15,10 +15,6 @@ module.exports = {
     networkStatsInterval: 1000 * 60 * 60 // 1hr check
   },
 
-  dependencies: [
-    'seeder'
-  ],
-
   mixins: [Config],
 
   events: {
@@ -30,7 +26,7 @@ module.exports = {
         await this.saveStats({ key, timestamp, event })
       }
     },
-    'seeder.networker.*': {
+    'seeder.networker.peer.*': {
       debounce: 1000,
       async handler (ctx) {
         const stats = await this.getNetworkStats()
