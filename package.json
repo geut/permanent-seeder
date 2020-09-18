@@ -22,7 +22,8 @@
     "lint:fix": "lerna run lint -- -- --fix",
     "test": "lerna run test",
     "posttest": "npm run lint",
-    "lerna": "lerna"
+    "lerna": "lerna",
+    "version": "chan release --allow-yanked --ghrelease ${npm_package_version} && git add ."
   },
   "husky": {
     "hooks": {
