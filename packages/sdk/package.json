@@ -25,8 +25,7 @@
     "lint": "xd-ns \"**/*.js\"",
     "prepublishOnly": "npm test",
     "test": "jest --passWithNoTests",
-    "posttest": "npm run lint",
-    "version": "chan release --allow-yanked ${npm_package_version} && git add ."
+    "posttest": "npm run lint"
   },
   "jest": {
     "testMatch": [

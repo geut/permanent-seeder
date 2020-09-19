@@ -3,7 +3,11 @@ const { cli } = require('cli-ux')
 
 class DashboardCommand extends BaseCommand {
   async run () {
-    await cli.open('http://localhost:3001/')
+    try {
+      await cli.open('http://localhost:3001/')
+    } catch (_) {
+      this.log('Dashboard running in: http://localhost:3001')
+    }
   }
 }
 

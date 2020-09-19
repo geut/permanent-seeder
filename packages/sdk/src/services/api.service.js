@@ -1,10 +1,12 @@
-const { join } = require('path')
+const { join, dirname } = require('path')
+const { homedir } = require('os')
 
 const ApiGatewayService = require('moleculer-web')
 const IO = require('socket.io')
 const compression = require('compression')
 const { encode } = require('dat-encoding')
 const heapdump = require('heapdump')
+const dashboard = require.resolve('@geut/permanent-seeder-dashboard')
 
 module.exports = {
   name: 'api',
@@ -22,7 +24,7 @@ module.exports = {
 
     // Dashboard site
     assets: {
-      folder: join(__dirname, '../', '../', 'node_modules', '@geut', 'permanent-seeder-dashboard', 'build')
+      folder: dirname(dashboard)
     },
 
     whitelist: [
@@ -227,13 +229,14 @@ module.exports = {
     heapdump: {
       async handler () {
         return new Promise((resolve, reject) => {
-          heapdump.writeSnapshot(`heapDump-${Date.now()}.heapsnapshot`, (err, filename) => {
+          const dest = join(homedir(), `heapDump-${Date.now()}.heapsnapshot`)
+          heapdump.writeSnapshot(dest, (err) => {
             if (err) {
               this.logger.error(err)
               return reject(err)
             }
 
-            return resolve({ filename })
+            return resolve({ dest })
           })
         })
       }

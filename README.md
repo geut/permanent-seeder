@@ -13,16 +13,26 @@
 ## <a name="install"></a> Install
 
 ```
-npm i @geut/permanent-seeder
+npm i -g @geut/permanent-seeder
 ```
 
 Alternatively you can `git clone` this repo and build it from source:
 
-```
+```bash
+# install deps
 npm i
 npm run bootstrap
+
+# build the dashboard
+cd packages/dashboard
+cp .env.example .env
+npm run build
+
+# start the seeder
+cd ../cli
 permanent-seeder stop
 permanent-seeder start
+
 ```
 
 ## <a name="usage"></a> Usage
@@ -103,6 +113,64 @@ Opens the dashboard app in a browser. If you want to manually access the dashboa
 
 <img src="./Dashboard.jpg" width="800px" height="auto" style="border:2px solid #fff; box-shadow: 10px 10px 5px #ccc">
 
+:warning: Note: The dashboard app runs in `http://localhost:3001`. If you deploy the Permanent Seeder on a server and wants to access the dashboard from the outside, you would need to setup a reverse proxy.
+
+<details>
+  <summary>Sample nginx reverse proxy config</summary>
+
+```
+upstream dashboard-nodejs {
+        server  127.0.0.1:3001;
+}
+
+server {
+	listen 80 default_server;
+	listen [::]:80 default_server;
+
+	server_name _;
+
+        location / {
+                proxy_pass              http://dashboard-nodejs;
+                proxy_next_upstream     error timeout invalid_header http_500 http_502 http_503 http_504;
+                proxy_redirect          off;
+                proxy_buffering         off;
+
+                proxy_set_header        Host                    $host;
+                proxy_set_header        X-Real-IP               $remote_addr;
+                proxy_set_header        X-Forwarded-For         $proxy_add_x_forwarded_for;
+                proxy_set_header        X-Forwarded-Proto       $scheme;
+        }
+
+        location /socket.io/ {
+                proxy_pass              http://dashboard-nodejs;
+                proxy_redirect          off;
+
+                proxy_http_version      1.1;
+
+                proxy_set_header        Upgrade                 $http_upgrade;
+                proxy_set_header        Connection              "upgrade";
+                proxy_set_header        Host                    $host;
+                proxy_set_header        X-Real-IP               $remote_addr;
+                proxy_set_header        X-Forwarded-For         $proxy_add_x_forwarded_for;
+        }
+}
+```
+</details>
+
+
+:warning: Note2: We use the `.env.example` file as a placeholder for some environment variables that we use internally, like `PUBLIC_URL`. For **development** there are a few others variables that you can tweak, like the `SOCKET_URL` and `API_URL`. Checkout the full `.env.example`:
+
+```
+PUBLIC_URL=/
+
+## Extend eslint config
+EXTEND_ESLINT=true
+
+## Optional ENVs only for development
+#REACT_APP_SOCKET_URL=
+#REACT_APP_API_URL=
+```
+
 ### Key Management :key:
 ```
 $ permanent-seeder key:[add|remove|remove-all]
@@ -170,7 +238,7 @@ As you can see the project does a couple of things. To do this we decided to use
 
 ## Acknowledgments
 
-:clap: Many thanks to @nicoman for offering some basic infrastructure that was used for some early testing and @krasher for his outstanding docker contribution ([PR](https://github.com/geut/permanent-seeder/pull/105))
+:clap: Many thanks to [@nicomanso](https://github.com/nicomanso) for offering some basic infrastructure that was used for early testing and [@krahser](https://github.com/krahser) for his outstanding docker contribution ([PR](https://github.com/geut/permanent-seeder/pull/105))
 
 ## License
 
