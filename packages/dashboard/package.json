@@ -23,6 +23,7 @@
   "files": [
     "/build"
   ],
+  "main": "build/index.html",
   "scripts": {
     "build": "react-scripts build",
     "eject": "react-scripts eject",
