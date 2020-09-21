@@ -26,7 +26,6 @@
     "prepublishOnly": "npm test",
     "start": "node index.js",
     "test": "jest --passWithNoTests",
-    "posttest": "npm run lint",
     "version": "chan release --allow-yanked ${npm_package_version} && git add ."
   },
   "jest": {

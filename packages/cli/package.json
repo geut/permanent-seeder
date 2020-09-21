@@ -36,8 +36,7 @@
     "postpack": "rm -f oclif.manifest.json",
     "prepublishOnly": "npm test",
     "tarballs": "cp ../../package-lock.json . && oclif-dev pack",
-    "test": "jest --passWithNoTests --runInBand --detectOpenHandles --forceExit",
-    "posttest": "npm run lint"
+    "test": "jest --passWithNoTests --runInBand --detectOpenHandles --forceExit"
   },
   "jest": {
     "globalSetup": "<rootDir>/tests/setup.js",

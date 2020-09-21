@@ -24,8 +24,7 @@
   "scripts": {
     "lint": "xd-ns \"**/*.js\"",
     "prepublishOnly": "npm test",
-    "test": "jest --passWithNoTests",
-    "posttest": "npm run lint"
+    "test": "jest --passWithNoTests"
   },
   "jest": {
     "testMatch": [
@@ -52,7 +51,7 @@
   },
   "devDependencies": {
     "@geut/chan": "^2.0.0",
-    "@geut/xd": "^1.5.0",
+    "@geut/xd": "^1.6.0",
     "jest": "^24.8.0",
     "standard": "^14.3.1"
   },
