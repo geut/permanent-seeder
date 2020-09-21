@@ -18,7 +18,9 @@ const useStyles = makeStyles((theme) => ({
   root: {
     flex: 1,
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    flexWrap: 'nowrap',
+    height: '90vh'
   },
 
   expand: {
@@ -27,12 +29,16 @@ const useStyles = makeStyles((theme) => ({
   },
 
   drives: {
+    maxHeight: '100%',
+    overflow: 'scroll',
+    minHeight: 0,
     padding: theme.spacing(2),
-    paddingTop: 0,
-    flexGrow: 1
+    flexGrow: 1,
+    paddingTop: 0
   },
 
   hostStats: {
+    display: 'flex',
     flexShrink: 1,
     flexGrow: 0
   }
@@ -132,8 +138,8 @@ function Dashboard () {
           error={addKeyDialogError}
         />
         <div id='dashboard' className={classes.root}>
+          <DriveItemHeader onKeyAdd={() => handleKeyAddDialogOpen()} />
           <div className={classes.drives}>
-            <DriveItemHeader onKeyAdd={() => handleKeyAddDialogOpen()} />
             {Object.values(keys).map(key => <DriveItem key={key} driveKey={key} />)}
           </div>
           <div className={classes.hostStats}>

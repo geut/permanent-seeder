@@ -60,8 +60,7 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     flexGrow: 1,
-    height: '100vh',
-    overflow: 'auto'
+    height: '100vh'
   },
   container: {
     flexGrow: 1,
