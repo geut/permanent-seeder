@@ -23,6 +23,7 @@ import Tooltip from './Tooltip'
 
 const useStyles = makeStyles(theme => ({
   root: {
+    height: theme.spacing(7),
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
     backgroundColor: 'transparent',
