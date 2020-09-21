@@ -61,13 +61,14 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: 'column',
     flexGrow: 1,
     height: '100vh',
-    overflow: 'auto'
+    overflow: 'hidden'
   },
   container: {
     flexGrow: 1,
     display: 'flex',
     flexDirection: 'column',
-    padding: 0
+    padding: 0,
+    maxHeight: '100%'
   },
   paper: {
     padding: theme.spacing(2),
