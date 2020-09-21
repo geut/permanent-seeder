@@ -8,11 +8,12 @@ let sdk
 
 const seederDaemon = async () => {
   const config = JSON.parse(process.argv[2])
-  const hot = Boolean(process.argv[3])
 
   sdk = new SDK(config)
 
-  await sdk.start('seeder', hot)
+  sdk.on('ready', () => process.send('ready'))
+
+  await sdk.start('seeder')
 }
 
 const messageHandlers = {
@@ -38,6 +39,11 @@ process.on('message', handleMessage)
 
 process.on('exit', function () {
   process.off('message', handleMessage)
+})
+
+process.on('SIGINT', async function () {
+  sdk.once('stopped', () => process.exit(0))
+  await sdk.stop()
 })
 
 seederDaemon().catch(error => {
