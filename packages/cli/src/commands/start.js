@@ -17,7 +17,9 @@ class StartCommand extends BaseCommand {
       const daemonProcess = runningProcesses.find(proc => proc.name === SEEDER_DAEMON)
       const status = daemonProcess && daemonProcess.pm2_env.status
 
-      if (status !== 'online' || restart) {
+      if (status !== 'online') {
+        await this.start()
+      } else if (restart) {
         await this.restart()
       } else {
         const error = new Error('Permanent Seeder daemon already running. Use --restart to force')
@@ -25,14 +27,11 @@ class StartCommand extends BaseCommand {
         throw error
       }
     } catch (error) {
-      await this.stopTask(false)
       this.error(error.message || error.toString())
       return
     } finally {
       await pm2Disconnect()
     }
-
-    await this.stopTask()
   }
 
   async restart () {
@@ -40,7 +39,7 @@ class StartCommand extends BaseCommand {
       await this.stop()
       await pm2Delete(SEEDER_DAEMON)
     } catch (error) {
-      this.stopTask()
+      this.error(error)
     }
 
     await this.start()
@@ -49,28 +48,38 @@ class StartCommand extends BaseCommand {
   async start () {
     this.startTask('Starting')
 
-    const config = this.checkConfig()
+    try {
+      const config = this.checkConfig()
 
-    const args = [JSON.stringify(config)]
+      const args = [JSON.stringify(config)]
 
-    await pm2Start({
-      name: SEEDER_DAEMON,
-      script: resolve(__dirname, '..', 'seeder-daemon'),
-      args,
-      output: resolve(config.path, 'logs', 'output.log'),
-      error: resolve(config.path, 'logs', 'error.log'),
-      wait_ready: true,
-      listen_timeout: 5000,
-      max_memory_restart: '1024M',
-      force: true
-    })
+      await pm2Start({
+        name: SEEDER_DAEMON,
+        script: resolve(__dirname, '..', 'seeder-daemon'),
+        args,
+        output: resolve(config.path, 'logs', 'output.log'),
+        error: resolve(config.path, 'logs', 'error.log'),
+        wait_ready: true,
+        listen_timeout: 5000,
+        max_memory_restart: '1024M',
+        force: true
+      })
+    } catch (error) {
+      this.error(error)
+    }
 
     await this.stopTask()
   }
 
   async stop () {
     this.startTask('Stopping')
-    await pm2Stop(SEEDER_DAEMON)
+
+    try {
+      await pm2Stop(SEEDER_DAEMON)
+    } catch (error) {
+      this.error(error)
+    }
+
     await this.stopTask()
   }
 }
