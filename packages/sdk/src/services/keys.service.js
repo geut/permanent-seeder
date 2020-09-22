@@ -1,6 +1,5 @@
 const { resolve } = require('path')
 
-const Cron = require('moleculer-cron')
 const deepEqual = require('deep-equal')
 const { encode } = require('dat-encoding')
 
@@ -11,20 +10,7 @@ const { Config } = require('../mixins/config.mixin')
 module.exports = {
   name: 'keys',
 
-  mixins: [Config, Cron],
-
-  crons: [
-    {
-      name: 'update-keys-job',
-      manualStart: true,
-      cronTime: '* * * * *', // Use config
-      onTick: async function () {
-        await this.getLocalService('keys')
-          .actions
-          .updateKeys()
-      }
-    }
-  ],
+  mixins: [Config],
 
   actions: {
     updateAll: {
