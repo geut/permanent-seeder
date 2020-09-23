@@ -8,7 +8,7 @@ const StartCommand = require('../src/commands/start')
 const StopCommand = require('../src/commands/stop')
 const { pm2Delete } = require('../src/pm2-async')
 
-jest.setTimeout(10000)
+jest.setTimeout(30000)
 
 beforeEach(async () => {
   try {
