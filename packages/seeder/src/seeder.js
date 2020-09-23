@@ -24,8 +24,6 @@ const DEFAULT_OPTS = {
   storageLocation: join(homedir(), 'permanent-seeder'),
   corestoreOpts: {
     sparse: false,
-    // Collect networking statistics.
-    stats: true,
     cache: {
       data: new HypercoreCache({
         maxByteSize: DATA_CACHE_SIZE,
@@ -78,14 +76,16 @@ class Seeder extends EventEmitter {
 
     this.store = new Corestore(
       getCoreStore(this.opts.storageLocation, '.hyper'),
-      this.opts
+      this.opts.corestoreOpts
     )
 
     await this.store.ready()
 
     this.networker = new Networker(this.store, {
+      announceLocalNetwork: true,
       maxPeers: MAX_PEERS,
-      ephemeral: false
+      ephemeral: false,
+      ...this.opts.networker
     })
     await this.networker.listen()
 
