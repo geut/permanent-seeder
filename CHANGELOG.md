@@ -10,4 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Expose public/index.html as main + assets tweaks
 - packages/sdk
   - Use require.resolve with dirname to obtain the dasboard assets dir
+  - Update: pass optional swarm port to seeder
+- packages/seeder
+  - Fix: use corestoreOpts + allow optional preferredPort setting
 - Docs update
