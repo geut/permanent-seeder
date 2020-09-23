@@ -168,8 +168,12 @@ module.exports = {
   },
 
   created () {
+    const networker = {
+      preferredPort: this.settings.config.swarm_port
+    }
     this.seeder = new Seeder({
-      storageLocation: resolve(this.settings.config.path, '.hyper')
+      storageLocation: resolve(this.settings.config.path, '.hyper'),
+      networker
     })
   },
 
