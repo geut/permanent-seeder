@@ -28,7 +28,7 @@
     "build": "react-scripts build",
     "eject": "react-scripts eject",
     "start": "EXTEND_ESLINT=true react-scripts start",
-    "test": "react-scripts test --passWithNoTests --watchAll=false"
+    "test": "EXTEND_ESLINT=true react-scripts test --passWithNoTests --watchAll=false"
   },
   "browserslist": {
     "production": [
