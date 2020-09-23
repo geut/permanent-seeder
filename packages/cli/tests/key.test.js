@@ -42,6 +42,8 @@ beforeAll(async () => {
   await ConfigInitCommand.run(['--force'])
 
   await StartCommand.run(['--restart'])
+
+  await new Promise(resolve => setTimeout(resolve, 5000))
 })
 
 afterAll(async () => {
