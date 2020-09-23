@@ -3,5 +3,6 @@ node_js:
   - "node"
   - "12"
 before_script:
-  - npx lerna bootstrap --ci
+  - npm run i
+  - npm run lerna bootstrap --ci
   - npm run build
