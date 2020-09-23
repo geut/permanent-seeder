@@ -30,8 +30,8 @@ npm run build
 
 # start the seeder
 cd ../cli
-permanent-seeder stop
-permanent-seeder start
+./bin/run stop
+./bin/run start
 
 ```
 
