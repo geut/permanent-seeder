@@ -17,7 +17,6 @@ const { ENDPOINT_HOOK_FILENAME, CONFIG_FILENAME } = require('../src/constants')
 function checkConfig (config) {
   expect(config.path).toBe(join(process.cwd(), 'permanent-seeder'))
   expect(config.save_stats).toBeTruthy()
-  expect(config.swarm_port).toBe(50150)
   expect(config.keys.endpoints).toHaveLength(1)
   expect(config.keys.endpoints[0]).toStrictEqual({
     url: 'http://localhost:3000',
@@ -44,7 +43,7 @@ afterEach(async () => {
   await del(process.cwd(), { force: true })
 })
 
-describe.only('Config commands', () => {
+describe('Config commands', () => {
   it('Init: should create a .toml file', async () => {
     expect(() => open(configFilePath, 'r')).rejects.toBeTruthy()
 
