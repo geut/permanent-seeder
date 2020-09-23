@@ -110,15 +110,22 @@ class Drive extends EventEmitter {
     this._hyperdrive.off('peer-add', this._onPeerAdd)
     this._hyperdrive.off('peer-remove', this._onPeerRemove)
 
-    this._contentFeed.off('download', this._onDownload)
-    this._contentFeed.off('upload', this._onUpload)
+    if (this._contentFeed) {
+      this._contentFeed.off('download', this._onDownload)
+      this._contentFeed.off('upload', this._onUpload)
+    }
 
     await this._hyperdrive.close()
   }
 
   async getContentFeed () {
     if (!this._contentFeed) {
-      this._contentFeed = await this._getContentAsync()
+      try {
+        this._contentFeed = await this._getContentAsync()
+      } catch (error) {
+        console.error(error)
+        return null
+      }
 
       this._contentFeed.on('download', this._onDownload)
       this._contentFeed.on('upload', this._onUpload)

@@ -2,4 +2,7 @@ language: node_js
 node_js:
   - "node"
   - "12"
-before_script: npx lerna bootstrap --ci
+before_script:
+  - npm i
+  - npm run lerna bootstrap --ci
+  - npm run build

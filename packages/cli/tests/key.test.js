@@ -14,6 +14,7 @@ const StopCommand = require('../src/commands/stop')
 const AddCommand = require('../src/commands/key/add')
 const RemoveCommand = require('../src/commands/key/remove')
 const GetCommand = require('../src/commands/key/get')
+const { pm2Delete } = require('../src/pm2-async')
 
 jest.setTimeout(10000)
 
@@ -26,20 +27,29 @@ async function addKey (key = randomBytes(32).toString('hex')) {
 
   expect(result[0]).toContain('Key added!')
 
+  // Wait for key completely added
+  await new Promise(resolve => setTimeout(resolve, 500))
+
   return key
 }
 
 beforeAll(async () => {
-  await ConfigInitCommand.run([])
+  try {
+    await StopCommand.run([])
+    await pm2Delete('seeder-daemon-test')
+  } catch (_) {}
+
+  await ConfigInitCommand.run(['--force'])
 
   await StartCommand.run(['--restart'])
-
-  // Wait for start complete
-  await new Promise(resolve => setTimeout(resolve, 2000))
 })
 
 afterAll(async () => {
-  await StopCommand.run([])
+  try {
+    await StopCommand.run([])
+    await pm2Delete('seeder-daemon-test')
+    await new Promise(resolve => setTimeout(resolve, 3500))
+  } catch (_) {}
 })
 
 beforeEach(async () => {
@@ -59,7 +69,7 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
-describe.skip('Test Commands', () => {
+describe('Test Commands', () => {
   it('Add: should work with key', async () => {
     const key = await addKey()
     insertedKeys.push({ key })

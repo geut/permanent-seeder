@@ -181,6 +181,7 @@ class Seeder extends EventEmitter {
     const onDrivePeerRemove = () => {
       this.emit('drive-peer-remove', keyString)
     }
+
     // Register event listeners
     drive.on('update', onDriveUpdate)
     drive.on('download', onDriveDownload)
