@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - packages/sdk
   - Use require.resolve with dirname to obtain the dasboard assets dir
   - Update: pass optional swarm port to seeder
+  - Api port setting
+  - Api https settings
 - packages/seeder
   - Fix: use corestoreOpts + allow optional preferredPort setting
 - Docs update
