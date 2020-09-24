@@ -13,7 +13,7 @@ save_stats = true
 
 ## [optional] HTTPS certificate and key
 # [api.https]
-# cert = "/home/esteban/Downloads/localhost.crt"
+# cert = "/path/to/file.crt"
 # key = "/home/esteban/Downloads/localhost.key"
 
 ## keys.endpoints = array of configs per endpoint
