@@ -4,6 +4,9 @@ path = 'permanent-seeder'
 # Enable stats recording
 save_stats = true
 
+# Preferred swarm port
+# swarm_port =
+
 # keys.endpoints = array of configs per endpoint
 [[keys.endpoints]]
 
