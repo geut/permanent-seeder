@@ -24,7 +24,7 @@ afterEach(async () => {
   } catch (_) {}
 })
 
-describe('Start Command', () => {
+describe.skip('Start Command', () => {
   it('Should not start without config', async () => {
     await expect(StartCommand.run([])).rejects.toThrow()
   })
