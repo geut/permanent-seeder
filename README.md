@@ -61,16 +61,25 @@ $ permanent-seeder config:[init|get]
 
 Default settings:
 ```toml
-# Permanent seeder path (will be completed on config:init)
+## Permanent seeder path (will be completed on config:init)
 path = 'permanent-seeder'
 
-# Enable stats recording
+## Enable stats recording
 save_stats = true
 
-# Preferred swarm port
+## [optional] Preferred swarm port
 # swarm_port =
 
-# keys.endpoints = array of configs per endpoint
+## [optional] Api service settings
+# [api]
+# port = 3001
+
+## [optional] HTTPS certificate and key
+# [api.https]
+# cert = "/path/to/cert.crt"
+# key = "/path/to/cert.key"
+
+## keys.endpoints = array of configs per endpoint
 [[keys.endpoints]]
 
   # Where to fetch keys
@@ -82,7 +91,7 @@ save_stats = true
   # Hook to parse response
   hook = 'endpoint-hook.js'
 
-## To add another endpoint, uncomment and complete next lines:
+## [optional] To add another endpoint, uncomment and complete next lines:
 # [[keys.endpoints]]
 #   url =
 #   frequency =
