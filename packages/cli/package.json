@@ -31,7 +31,7 @@
   ],
   "scripts": {
     "demo": "npx http-server ./demo -p 8383",
-    "lint": "xd-ns \"**/*.js\"",
+    "lint": "xd-ns \"src/**/*.js\"",
     "prepack": "oclif-dev manifest && oclif-dev readme",
     "postpack": "rm -f oclif.manifest.json",
     "prepublishOnly": "npm test",
