@@ -16,3 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - packages/seeder
   - Fix: use corestoreOpts + allow optional preferredPort setting
 - Docs update
+
+### Fixed
+- packages/cli
+  - Use api config to open dashboard in browser
