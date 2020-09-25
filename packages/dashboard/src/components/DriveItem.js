@@ -70,7 +70,7 @@ function DriveItem ({ driveKey }) {
   const [showInfo, setShowInfo] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
 
-  const { get, response, error } = useFetch(API_URL)
+  const { get, response, error } = useFetch(API_URL, { credentials: 'same-origin', mode: 'cors' })
 
   const { socket } = useSocket()
 

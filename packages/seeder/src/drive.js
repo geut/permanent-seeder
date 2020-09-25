@@ -139,7 +139,7 @@ class Drive extends EventEmitter {
   }
 
   async getStat (path = '/') {
-    return this._hyperdrive.stat(path)
+    return timeout(this._hyperdrive.stat(path), 200)
   }
 
   async getStats (path = '/', opts) {
