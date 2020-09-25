@@ -77,3 +77,6 @@ packages/cli/tmp
 packages/cli/dist
 
 .DS_Store
+
+# heapdumps
+*.heapsnapshot
