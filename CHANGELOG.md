@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - packages/dashboard
   - Expose public/index.html as main + assets tweaks
+  - Update: use preload for api/drives
 - packages/sdk
   - Use require.resolve with dirname to obtain the dasboard assets dir
   - Update: pass optional swarm port to seeder
