@@ -27,6 +27,7 @@ class Drive extends EventEmitter {
 
     this._hyperdrive = hyperdrive(store, key, this._opts)
     this._key = key
+    this._keyString = key.toString('hex')
     this._store = store
     this._download = null
     this._contentFeed = null
@@ -43,8 +44,8 @@ class Drive extends EventEmitter {
 
     this._getContentAsync = promisify(this._hyperdrive.getContent)
 
-    this._memoGetStats = memoize(this._hyperdrive.stats, { maxAge: 1000 * 60 * 60 })
-    this._memoGetStat = memoize(this._hyperdrive.stat, { maxAge: 1000 * 60 * 60 })
+    this._memoGetStats = memoize(this._hyperdrive.stats, { cacheKey: () => `stats_${this._keyString}`, maxAge: 1000 * 60 * 60 })
+    this._memoGetStat = memoize(this._hyperdrive.stat, { cacheKey: () => `stat_${this._keyString}`, maxAge: 1000 * 60 * 60 })
     this._readFile = memoize(this._hyperdrive.readFile, { maxAge: 1000 * 60 * 60 })
   }
 
@@ -154,6 +155,16 @@ class Drive extends EventEmitter {
     return Number.isFinite(value)
   }
 
+  seedingStatus (sizeData = {}) {
+    let status = 'WAITING' // waiting for peers == orange
+    if (sizeData.blocks > 0 && sizeData.downloadedBlocks >= sizeData.blocks) {
+      status = 'SEEDING' // green
+    } else if (sizeData.downloadedBlocks > 0) {
+      status = 'DOWNLOADING' // yellow
+    }
+    return status
+  }
+
   async getSize () {
     let stats = new Map()
     try {
@@ -180,6 +191,8 @@ class Drive extends EventEmitter {
     totalSize.blocks = this.isNumber(totalSize.blocks) ? totalSize.blocks : 0
     totalSize.bytes = this.isNumber(totalSize.bytes) ? totalSize.bytes : 0
     totalSize.downloadedBlocks = this.isNumber(totalSize.downloadedBlocks) ? totalSize.downloadedBlocks : 0
+    totalSize.seedingStatus = this.seedingStatus(totalSize)
+    totalSize.timestamp = Date.now()
 
     return totalSize
   }
