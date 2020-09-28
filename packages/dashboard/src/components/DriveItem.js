@@ -4,6 +4,7 @@ import { useSocket } from 'use-socketio'
 import { CopyToClipboard } from 'react-copy-to-clipboard'
 
 import { makeStyles } from '@material-ui/core'
+import Chip from '@material-ui/core/Chip'
 import IconButton from '@material-ui/core/IconButton'
 import InfoIcon from '@material-ui/icons/Info'
 import FoldIcon from '@material-ui/icons/UnfoldLess'
@@ -33,8 +34,17 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(2)
   },
 
+  driveTitleContainer: {
+    display: 'flex',
+    alignItems: 'center'
+  },
+
   driveTitle: {
     fontFamily: 'monospace'
+  },
+
+  seedingStatus: {
+    marginLeft: theme.spacing(2)
   },
 
   driveKey: {
@@ -61,6 +71,7 @@ function DriveItem ({ driveKey }) {
   const classes = useStyles()
 
   const [title, setTitle] = useState('')
+  const [seedingStatus, setSeedingStatus] = useState('WAITING')
   const [sizeBlocks, setSizeBlocks] = useState(0)
   const [sizeBytes, setSizeBytes] = useState(0)
   const [downloadedBlocks, setDownloadedBlocks] = useState(0)
@@ -124,9 +135,10 @@ function DriveItem ({ driveKey }) {
       setTitle(`Drive-${driveKey.substring(0, 6)}`)
       setSizeBlocks(drive.size.blocks)
       setSizeBytes(drive.size.bytes)
+      setSeedingStatus(drive.size.seedingStatus)
       setDownloadedBlocks(drive.size.downloadedBlocks)
-      setFiles(drive.stats)
-      setPeers(drive.peers)
+      setFiles(drive.stats || {})
+      setPeers(drive.peers || [])
 
       const driveInfo = await get(`/drives/${driveKey}/info`)
       if (!response.ok) {
@@ -170,7 +182,10 @@ function DriveItem ({ driveKey }) {
         <Grid container>
           <DriveItemGridContainer xs alignItems='center' justify='center'>
             <Grid container direction='column' alignItems='flex-start'>
-              <Typography variant='h4' className={classes.driveTitle}>{title}</Typography>
+              <div className={classes.driveTitleContainer}>
+                <Typography variant='h4' display='inline' className={classes.driveTitle}>{title}</Typography>
+                <Chip label={seedingStatus} size='small' variant='outlined' className={classes.seedingStatus} />
+              </div>
               <div onClick={e => e.stopPropagation()}>
                 <CopyToClipboard text={driveKey}>
                   <Tooltip title='Click to copy'>
