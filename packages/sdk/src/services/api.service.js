@@ -1,13 +1,16 @@
 const { readFileSync } = require('fs')
-const { join, dirname } = require('path')
+const { join, dirname, resolve } = require('path')
 const { homedir } = require('os')
 
+const { DrivesDatabase } = require('@geut/permanent-seeder-database')
 const ApiGatewayService = require('moleculer-web')
 const IO = require('socket.io')
 const compression = require('compression')
 const { encode } = require('dat-encoding')
 const heapdump = require('heapdump')
 const dashboard = require.resolve('@geut/permanent-seeder-dashboard')
+
+const { Config } = require('../mixins/config.mixin')
 
 module.exports = function (broker) {
   let { api: { https, port = 3001 } = {} } = broker.metadata.config
@@ -26,7 +29,7 @@ module.exports = function (broker) {
   return {
     name: 'api',
 
-    mixins: [ApiGatewayService],
+    mixins: [ApiGatewayService, Config],
 
     dependencies: [
       'metrics',
@@ -183,8 +186,14 @@ module.exports = function (broker) {
 
     methods: {
       driveSize: {
-        async handler (key) {
+        async handler (key, skipUpdate) {
           const size = await this.broker.call('seeder.driveSize', { key })
+          if (!skipUpdate) {
+          // update drives db
+            console.log('driveSize!!!!!!!')
+            console.log({ size })
+            await this.database.update(key, 'size', size)
+          }
           return size
         }
       },
@@ -204,14 +213,18 @@ module.exports = function (broker) {
       },
 
       driveStats: {
-        async handler (key) {
+        async handler (key, skipUpdate) {
           const stats = await this.broker.call('seeder.driveStats', { key })
+          if (!skipUpdate) {
+            // update drives db
+            await this.database.update(key, 'stats', stats)
+          }
           return stats
         }
       },
 
       drives: {
-        async handler (key) {
+        async handler (key, forceUpdate = false) {
           let keys = []
 
           if (key) {
@@ -222,15 +235,21 @@ module.exports = function (broker) {
 
           let drives = []
 
+          const skipUpdate = true
           drives = await Promise.all(keys.map(async ({ key: publicKey }) => {
-            return {
-              key: {
-                publicKey
-              },
-              stats: await this.driveStats(publicKey),
-              size: await this.driveSize(publicKey),
-              peers: await this.drivePeers(publicKey)
+            let item = await this.database.get(publicKey)
+            if (!item || Object.entries(item.stats).length === 0 || Object.entries(item.size).length === 0 || forceUpdate) {
+              item = {
+                key: publicKey,
+                stats: await this.driveStats(publicKey, skipUpdate),
+                size: await this.driveSize(publicKey, skipUpdate),
+                peers: await this.drivePeers(publicKey, skipUpdate)
+              }
+
+              await this.database.add(item)
             }
+
+            return item
           }))
 
           return key ? drives[0] : drives
@@ -258,6 +277,12 @@ module.exports = function (broker) {
           })
         }
       }
+    },
+
+    created () {
+      const drivesDbPath = resolve(this.settings.config.path, 'drives.db')
+
+      this.database = new DrivesDatabase(drivesDbPath)
     },
 
     async started () {
