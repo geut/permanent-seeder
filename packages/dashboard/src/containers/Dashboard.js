@@ -72,9 +72,10 @@ function Dashboard () {
   useEffect(() => {
     async function fetchInitalData () {
       const drives = await get('/drives')
+      console.log({ drives })
       if (response.ok) {
         setKeys(drives.reduce((keys, drive) => {
-          keys[drive.key.publicKey] = drive.key.publicKey
+          keys[drive.key] = drive.key
           return keys
         }, {}))
       }
