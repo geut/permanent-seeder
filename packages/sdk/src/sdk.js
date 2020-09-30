@@ -70,6 +70,10 @@ class SDK extends EventEmitter {
     return this._broker.call('keys.add', keyRecord)
   }
 
+  async fetchKeys () {
+    return this._broker.call('keys-updater.update')
+  }
+
   async unseed (keyRecord) {
     return this._broker.call('seeder.unseed', keyRecord)
   }
