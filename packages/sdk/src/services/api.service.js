@@ -79,32 +79,38 @@ module.exports = function (broker) {
     },
 
     events: {
-      'seeder.drive.add' (ctx) {
-        this.io.emit('drive.add', ctx.params.key)
+      async 'seeder.drive.add' (ctx) {
+        const drive = await this.drives(ctx.params.key)
+        this.io.emit('drive.add', drive)
       },
 
       'seeder.drive.remove' (ctx) {
         this.io.emit('drive.remove', ctx.params.key)
       },
 
-      'seeder.drive.download' (ctx) {
-        this.io.emit(`drive.${ctx.params.key}.download`, ctx.params.key)
+      async 'seeder.drive.download' (ctx) {
+        const drive = await this.drives(ctx.params.key)
+        this.io.emit('drive.download', drive)
       },
 
-      'seeder.drive.upload' (ctx) {
-        this.io.emit(`drive.${ctx.params.key}.upload`, ctx.params.key)
+      async 'seeder.drive.upload' (ctx) {
+        const drive = await this.drives(ctx.params.key)
+        this.io.emit('drive.upload', drive)
       },
 
-      'seeder.drive.indexjson.update' (ctx) {
-        this.io.emit(`drive.${ctx.params.key}.indexjson.update`, ctx.params.key)
+      async 'seeder.drive.indexjson.update' (ctx) {
+        const drive = await this.drives(ctx.params.key)
+        this.io.emit('drive.indexjson.update', drive)
       },
 
-      'seeder.drive.peer.add' (ctx) {
-        this.io.emit(`drive.${ctx.params.key}.peer.add`, ctx.params.key)
+      async 'seeder.drive.peer.add' (ctx) {
+        const drive = await this.drives(ctx.params.key)
+        this.io.emit('drive.peer.add', drive)
       },
 
-      'seeder.drive.peer.remove' (ctx) {
-        this.io.emit(`drive.${ctx.params.key}.peer.remove`, ctx.params.key)
+      async 'seeder.drive.peer.remove' (ctx) {
+        const drive = await this.drives(ctx.params.key)
+        this.io.emit('drive.peer.remove', drive)
       },
 
       'stats.host' (ctx) {
@@ -235,26 +241,20 @@ module.exports = function (broker) {
 
           let drives = []
 
-          const skipUpdate = true
-          drives = await Promise.all(keys.map(async ({ key: publicKey }) => {
-            let item = await this.database.get(publicKey)
-            if (!item || Object.entries(item.stats).length === 0 || Object.entries(item.size).length === 0 || forceUpdate) {
-              item = {
-                key: publicKey,
-                stats: await this.driveStats(publicKey, skipUpdate),
-                size: await this.driveSize(publicKey, skipUpdate),
-                peers: await this.drivePeers(publicKey, skipUpdate)
-              }
-
-              await this.database.add(item)
+          drives = await Promise.all(keys.map(async ({ key }) => {
+            return {
+              key,
+              stats: await this.driveStats(key),
+              size: await this.driveSize(key),
+              peers: await this.drivePeers(key),
+              info: await this.driveInfo(key)
             }
-
-            return item
           }))
 
           return key ? drives[0] : drives
         }
       },
+
       raw: {
         async handler (key, timestamp) {
         // get all keys from timestamp (optional)
@@ -262,6 +262,7 @@ module.exports = function (broker) {
           return stats
         }
       },
+
       heapdump: {
         async handler () {
           return new Promise((resolve, reject) => {
@@ -293,26 +294,6 @@ module.exports = function (broker) {
 
         client.on('disconnect', () => {
           this.logger.info('SOCKET: Client disconnected')
-        })
-
-        client.on('drive.size', async (key, done) => {
-          const size = await this.driveSize(key)
-          done(size)
-        })
-
-        client.on('drive.peers', async (key, done) => {
-          const peers = await this.drivePeers(key)
-          done(peers)
-        })
-
-        client.on('drive.stats', async (key, done) => {
-          const stats = await this.driveStats(key)
-          done(stats)
-        })
-
-        client.on('drive.info', async (key, done) => {
-          const info = await this.driveInfo(key)
-          done(info)
         })
       })
     }

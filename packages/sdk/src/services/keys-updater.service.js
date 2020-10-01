@@ -26,6 +26,17 @@ module.exports = {
     }
   },
 
+  actions: {
+    update: {
+      async handler (ctx) {
+        const { endpoints } = this.settings.config.keys
+        for (const endpoint of endpoints) {
+          await this.runUpdate(endpoint)
+        }
+      }
+    }
+  },
+
   methods: {
     async runUpdate (endpoint) {
       let hook = defaultHook
