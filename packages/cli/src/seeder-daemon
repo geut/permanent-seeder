@@ -2,7 +2,7 @@
 
 const { SDK } = require('@geut/permanent-seeder-sdk')
 
-const { MESSAGE_KEY_ADD, MESSAGE_SEEDER_UNSEED } = require('./constants')
+const { MESSAGE_KEY_ADD, MESSAGE_SEEDER_UNSEED, MESSAGE_KEY_FETCH } = require('./constants')
 
 let sdk
 
@@ -18,11 +18,16 @@ const seederDaemon = async () => {
 
 const messageHandlers = {
   [MESSAGE_KEY_ADD]: handleAddKeyMessage,
+  [MESSAGE_KEY_FETCH]: handleFetchKeysMessage,
   [MESSAGE_SEEDER_UNSEED]: handleUnseedMessage
 }
 
 async function handleAddKeyMessage (packet) {
   await sdk.addKey(packet.data)
+}
+
+async function handleFetchKeysMessage (packet) {
+  await sdk.fetchKeys(packet.data)
 }
 
 async function handleUnseedMessage (packet) {

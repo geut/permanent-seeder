@@ -12,7 +12,7 @@ const pm2SendDataToProcessId = promisify(pm2.sendDataToProcessId.bind(pm2))
 const pm2Start = promisify(pm2.start.bind(pm2))
 const pm2Stop = promisify(pm2.stop.bind(pm2))
 
-async function sendMessage (processName, message, data) {
+async function sendMessage (processName, message, data = {}) {
   await pm2Connect()
 
   let result
