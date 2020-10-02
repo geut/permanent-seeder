@@ -1,7 +1,7 @@
 const { EventEmitter } = require('events')
 const { promisify } = require('util')
-// const memoize = require('p-memoize')
-// const timeout = require('p-timeout')
+const memoize = require('p-memoize')
+const timeout = require('p-timeout')
 const debounce = require('lodash.debounce')
 
 const hyperdrive = require('@geut/hyperdrive-promise')
@@ -11,7 +11,8 @@ const DEFAULT_OPTIONS = {
   latest: true
 }
 
-// const CACHE_MAX_AGE = 1000
+const CACHE_MAX_AGE = 1000 * 5
+const TIMEOUT = 1000
 
 // TODO(dk): check support for mounts
 // const mounts = await drive.getAllMounts({ memory: true, recursive: !!opts.recursive })
@@ -47,11 +48,9 @@ class Drive extends EventEmitter {
 
     this._getContentAsync = promisify(this._hyperdrive.getContent)
 
-    // this._memoGetStats = memoize(this._hyperdrive.stats, { cacheKey: () => `stats_${this._keyString}`, maxAge: CACHE_MAX_AGE })
-    // this._memoGetStat = memoize(this._hyperdrive.stat, { cacheKey: () => `stat_${this._keyString}`, maxAge: CACHE_MAX_AGE })
-    // this._readFile = memoize(this._hyperdrive.readFile, { cacheKey: () => `readFile_${this._keyString}`, maxAge: CACHE_MAX_AGE })
-
-    // this._downloadedBlocksCount = 0
+    this._memoGetStats = memoize(this._hyperdrive.stats, { cacheKey: () => `stats_${this._keyString}`, maxAge: CACHE_MAX_AGE })
+    this._memoGetStat = memoize(this._hyperdrive.stat, { cacheKey: () => `stat_${this._keyString}`, maxAge: CACHE_MAX_AGE })
+    this._readFile = memoize(this._hyperdrive.readFile, { cacheKey: () => `readFile_${this._keyString}`, maxAge: CACHE_MAX_AGE })
   }
 
   get discoveryKey () {
@@ -109,12 +108,9 @@ class Drive extends EventEmitter {
     let indexJSON = {}
 
     try {
-      // const raw = await timeout(this._readFile('index.json', 'utf-8'), 200)
-      const raw = await this._hyperdrive.readFile('index.json', 'utf-8')
+      const raw = await timeout(this._readFile('index.json', 'utf-8'), TIMEOUT)
       indexJSON = JSON.parse(raw)
-    } catch (err) {
-      console.error(err.message)
-    }
+    } catch (_) {}
 
     const version = this._hyperdrive.version
 
@@ -159,16 +155,18 @@ class Drive extends EventEmitter {
 
   async getStat (path = '/') {
     try {
-      // return timeout(this._memoGetStat(path), 200)
-      return this._hyperdrive.stat(path)
-    } catch (error) {
+      return timeout(this._memoGetStat(path), TIMEOUT)
+    } catch (_) {
       return null
     }
   }
 
   async getStats (path = '/', opts) {
-    // return timeout(this._memoGetStats(path, opts), 200)
-    return this._hyperdrive.stats(path, opts)
+    try {
+      return timeout(this._memoGetStats(path, opts), TIMEOUT)
+    } catch (_) {
+      return new Map()
+    }
   }
 
   async getLstat (path = '/') {
@@ -233,8 +231,6 @@ class Drive extends EventEmitter {
     totalSize.blocks = this.isNumber(totalSize.blocks) ? totalSize.blocks : 0
     totalSize.bytes = this.isNumber(totalSize.bytes) ? totalSize.bytes : 0
     totalSize.downloadedBlocks = this.isNumber(totalSize.downloadedBlocks) ? totalSize.downloadedBlocks : 0
-    // totalSize.seedingStatus = this.seedingStatus(totalSize)
-    // totalSize.timestamp = Date.now()
 
     return totalSize
   }
