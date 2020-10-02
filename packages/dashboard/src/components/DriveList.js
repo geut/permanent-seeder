@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSocket } from 'use-socketio'
-import { DelayQueue } from 'rx-queue'
 
 import DrivesTable from './DrivesTable'
 
@@ -13,13 +12,12 @@ function buildDriveData (drive) {
     title: drive.info.indexJSON?.title || `Drive-${drive.key.substring(0, 6)}`,
     peers: drive.peers,
     files: drive.stats,
-    info: drive.info
+    info: drive.info,
+    seedingStatus: drive.seedingStatus
   }
 }
 
 function DriveList ({ loadDrives, onKeyAdd }) {
-  const updatedDrives = useRef({})
-
   const [drives, setDrives] = useState(() => {
     const drives = loadDrives()
 
@@ -29,18 +27,19 @@ function DriveList ({ loadDrives, onKeyAdd }) {
     }, {})
   })
 
-  const delay = useRef()
-
   function updateDrive (drive) {
-    updatedDrives.current[drive.key] = buildDriveData(drive)
-    delay.current.next()
+    setDrives(drives => ({
+      ...drives,
+      [drive.key]: buildDriveData(drive)
+    }))
   }
 
   // // Drive data
   const { unsubscribe: unsubscribeDriveDownload } = useSocket('drive.download', updateDrive)
-  const { unsubscribe: unsubscribeDriveIndexUpdate } = useSocket('drive.indexjson.update', updateDrive)
   const { unsubscribe: unsubscribeDrivePeerAdd } = useSocket('drive.peer.add', updateDrive)
   const { unsubscribe: unsubscribeDrivePeerRemove } = useSocket('drive.peer.remove', updateDrive)
+  const { unsubscribe: unsubscribeDriveReady } = useSocket('drive.ready', updateDrive)
+  const { unsubscribe: unsubscribeDriveUpdate } = useSocket('drive.update', updateDrive)
   const { unsubscribe: unsubscribeDriveUpload } = useSocket('drive.peer.upload', updateDrive)
 
   // New keys
@@ -56,28 +55,15 @@ function DriveList ({ loadDrives, onKeyAdd }) {
   })
 
   useEffect(() => {
-    delay.current = new DelayQueue(100)
-    delay.current.subscribe(function () {
-      const toUpdate = { ...updatedDrives.current }
-
-      updatedDrives.current = {}
-
-      console.log('execute', Object.keys(toUpdate).length)
-
-      setDrives(drives => ({
-        ...drives,
-        ...toUpdate
-      }))
-    })
-
     return () => {
-      unsubscribeDriveDownload()
-      unsubscribeDriveIndexUpdate()
-      unsubscribeDrivePeerAdd()
-      unsubscribeDrivePeerRemove()
-      unsubscribeDriveUpload()
       unsubscribeKeyAdd()
       unsubscribeKeyRemove()
+      unsubscribeDriveDownload()
+      unsubscribeDrivePeerAdd()
+      unsubscribeDrivePeerRemove()
+      unsubscribeDriveReady()
+      unsubscribeDriveUpdate()
+      unsubscribeDriveUpload()
     }
   }, [])
 

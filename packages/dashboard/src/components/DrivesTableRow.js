@@ -7,6 +7,7 @@ import TableCell from '@material-ui/core/TableCell'
 import MuiTableRow from '@material-ui/core/TableRow'
 import IconButton from '@material-ui/core/IconButton'
 import Collapse from '@material-ui/core/Collapse'
+
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp'
 
@@ -14,6 +15,7 @@ import { humanizedBytes } from '../format'
 
 import DriveInfo from './DriveInfo'
 import DriveDetailsDialog from './DriveDetailsDialog'
+import DriveSeedingStatusIndicator from './DriveSeedingStatusIndicator'
 
 const useStyles = makeStyles((theme) => ({
   row: {
@@ -40,6 +42,7 @@ const DrivesTableRow = React.memo(
     peers,
     files,
     info,
+    seedingStatus,
     onClick
   }) {
     const classes = useStyles()
@@ -51,6 +54,11 @@ const DrivesTableRow = React.memo(
       setOpen(open => !open)
     }
 
+    function handleOpenDetails (event) {
+      event.stopPropagation()
+      setDetailsOpen(true)
+    }
+
     return (
       <>
         <MuiTableRow
@@ -58,7 +66,7 @@ const DrivesTableRow = React.memo(
           role='checkbox'
           tabIndex={-1}
           key={driveKey}
-          onClick={() => setDetailsOpen(true)}
+          onClick={handleOpenDetails}
           className={classes.row}
         >
           <TableCell padding='none' align='center'>
@@ -67,14 +75,19 @@ const DrivesTableRow = React.memo(
             </IconButton>
           </TableCell>
           <TableCell align='center'>
-            <CopyToClipboard text={driveKey}>
-              <code
-                title={`${driveKey}\n(click to copy)`}
-                className={classes.key}
-              >
-                {driveKey.substr(0, 6)}...{driveKey.substr(-6)}
-              </code>
-            </CopyToClipboard>
+            <DriveSeedingStatusIndicator status={seedingStatus} />
+          </TableCell>
+          <TableCell align='center'>
+            <div onClick={e => e.stopPropagation()}>
+              <CopyToClipboard text={driveKey}>
+                <code
+                  title={`${driveKey}\n(click to copy)`}
+                  className={classes.key}
+                >
+                  {driveKey.substr(0, 6)}...{driveKey.substr(-6)}
+                </code>
+              </CopyToClipboard>
+            </div>
           </TableCell>
           <TableCell>{title}</TableCell>
           <TableCell align='center'>{sizeBlocks}</TableCell>
@@ -83,7 +96,7 @@ const DrivesTableRow = React.memo(
           <TableCell align='center'>{peers.length}</TableCell>
         </MuiTableRow>
         <MuiTableRow>
-          <TableCell className={classes.collapse} colSpan={7}>
+          <TableCell className={classes.collapse} colSpan={8}>
             <Collapse in={open} timeout='auto' unmountOnExit>
               <DriveInfo peers={peers} files={files} sizeBytes={sizeBytes} />
             </Collapse>

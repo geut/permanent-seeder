@@ -46,7 +46,13 @@ const useStyles = makeStyles((theme) => ({
     padding: 0,
     position: 'absolute',
     top: 20,
-    width: 1
+    width: 1,
+
+    '& + svg': {
+      position: 'absolute',
+      top: 2,
+      right: -25
+    }
   }
 }))
 
@@ -70,7 +76,6 @@ function DrivesTable ({ drives, onKeyAdd }) {
       aria-label='enhanced table'
     >
       <DrivesTableHead
-        classes={classes}
         order={order}
         orderBy={orderBy}
         onRequestSort={handleRequestSort}
@@ -90,6 +95,7 @@ function DrivesTable ({ drives, onKeyAdd }) {
               peers={drive.peers}
               files={drive.files}
               info={drive.info}
+              seedingStatus={drive.seedingStatus}
             />
           ))}
       </TableBody>

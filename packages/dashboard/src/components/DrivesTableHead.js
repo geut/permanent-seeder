@@ -7,13 +7,15 @@ import TableSortLabel from '@material-ui/core/TableSortLabel'
 import IconButton from '@material-ui/core/IconButton'
 
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline'
+import { makeStyles } from '@material-ui/core'
 
 const headCells = [
+  { id: 'seedingStatus', numeric: false, label: 'Status', width: '40px', sort: false },
   {
     id: 'key',
     numeric: false,
     label: 'Key',
-    extra: ({ onKeyAdd, classes }) =>
+    extra: ({ onKeyAdd }) =>
       (
         <IconButton
           aria-label='add key'
@@ -21,7 +23,6 @@ const headCells = [
           color='primary'
           variant='outlined'
           size='small'
-          className={classes.addKeyButton}
         >
           <AddCircleOutlineIcon />
         </IconButton>
@@ -34,7 +35,31 @@ const headCells = [
   { id: 'peers', numeric: true, label: 'Peers' }
 ]
 
-function DrivesTableHead ({ classes, order, orderBy, onRequestSort, rowCount, ...props }) {
+const useStyles = makeStyles((theme) => ({
+  visuallyHidden: {
+    border: 0,
+    clip: 'rect(0 0 0 0)',
+    height: 1,
+    margin: -1,
+    overflow: 'hidden',
+    padding: 0,
+    position: 'absolute',
+    top: 20,
+    width: 1
+  },
+
+  tableHeadCell: {
+    '& > span > svg': {
+      position: 'absolute',
+      top: 2,
+      right: -25
+    }
+  }
+}))
+
+function DrivesTableHead ({ order, orderBy, onRequestSort, rowCount, ...props }) {
+  const classes = useStyles()
+
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property)
   }
@@ -51,19 +76,23 @@ function DrivesTableHead ({ classes, order, orderBy, onRequestSort, rowCount, ..
             width={headCell.width}
             className={classes.tableHeadCell}
           >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={createSortHandler(headCell.id)}
-            >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <span className={classes.visuallyHidden}>
-                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                </span>
-              ) : null}
-              {ExtraComponent && <ExtraComponent classes={classes} {...props} />}
-            </TableSortLabel>
+            {headCell.sort !== false && (
+              <TableSortLabel
+                active={orderBy === headCell.id}
+                direction={orderBy === headCell.id ? order : 'asc'}
+                onClick={createSortHandler(headCell.id)}
+              >
+                {headCell.label}
+                {orderBy === headCell.id ? (
+                  <span className={classes.visuallyHidden}>
+                    {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                  </span>
+                ) : null}
+                {ExtraComponent && <ExtraComponent {...props} />}
+              </TableSortLabel>
+            )}
+
+            {headCell.sort === false && headCell.label}
           </TableCell>
         ))}
       </MuiTableRow>
