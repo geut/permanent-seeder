@@ -28,7 +28,6 @@ module.exports = {
         }
       },
       async handler (ctx) {
-        this.logger.info(ctx.params.keys)
         const keys = ctx.params.keys.map(datum => {
           const key = encode(datum.url)
           delete datum.url

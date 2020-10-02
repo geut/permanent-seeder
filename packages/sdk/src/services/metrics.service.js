@@ -2,7 +2,7 @@ const { resolve } = require('path')
 
 const { MetricsDatabase } = require('@geut/permanent-seeder-database')
 const top = require('process-top')()
-const { getDiskInfo } = require('node-disk-info')
+// const { getDiskInfo } = require('node-disk-info')
 const isOnline = require('is-online')
 
 const { Config } = require('../mixins/config.mixin')
@@ -68,10 +68,10 @@ module.exports = {
   methods: {
     getHostStats: {
       async handler () {
-        let disk = {}
+        const disk = []
 
         try {
-          disk = await getDiskInfo()
+          // disk = await getDiskInfo()
         } catch (error) {
           console.error(error)
         }

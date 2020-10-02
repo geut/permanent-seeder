@@ -1,7 +1,8 @@
 const { EventEmitter } = require('events')
 const { promisify } = require('util')
-const memoize = require('p-memoize')
-const timeout = require('p-timeout')
+// const memoize = require('p-memoize')
+// const timeout = require('p-timeout')
+const debounce = require('lodash.debounce')
 
 const hyperdrive = require('@geut/hyperdrive-promise')
 
@@ -9,6 +10,8 @@ const DEFAULT_OPTIONS = {
   sparse: false,
   latest: true
 }
+
+// const CACHE_MAX_AGE = 1000
 
 // TODO(dk): check support for mounts
 // const mounts = await drive.getAllMounts({ memory: true, recursive: !!opts.recursive })
@@ -32,7 +35,7 @@ class Drive extends EventEmitter {
     this._download = null
     this._contentFeed = null
 
-    this._onDownload = this._onDownload.bind(this)
+    this._onDownload = debounce(this._onDownload.bind(this), 250, { maxWait: 500, trailing: true })
     this._onUpload = this._onUpload.bind(this)
     this._onUpdate = this._onUpdate.bind(this)
     this._onPeerAdd = this._onPeerAdd.bind(this)
@@ -44,9 +47,11 @@ class Drive extends EventEmitter {
 
     this._getContentAsync = promisify(this._hyperdrive.getContent)
 
-    this._memoGetStats = memoize(this._hyperdrive.stats, { cacheKey: () => `stats_${this._keyString}`, maxAge: 1000 * 60 * 60 })
-    this._memoGetStat = memoize(this._hyperdrive.stat, { cacheKey: () => `stat_${this._keyString}`, maxAge: 1000 * 60 * 60 })
-    this._readFile = memoize(this._hyperdrive.readFile, { maxAge: 1000 * 60 * 60 })
+    // this._memoGetStats = memoize(this._hyperdrive.stats, { cacheKey: () => `stats_${this._keyString}`, maxAge: CACHE_MAX_AGE })
+    // this._memoGetStat = memoize(this._hyperdrive.stat, { cacheKey: () => `stat_${this._keyString}`, maxAge: CACHE_MAX_AGE })
+    // this._readFile = memoize(this._hyperdrive.readFile, { cacheKey: () => `readFile_${this._keyString}`, maxAge: CACHE_MAX_AGE })
+
+    // this._downloadedBlocksCount = 0
   }
 
   get discoveryKey () {
@@ -57,15 +62,23 @@ class Drive extends EventEmitter {
     return this._hyperdrive.peers
   }
 
-  download (path, cb) {
-    return this._hyperdrive.download(path, cb)
+  get feedBlocks () {
+    return this._contentFeed ? this._contentFeed.length : 0
+  }
+
+  get feedBytes () {
+    return this._contentFeed ? this._contentFeed.byteLength : 0
+  }
+
+  get feedStats () {
+    return this._contentFeed ? this._contentFeed._stats : {}
   }
 
   _onUpdate () {
     this.emit('update')
   }
 
-  _onDownload () {
+  _onDownload (index, data) {
     this.emit('download')
   }
 
@@ -85,6 +98,10 @@ class Drive extends EventEmitter {
     return this._hyperdrive.ready()
   }
 
+  download (path, cb) {
+    return this._hyperdrive.download(path, cb)
+  }
+
   async info () {
     // returns drive info, ie: { version, index.json }
     await this.ready()
@@ -92,7 +109,8 @@ class Drive extends EventEmitter {
     let indexJSON = {}
 
     try {
-      const raw = await timeout(this._readFile('index.json', 'utf-8'), 200)
+      // const raw = await timeout(this._readFile('index.json', 'utf-8'), 200)
+      const raw = await this._hyperdrive.readFile('index.json', 'utf-8')
       indexJSON = JSON.parse(raw)
     } catch (err) {
       console.error(err.message)
@@ -140,11 +158,17 @@ class Drive extends EventEmitter {
   }
 
   async getStat (path = '/') {
-    return timeout(this._hyperdrive.stat(path), 200)
+    try {
+      // return timeout(this._memoGetStat(path), 200)
+      return this._hyperdrive.stat(path)
+    } catch (error) {
+      return null
+    }
   }
 
   async getStats (path = '/', opts) {
-    return timeout(this._memoGetStats(path, opts), 200)
+    // return timeout(this._memoGetStats(path, opts), 200)
+    return this._hyperdrive.stats(path, opts)
   }
 
   async getLstat (path = '/') {
@@ -155,17 +179,35 @@ class Drive extends EventEmitter {
     return Number.isFinite(value)
   }
 
-  seedingStatus (sizeData = {}) {
+  seedingStatus () {
+    const size = this.getSize()
     let status = 'WAITING' // waiting for peers == orange
-    if (sizeData.blocks > 0 && sizeData.downloadedBlocks >= sizeData.blocks) {
+
+    if (size.blocks > 0 && size.downloadedBlocks >= size.blocks) {
       status = 'SEEDING' // green
-    } else if (sizeData.downloadedBlocks > 0) {
+    } else if (size.downloadedBlocks > 0) {
       status = 'DOWNLOADING' // yellow
     }
+
     return status
   }
 
-  async getSize () {
+  /**
+   * Feed size
+   */
+  getSize () {
+    return {
+      blocks: this.feedBlocks,
+      bytes: this.feedBytes,
+      downloadedBlocks: 0,
+      downloadedBytes: 0,
+      uploadedBlocks: 0,
+      uploadedBytes: 0,
+      ...this.feedStats
+    }
+  }
+
+  async getFilesSize () {
     let stats = new Map()
     try {
       // note: use stats cache
@@ -179,9 +221,9 @@ class Drive extends EventEmitter {
     }
 
     for (const [filePath, { blocks, size: bytes, downloadedBlocks }] of stats.entries()) {
-      const stat = await this._memoGetStat(filePath)
+      const stat = await this.getStat(filePath)
 
-      if (!stat[0].isDirectory()) {
+      if (stat && !stat[0].isDirectory()) {
         totalSize.blocks += blocks
         totalSize.bytes += bytes
         totalSize.downloadedBlocks += downloadedBlocks
@@ -191,8 +233,8 @@ class Drive extends EventEmitter {
     totalSize.blocks = this.isNumber(totalSize.blocks) ? totalSize.blocks : 0
     totalSize.bytes = this.isNumber(totalSize.bytes) ? totalSize.bytes : 0
     totalSize.downloadedBlocks = this.isNumber(totalSize.downloadedBlocks) ? totalSize.downloadedBlocks : 0
-    totalSize.seedingStatus = this.seedingStatus(totalSize)
-    totalSize.timestamp = Date.now()
+    // totalSize.seedingStatus = this.seedingStatus(totalSize)
+    // totalSize.timestamp = Date.now()
 
     return totalSize
   }

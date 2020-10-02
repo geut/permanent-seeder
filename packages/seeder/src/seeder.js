@@ -207,7 +207,7 @@ class Seeder extends EventEmitter {
     await drive.getContentFeed()
 
     // force the first fetch for drive info
-    this.emit('drive-indexjson', keyString)
+    this.emit('drive-ready', keyString)
   }
 
   /**
@@ -221,7 +221,7 @@ class Seeder extends EventEmitter {
     await Promise.all(keys.map(this.seedKey.bind(this)))
   }
 
-  async driveSize (key) {
+  driveSize (key) {
     return this.getDrive(key).getSize()
   }
 
@@ -239,6 +239,10 @@ class Seeder extends EventEmitter {
 
   async driveInfo (key) {
     return this.getDrive(key).info()
+  }
+
+  driveSeedingStatus (key) {
+    return this.getDrive(key).seedingStatus()
   }
 
   async driveNetwork (key) {
