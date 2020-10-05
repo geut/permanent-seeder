@@ -39,8 +39,8 @@ class Drive extends EventEmitter {
     this._onDownload = debounce(this._onDownload.bind(this), 250, { maxWait: 500, trailing: true })
     this._onUpload = this._onUpload.bind(this)
     this._onUpdate = this._onUpdate.bind(this)
-    this._onPeerAdd = this._onPeerAdd.bind(this)
-    this._onPeerRemove = this._onPeerRemove.bind(this)
+    this._onPeerAdd = debounce(this._onPeerAdd.bind(this), 1000 * 5, { maxWait: 1000 * 10 })
+    this._onPeerRemove = debounce(this._onPeerRemove.bind(this), 1000 * 5, { maxWait: 1000 * 10 })
 
     this._hyperdrive.on('update', this._onUpdate)
     this._hyperdrive.on('peer-add', this._onPeerAdd)
@@ -77,7 +77,7 @@ class Drive extends EventEmitter {
     this.emit('update')
   }
 
-  _onDownload (index, data) {
+  _onDownload () {
     this.emit('download')
   }
 

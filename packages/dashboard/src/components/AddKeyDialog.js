@@ -15,7 +15,8 @@ const useStyles = makeStyles((theme) => ({
     color: theme.palette.text.primary
   },
   input: {
-    fontFamily: 'monospace'
+    fontFamily: 'monospace',
+    fontSize: '1.3rem'
   }
 }))
 
@@ -40,7 +41,7 @@ function AddKeyDialog ({ open, keyToAdd = '', error, onClose, onAdd }) {
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth='sm'
+      maxWidth='md'
       fullWidth
       aria-labelledby='form-dialog-title'
     >

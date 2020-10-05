@@ -130,7 +130,7 @@ module.exports = {
       const stats = await this.driveStats(key)
       const size = this.driveSize(key)
 
-      await this.database.add({
+      await this.database.update({
         key,
         size,
         stats

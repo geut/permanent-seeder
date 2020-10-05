@@ -152,7 +152,7 @@ class Seeder extends EventEmitter {
     console.log('------------------------------------------------------------------\n')
 
     // Create drive
-    drive = new Drive(key, this.store)
+    drive = new Drive(decode(key), this.store)
 
     // Store drive
     this.drives.set(keyString, drive)
