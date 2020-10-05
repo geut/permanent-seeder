@@ -96,7 +96,6 @@ function Dashboard () {
       />
       <div className={classes.root}>
         <div className={classes.drives}>
-
           <Suspense fallback={<h1>Loading keys...</h1>}>
             <DriveList loadDrives={loadDrives} onKeyAdd={() => handleKeyAddDialogOpen()} />
           </Suspense>

@@ -29,7 +29,7 @@ function DriveFiles ({ files }) {
 
   return (
     <TableContainer square component={Paper} className={classes.container}>
-      <Table stickyHeader aria-label="drive's file contents table" className={classes.table}>
+      <Table size='small' aria-label="drive's file contents table" className={classes.table}>
         <TableHead>
           <TableRow>
             <TableCell className={classes.cellFile}>File</TableCell>

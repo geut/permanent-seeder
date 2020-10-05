@@ -20,8 +20,7 @@ const useStyles = makeStyles(theme => ({
     tableLayout: 'fixed'
   },
   address: {
-    fontFamily: 'monospace',
-    fontSize: '1.2rem'
+    fontFamily: 'monospace'
   }
 }))
 
@@ -30,7 +29,7 @@ function DrivePeers ({ peers }) {
 
   return (
     <TableContainer square component={Paper} className={classes.container}>
-      <Table stickyHeader aria-label="drive's peers table" className={classes.table}>
+      <Table aria-label="drive's peers table" size='small' className={classes.table}>
         <TableHead>
           <TableRow>
             <TableCell>Peers</TableCell>
