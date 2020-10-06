@@ -170,6 +170,14 @@ class Seeder extends EventEmitter {
       this.emit('drive-download', keyString)
     }
 
+    const onDriveDownloadStarted = () => {
+      this.emit('drive-download-started', keyString)
+    }
+
+    const onDriveDownloadFinished = () => {
+      this.emit('drive-download-finished', keyString)
+    }
+
     const onDriveUpload = () => {
       this.emit('drive-upload', keyString)
     }
@@ -182,19 +190,29 @@ class Seeder extends EventEmitter {
       this.emit('drive-peer-remove', keyString)
     }
 
+    const onDriveStats = (stats) => {
+      this.emit('drive-stats', keyString, stats)
+    }
+
     // Register event listeners
-    drive.on('update', onDriveUpdate)
+    drive.on('download-finished', onDriveDownloadFinished)
+    drive.on('download-started', onDriveDownloadStarted)
     drive.on('download', onDriveDownload)
-    drive.on('upload', onDriveUpload)
     drive.on('peer-add', onDrivePeerAdd)
     drive.on('peer-remove', onDrivePeerRemove)
+    drive.on('stats', onDriveStats)
+    drive.on('update', onDriveUpdate)
+    drive.on('upload', onDriveUpload)
 
     this._unlistens.push(() => {
-      drive.off('update', onDriveUpdate)
+      drive.off('download-finished', onDriveDownloadFinished)
+      drive.off('download-started', onDriveDownloadStarted)
       drive.off('download', onDriveDownload)
-      drive.off('upload', onDriveUpload)
       drive.off('peer-add', onDrivePeerAdd)
       drive.off('peer-remove', onDrivePeerRemove)
+      drive.off('stats', onDriveStats)
+      drive.off('update', onDriveUpdate)
+      drive.off('upload', onDriveUpload)
     })
 
     // Notify new drive
@@ -205,9 +223,6 @@ class Seeder extends EventEmitter {
 
     // Wait for content ready
     await drive.getContentFeed()
-
-    // force the first fetch for drive info
-    this.emit('drive-ready', keyString)
   }
 
   /**
@@ -229,10 +244,6 @@ class Seeder extends EventEmitter {
     return this.getDrive(key).getStats()
   }
 
-  async driveLstat (key) {
-    return this.getDrive(key).getLstat()
-  }
-
   drivePeers (key) {
     return this.getDrive(key).peers
   }
@@ -243,6 +254,10 @@ class Seeder extends EventEmitter {
 
   driveSeedingStatus (key) {
     return this.getDrive(key).seedingStatus()
+  }
+
+  loadDriveStats (key) {
+    this.getDrive(key).loadStats()
   }
 
   async driveNetwork (key) {

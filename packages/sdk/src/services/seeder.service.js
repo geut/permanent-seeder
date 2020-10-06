@@ -122,80 +122,100 @@ module.exports = {
       return fromEntries(stats)
     },
 
+    async loadDriveStats (key) {
+      this.seeder.loadDriveStats(key)
+    },
+
     driveSeedingStatus (key) {
       return this.seeder.driveSeedingStatus(key)
     },
 
-    async onDriveAdd (key) {
-      const stats = await this.driveStats(key)
-      const size = this.driveSize(key)
+    async updateDriveData (
+      key,
+      {
+        info = false,
+        peers = false,
+        seedingStatus = false,
+        size = false,
+        stats = false
+      } = {},
+      data
+    ) {
+      const toUpdate = {}
 
-      await this.database.update({
-        key,
-        size,
-        stats
+      if (info) toUpdate.info = await this.driveInfo(key)
+      if (peers) toUpdate.peers = await this.drivePeers(key)
+      if (seedingStatus) toUpdate.seedingStatus = this.driveSeedingStatus(key)
+      if (size) toUpdate.size = this.driveSize(key)
+
+      await this.database.update(key, {
+        ...data,
+        ...toUpdate
       })
+    },
+
+    async onDriveAdd (key) {
+      const dbDrive = await this.database.get(key)
+
+      if (!dbDrive) {
+        await this.database.add({ key })
+      }
 
       this.broker.broadcast('seeder.drive.add', { key })
     },
 
-    async onDriveReady (key) {
-      await this.database.update(key, {
-        info: await this.driveInfo(key)
-      })
-
-      this.broker.broadcast('seeder.drive.ready', { key })
-    },
-
     async onDriveRemove (key) {
       await this.database.remove(key)
-
       this.broker.broadcast('seeder.drive.remove', { key })
     },
 
     async onDriveUpdate (key) {
-      await this.database.update(key, {
-        stats: await this.driveStats(key)
-      })
+      // Request for stats => onDriveStats
+      this.loadDriveStats(key)
 
+      await this.updateDriveData(key, { size: true, seedingStatus: true })
       this.broker.broadcast('seeder.drive.update', { key })
     },
 
+    async onDriveDownloadStarted (key) {
+      // Request for stats => onDriveStats
+      this.loadDriveStats(key)
+
+      await this.updateDriveData(key, { info: true, size: true, seedingStatus: true })
+      this.broker.broadcast('seeder.drive.download-started', { key })
+    },
+
     async onDriveDownload (key) {
-      const size = this.driveSize(key)
-      const seedingStatus = this.driveSeedingStatus(key)
-
-      await this.database.update(key, {
-        size,
-        seedingStatus
-      })
-
+      await this.updateDriveData(key, { size: true })
       this.broker.broadcast('seeder.drive.download', { key })
     },
 
-    async onDriveUpload (key) {
-      await this.database.update(key, {
-        stats: await this.driveStats(key),
-        info: await this.driveInfo(key)
-      })
+    async onDriveDownloadFinished (key) {
+      // Request for stats => onDriveStats
+      this.loadDriveStats(key)
 
+      await this.updateDriveData(key, { size: true, seedingStatus: true })
+      this.broker.broadcast('seeder.drive.download-finished', { key })
+    },
+
+    async onDriveUpload (key) {
+      await this.updateDriveData(key, { size: true })
       this.broker.broadcast('seeder.drive.upload', { key })
     },
 
     async onDrivePeerAdd (key) {
-      await this.database.update(key, {
-        peers: await this.drivePeers(key)
-      })
-
+      await this.updateDriveData(key, { peers: true })
       this.broker.broadcast('seeder.drive.peer.add', { key })
     },
 
     async onDrivePeerRemove (key) {
-      await this.database.update(key, {
-        peers: await this.drivePeers(key)
-      })
-
+      await this.updateDriveData(key, { peers: true })
       this.broker.broadcast('seeder.drive.peer.remove', { key })
+    },
+
+    async onDriveStats (key, stats) {
+      await this.updateDriveData(key, undefined, { stats: fromEntries(stats) })
+      this.broker.broadcast('seeder.drive.stats', { key })
     },
 
     onSwarmPeerAdd (peer) {
@@ -231,10 +251,12 @@ module.exports = {
     this.seeder.on('drive-update', this.onDriveUpdate)
     this.seeder.on('drive-remove', this.onDriveRemove)
     this.seeder.on('drive-download', this.onDriveDownload)
+    this.seeder.on('drive-download-started', this.onDriveDownloadStarted)
+    this.seeder.on('drive-download-finished', this.onDriveDownloadFinished)
     this.seeder.on('drive-upload', this.onDriveUpload)
     this.seeder.on('drive-peer-add', this.onDrivePeerAdd)
     this.seeder.on('drive-peer-remove', this.onDrivePeerRemove)
-    this.seeder.on('drive-ready', this.onDriveReady)
+    this.seeder.on('drive-stats', this.onDriveStats)
     this.seeder.on('networker-peer-add', this.onSwarmPeerAdd)
     this.seeder.on('networker-peer-remove', this.onSwarmPeerRemove)
 
@@ -247,10 +269,12 @@ module.exports = {
     this.seeder.off('drive-update', this.onDriveUpdate)
     this.seeder.off('drive-remove', this.onDriveRemove)
     this.seeder.off('drive-download', this.onDriveDownload)
+    this.seeder.off('drive-download-started', this.onDriveDownloadStarted)
+    this.seeder.off('drive-download-finished', this.onDriveDownloadFinished)
     this.seeder.off('drive-upload', this.onDriveUpload)
     this.seeder.off('drive-peer-add', this.onDrivePeerAdd)
     this.seeder.off('drive-peer-remove', this.onDrivePeerRemove)
-    this.seeder.off('drive-ready', this.onDriveReady)
+    this.seeder.off('drive-stats', this.onDriveStats)
     this.seeder.off('networker-peer-add', this.onSwarmPeerAdd)
     this.seeder.off('networker-peer-remove', this.onSwarmPeerRemove)
 

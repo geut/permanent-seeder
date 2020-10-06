@@ -36,11 +36,12 @@ class Drive extends EventEmitter {
     this._download = null
     this._contentFeed = null
 
-    this._onDownload = debounce(this._onDownload.bind(this), 250, { maxWait: 500, trailing: true })
+    this._onDownload = debounce(this._onDownload.bind(this), 500, { maxWait: 1000 * 2 })
     this._onUpload = this._onUpload.bind(this)
     this._onUpdate = this._onUpdate.bind(this)
     this._onPeerAdd = debounce(this._onPeerAdd.bind(this), 1000 * 5, { maxWait: 1000 * 10 })
     this._onPeerRemove = debounce(this._onPeerRemove.bind(this), 1000 * 5, { maxWait: 1000 * 10 })
+    this._onStats = this._onStats.bind(this)
 
     this._hyperdrive.on('update', this._onUpdate)
     this._hyperdrive.on('peer-add', this._onPeerAdd)
@@ -49,8 +50,9 @@ class Drive extends EventEmitter {
     this._getContentAsync = promisify(this._hyperdrive.getContent)
 
     this._memoGetStats = memoize(this._hyperdrive.stats, { cacheKey: () => `stats_${this._keyString}`, maxAge: CACHE_MAX_AGE })
-    this._memoGetStat = memoize(this._hyperdrive.stat, { cacheKey: () => `stat_${this._keyString}`, maxAge: CACHE_MAX_AGE })
     this._readFile = memoize(this._hyperdrive.readFile, { cacheKey: () => `readFile_${this._keyString}`, maxAge: CACHE_MAX_AGE })
+
+    this._downloadStarted = false
   }
 
   get discoveryKey () {
@@ -78,6 +80,18 @@ class Drive extends EventEmitter {
   }
 
   _onDownload () {
+    const downloadedPercent = this.feedStats.downloadedBlocks / this.feedBlocks
+
+    // Downloaded > 1%
+    if (!this._downloadStarted && downloadedPercent > 0.01) {
+      this._downloadStarted = true
+      return this.emit('download-started')
+    }
+
+    if (this.feedStats.downloadedBlocks >= this.feedBlocks) {
+      return this.emit('download-finished')
+    }
+
     this.emit('download')
   }
 
@@ -91,6 +105,15 @@ class Drive extends EventEmitter {
 
   _onPeerRemove () {
     this.emit('peer-remove')
+  }
+
+  _onStats (err, stats) {
+    if (err) {
+      console.error(err)
+      return
+    }
+
+    this.emit('stats', stats)
   }
 
   async ready () {
@@ -153,35 +176,24 @@ class Drive extends EventEmitter {
     return this._contentFeed
   }
 
-  async getStat (path = '/') {
-    try {
-      return timeout(this._memoGetStat(path), TIMEOUT)
-    } catch (_) {
-      return null
-    }
+  loadStats (path = '/', opts) {
+    this._hyperdrive.stats(path, opts, this._onStats)
   }
 
   async getStats (path = '/', opts) {
     try {
       return timeout(this._memoGetStats(path, opts), TIMEOUT)
-    } catch (_) {
+    } catch (error) {
+      console.error(error)
       return new Map()
     }
-  }
-
-  async getLstat (path = '/') {
-    return this._hyperdrive.lstat(path)
-  }
-
-  isNumber (value) {
-    return Number.isFinite(value)
   }
 
   seedingStatus () {
     const size = this.getSize()
     let status = 'WAITING' // waiting for peers == orange
 
-    if (size.blocks > 0 && size.downloadedBlocks >= size.blocks) {
+    if (this.feedBlocks > 0 && size.downloadedBlocks >= this.feedBlocks) {
       status = 'SEEDING' // green
     } else if (size.downloadedBlocks > 0) {
       status = 'DOWNLOADING' // yellow
@@ -203,36 +215,6 @@ class Drive extends EventEmitter {
       uploadedBytes: 0,
       ...this.feedStats
     }
-  }
-
-  async getFilesSize () {
-    let stats = new Map()
-    try {
-      // note: use stats cache
-      stats = await this.getStats('/', { file: true })
-    } catch (_) {}
-
-    const totalSize = {
-      blocks: 0,
-      bytes: 0,
-      downloadedBlocks: 0
-    }
-
-    for (const [filePath, { blocks, size: bytes, downloadedBlocks }] of stats.entries()) {
-      const stat = await this.getStat(filePath)
-
-      if (stat && !stat[0].isDirectory()) {
-        totalSize.blocks += blocks
-        totalSize.bytes += bytes
-        totalSize.downloadedBlocks += downloadedBlocks
-      }
-    }
-
-    totalSize.blocks = this.isNumber(totalSize.blocks) ? totalSize.blocks : 0
-    totalSize.bytes = this.isNumber(totalSize.bytes) ? totalSize.bytes : 0
-    totalSize.downloadedBlocks = this.isNumber(totalSize.downloadedBlocks) ? totalSize.downloadedBlocks : 0
-
-    return totalSize
   }
 }
 
