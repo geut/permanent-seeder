@@ -34,18 +34,10 @@ function DriveList ({ loadDrives, onKeyAdd }) {
     }))
   }
 
-  // // Drive data
-  const { unsubscribe: unsubscribeDriveDownload } = useSocket('drive.download', updateDrive)
-  const { unsubscribe: unsubscribeDrivePeerAdd } = useSocket('drive.peer.add', updateDrive)
-  const { unsubscribe: unsubscribeDrivePeerRemove } = useSocket('drive.peer.remove', updateDrive)
-  const { unsubscribe: unsubscribeDriveReady } = useSocket('drive.ready', updateDrive)
-  const { unsubscribe: unsubscribeDriveUpdate } = useSocket('drive.update', updateDrive)
-  const { unsubscribe: unsubscribeDriveUpload } = useSocket('drive.peer.upload', updateDrive)
+  // New key + update
+  const { unsubscribe: unsubscribeKeyUpdate } = useSocket('update', updateDrive)
 
-  // New keys
-  const { unsubscribe: unsubscribeKeyAdd } = useSocket('drive.add', updateDrive)
-
-  // Removed keys
+  // Removed key
   const { unsubscribe: unsubscribeKeyRemove } = useSocket('drive.remove', key => {
     setDrives(drives => {
       const newDrives = { ...drives }
@@ -56,14 +48,8 @@ function DriveList ({ loadDrives, onKeyAdd }) {
 
   useEffect(() => {
     return () => {
-      unsubscribeKeyAdd()
+      unsubscribeKeyUpdate()
       unsubscribeKeyRemove()
-      unsubscribeDriveDownload()
-      unsubscribeDrivePeerAdd()
-      unsubscribeDrivePeerRemove()
-      unsubscribeDriveReady()
-      unsubscribeDriveUpdate()
-      unsubscribeDriveUpload()
     }
   }, [])
 

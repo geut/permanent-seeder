@@ -81,35 +81,47 @@ module.exports = function (broker) {
 
     events: {
       'seeder.drive.add' (ctx) {
-        return this.emitDriveInfo(ctx.params.key, 'drive.add')
+        return this.emitDriveUpdate(ctx.params.key)
       },
 
       'seeder.drive.remove' (ctx) {
         this.io.emit('drive.remove', ctx.params.key)
       },
 
+      'seeder.drive.download-started' (ctx) {
+        return this.emitDriveUpdate(ctx.params.key)
+      },
+
+      'seeder.drive.download-finished' (ctx) {
+        return this.emitDriveUpdate(ctx.params.key)
+      },
+
       'seeder.drive.download' (ctx) {
-        return this.emitDriveInfo(ctx.params.key, 'drive.download')
+        return this.emitDriveUpdate(ctx.params.key)
       },
 
       'seeder.drive.upload' (ctx) {
-        return this.emitDriveInfo(ctx.params.key, 'drive.upload')
+        return this.emitDriveUpdate(ctx.params.key)
       },
 
       'seeder.drive.ready' (ctx) {
-        return this.emitDriveInfo(ctx.params.key, 'drive.ready')
+        return this.emitDriveUpdate(ctx.params.key)
+      },
+
+      'seeder.drive.stats' (ctx) {
+        return this.emitDriveUpdate(ctx.params.key)
       },
 
       'seeder.drive.update' (ctx) {
-        return this.emitDriveInfo(ctx.params.key, 'drive.update')
+        return this.emitDriveUpdate(ctx.params.key)
       },
 
       'seeder.drive.peer.add' (ctx) {
-        return this.emitDriveInfo(ctx.params.key, 'drive.peer.add')
+        return this.emitDriveUpdate(ctx.params.key)
       },
 
       'seeder.drive.peer.remove' (ctx) {
-        return this.emitDriveInfo(ctx.params.key, 'drive.peer.remove')
+        return this.emitDriveUpdate(ctx.params.key)
       },
 
       'stats.host' (ctx) {
@@ -237,10 +249,11 @@ module.exports = function (broker) {
         }
       },
 
-      emitDriveInfo: {
-        async handler (key, event) {
+      emitDriveUpdate: {
+        async handler (key) {
           const drive = await this.drives(key)
-          return this.io.emit(event, drive)
+
+          return this.io.emit('update', drive)
         }
       },
 

@@ -26,7 +26,9 @@ function DriveSeedingStatusIndicator ({ status = 'WAITING' }) {
   const classes = useStyles()
 
   return (
-    <DotIcon className={classes[status.toLowerCase()]} />
+    <div title={`${status[0]}${status.slice(1).toLowerCase()}`}>
+      <DotIcon className={classes[status.toLowerCase()]} />
+    </div>
   )
 }
 
