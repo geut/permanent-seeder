@@ -39,6 +39,7 @@ const DrivesTableRow = React.memo(
     sizeBlocks,
     sizeBytes,
     downloadedBlocks,
+    downloadedPercent,
     peers,
     files,
     info,
@@ -93,10 +94,11 @@ const DrivesTableRow = React.memo(
           <TableCell align='center'>{sizeBlocks}</TableCell>
           <TableCell align='center'>{humanizedBytes(sizeBytes).pretty}</TableCell>
           <TableCell align='center'>{downloadedBlocks}</TableCell>
+          <TableCell align='center'>{downloadedPercent}</TableCell>
           <TableCell align='center'>{peers.length}</TableCell>
         </MuiTableRow>
         <MuiTableRow>
-          <TableCell className={classes.collapse} colSpan={8}>
+          <TableCell className={classes.collapse} colSpan={9}>
             <Collapse in={open} timeout='auto' unmountOnExit>
               <DriveInfo peers={peers} files={files} sizeBytes={sizeBytes} />
             </Collapse>

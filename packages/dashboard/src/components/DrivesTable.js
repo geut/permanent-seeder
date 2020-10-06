@@ -92,6 +92,7 @@ function DrivesTable ({ drives, onKeyAdd }) {
               sizeBlocks={drive.sizeBlocks}
               sizeBytes={drive.sizeBytes}
               downloadedBlocks={drive.downloadedBlocks}
+              downloadedPercent={drive.downloadedPercent}
               peers={drive.peers}
               files={drive.files}
               info={drive.info}

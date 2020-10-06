@@ -28,10 +28,11 @@ const headCells = [
         </IconButton>
       )
   },
-  { id: 'title', numeric: false, label: 'Title', width: '40%' },
+  { id: 'title', numeric: false, label: 'Title', width: '30%' },
   { id: 'sizeBlocks', numeric: true, label: 'Blocks' },
   { id: 'sizeBytes', numeric: true, label: 'Size' },
   { id: 'downloadedBlocks', numeric: true, label: 'Downloaded blocks' },
+  { id: 'downloadedPercent', numeric: true, label: 'Downloaded (%)' },
   { id: 'peers', numeric: true, label: 'Peers' }
 ]
 
