@@ -234,6 +234,12 @@ It also contains a [`dashboard`](#dashboard) that you can use to have a visual r
 As you can see the project does a couple of things. To do this we decided to use a microservices based approach. We choose to use [moleculer](https://moleculer.services/) as the structural framework behind the Permanent Seeder. This enables multiples processes to communicate each other and at the same time each of these will have a single responsibility/scope. This also give us some room to scale things up if needed.
 :sunglasses:
 
+## <a name="routes"></a> Routes
+
+### `api/raw/:key`
+
+The route `api/raw/:key` displays the raw data that feed into the dashboard.
+
 ## <a name="issues"></a> Issues
 
 :bug: If you found an issue we encourage you to report it on [github](https://github.com/geut/permanent-seeder/issues). Please specify your OS and the actions to reproduce it.
