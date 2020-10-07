@@ -21,7 +21,7 @@ const MAX_PEERS = 256
 const DEFAULT_OPTS = {
   announce: true,
   lookup: true,
-  storageLocation: join(homedir(), 'permanent-seeder'),
+  storageLocation: join(homedir(), 'permanent-seeder', '.hyper'),
   corestoreOpts: {
     sparse: false,
     cache: {
@@ -44,9 +44,8 @@ const DEFAULT_OPTS = {
  * @param {} storageLocation
  * @param {} name
  */
-const getCoreStore = (storageLocation, name) => {
-  const location = join(storageLocation, name)
-  return file => raf(join(location, file))
+const getCoreStore = (storageLocation) => {
+  return file => raf(join(storageLocation, file))
 }
 
 /**
@@ -75,7 +74,7 @@ class Seeder extends EventEmitter {
     if (this.ready) return
 
     this.store = new Corestore(
-      getCoreStore(this.opts.storageLocation, '.hyper'),
+      getCoreStore(this.opts.storageLocation),
       this.opts.corestoreOpts
     )
 
@@ -139,7 +138,7 @@ class Seeder extends EventEmitter {
    *
    * @param {string|Buffer} key key to seed
    */
-  async seedKey (key) {
+  async seedKey ({ key, size }) {
     const keyString = encode(key)
 
     // Check if drive present
@@ -152,15 +151,13 @@ class Seeder extends EventEmitter {
     console.log('------------------------------------------------------------------\n')
 
     // Create drive
-    drive = new Drive(decode(key), this.store)
+    drive = new Drive(decode(key), this.store, size)
 
     // Store drive
     this.drives.set(keyString, drive)
 
     // Wait for readyness
     await drive.ready()
-
-    drive.download('/')
 
     const onDriveUpdate = () => {
       this.emit('drive-update', keyString)

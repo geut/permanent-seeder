@@ -17,11 +17,16 @@ const TIMEOUT = 1000
 // TODO(dk): check support for mounts
 // const mounts = await drive.getAllMounts({ memory: true, recursive: !!opts.recursive })
 
+const defaultTransferSizes = {
+  downloadedBlocks: 0,
+  downloadedBytes: 0
+}
+
 /**
  * Drive class
  */
 class Drive extends EventEmitter {
-  constructor (key, store, opts = {}) {
+  constructor (key, store, transferSizes = defaultTransferSizes, opts = {}) {
     super()
 
     this._opts = {
@@ -32,11 +37,10 @@ class Drive extends EventEmitter {
     this._hyperdrive = hyperdrive(store, key, this._opts)
     this._key = key
     this._keyString = key.toString('hex')
-    this._store = store
-    this._download = null
     this._contentFeed = null
 
-    this._onDownload = debounce(this._onDownload.bind(this), 500, { maxWait: 1000 * 2 })
+    // this._onDownload = debounce(this._onDownload.bind(this), 500, { maxWait: 1000 * 2 })
+    this._onDownload = this._onDownload.bind(this)
     this._onUpload = this._onUpload.bind(this)
     this._onUpdate = this._onUpdate.bind(this)
     this._onPeerAdd = debounce(this._onPeerAdd.bind(this), 1000 * 5, { maxWait: 1000 * 10 })
@@ -53,6 +57,9 @@ class Drive extends EventEmitter {
     this._readFile = memoize(this._hyperdrive.readFile, { cacheKey: () => `readFile_${this._keyString}`, maxAge: CACHE_MAX_AGE })
 
     this._downloadStarted = false
+
+    this._downloadedBlocks = transferSizes.downloadedBlocks || 0
+    this._downloadedBytes = transferSizes.downloadedBytes || 0
   }
 
   get discoveryKey () {
@@ -71,24 +78,28 @@ class Drive extends EventEmitter {
     return this._contentFeed ? this._contentFeed.byteLength : 0
   }
 
-  get feedStats () {
-    return this._contentFeed ? this._contentFeed._stats : {}
+  get downloadedBlocks () {
+    return this._downloadedBlocks
+  }
+
+  get downloadedBytes () {
+    return this._downloadedBytes
   }
 
   _onUpdate () {
     this.emit('update')
   }
 
-  _onDownload () {
-    const downloadedPercent = this.feedStats.downloadedBlocks / this.feedBlocks
+  _onDownload (index, { length }) {
+    this._downloadedBlocks++
+    this._downloadedBytes += length
 
-    // Downloaded > 1%
-    if (!this._downloadStarted && downloadedPercent > 0.01) {
+    if (!this._downloadStarted) {
       this._downloadStarted = true
       return this.emit('download-started')
     }
 
-    if (this.feedStats.downloadedBlocks >= this.feedBlocks) {
+    if (this.downloadedBlocks >= this.feedBlocks) {
       return this.emit('download-finished')
     }
 
@@ -209,11 +220,8 @@ class Drive extends EventEmitter {
     return {
       blocks: this.feedBlocks,
       bytes: this.feedBytes,
-      downloadedBlocks: 0,
-      downloadedBytes: 0,
-      uploadedBlocks: 0,
-      uploadedBytes: 0,
-      ...this.feedStats
+      downloadedBlocks: this.downloadedBlocks,
+      downloadedBytes: this.downloadedBytes
     }
   }
 }

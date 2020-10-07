@@ -1,6 +1,7 @@
 const { resolve } = require('path')
 
 const fromEntries = require('fromentries')
+const { encode } = require('dat-encoding')
 
 const { Seeder } = require('@geut/permanent-seeder-core')
 const { DrivesDatabase } = require('@geut/permanent-seeder-database')
@@ -72,6 +73,15 @@ module.exports = {
       }
     },
 
+    driveSeedingStatus: {
+      params: {
+        key: { type: 'string', length: '64', hex: true }
+      },
+      async handler (ctx) {
+        return this.driveSeedingStatus(ctx.params.key)
+      }
+    },
+
     getSwarmStats: {
       async handler () {
         return this.seeder.getSwarmStats()
@@ -80,9 +90,25 @@ module.exports = {
   },
 
   methods: {
-    async seed (keyBuffers) {
-      const keys = keyBuffers.map(key => Buffer.isBuffer(key) ? key : Buffer.from(key, 'hex'))
-      return this.seeder.seed(keys)
+    async seed (keys) {
+      const keysToSeed = []
+
+      for (const bufferKey of keys) {
+        const key = Buffer.isBuffer(bufferKey) ? bufferKey : Buffer.from(bufferKey, 'hex')
+        const keyString = encode(key)
+
+        // TODO(Esteban): Move from here
+        let dbDrive = await this.database.get(keyString)
+
+        if (!dbDrive) {
+          await this.database.add({ key: keyString })
+          dbDrive = await this.database.get(keyString)
+        }
+
+        keysToSeed.push({ key, size: dbDrive.size })
+      }
+
+      return this.seeder.seed(keysToSeed)
     },
 
     async unseed (key) {
