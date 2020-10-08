@@ -238,7 +238,7 @@ As you can see the project does a couple of things. To do this we decided to use
 
 ### `api/raw/:key`
 
-The route `api/raw/:key` displays the raw data that feed into the dashboard.
+Returns the raw data that feed into the dashboard.
 
 ## <a name="issues"></a> Issues
 
