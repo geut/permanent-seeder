@@ -34,7 +34,6 @@ module.exports = function (broker) {
 
     dependencies: [
       'metrics',
-      'seeder',
       'keys'
     ],
 
@@ -62,6 +61,7 @@ module.exports = function (broker) {
           'GET api/drives/:key/peers': 'api.drives.peers',
           'GET api/drives/:key/stats': 'api.drives.stats',
           'GET api/drives/:key/info': 'api.drives.info',
+          'GET api/drives/:key/seedingStatus': 'api.drives.seedingStatus',
           'GET api/stats/host': 'api.stats.host',
           'GET api/stats/network': 'api.stats.network',
           'GET api/raw/:key': 'api.raw',
@@ -80,47 +80,11 @@ module.exports = function (broker) {
     },
 
     events: {
-      'seeder.drive.add' (ctx) {
-        return this.emitDriveUpdate(ctx.params.key)
-      },
+      'seeder.drive.*' (ctx) {
+        if (ctx.eventName === 'seeder.drive.remove') {
+          return this.io.emit('drive.remove', ctx.params.key)
+        }
 
-      'seeder.drive.remove' (ctx) {
-        this.io.emit('drive.remove', ctx.params.key)
-      },
-
-      'seeder.drive.download-started' (ctx) {
-        return this.emitDriveUpdate(ctx.params.key)
-      },
-
-      'seeder.drive.download-finished' (ctx) {
-        return this.emitDriveUpdate(ctx.params.key)
-      },
-
-      'seeder.drive.download' (ctx) {
-        return this.emitDriveUpdate(ctx.params.key)
-      },
-
-      'seeder.drive.upload' (ctx) {
-        return this.emitDriveUpdate(ctx.params.key)
-      },
-
-      'seeder.drive.ready' (ctx) {
-        return this.emitDriveUpdate(ctx.params.key)
-      },
-
-      'seeder.drive.stats' (ctx) {
-        return this.emitDriveUpdate(ctx.params.key)
-      },
-
-      'seeder.drive.update' (ctx) {
-        return this.emitDriveUpdate(ctx.params.key)
-      },
-
-      'seeder.drive.peer.add' (ctx) {
-        return this.emitDriveUpdate(ctx.params.key)
-      },
-
-      'seeder.drive.peer.remove' (ctx) {
         return this.emitDriveUpdate(ctx.params.key)
       },
 
@@ -140,9 +104,11 @@ module.exports = function (broker) {
         }
       },
 
-      'drives.size': {
+      'drives.add': {
         async handler (ctx) {
-          return this.driveSize(ctx.params.key)
+          await ctx.call('keys.add', {
+            key: encode(ctx.params.key)
+          })
         }
       },
 
@@ -158,17 +124,21 @@ module.exports = function (broker) {
         }
       },
 
-      'drives.stats': {
+      'drives.size': {
         async handler (ctx) {
-          return this.driveStats(ctx.params.key)
+          return this.driveSize(ctx.params.key)
         }
       },
 
-      'drives.add': {
+      'drives.seedingStatus': {
         async handler (ctx) {
-          await ctx.call('keys.add', {
-            key: encode(ctx.params.key)
-          })
+          return this.driveSeedingStatus(ctx.params.key)
+        }
+      },
+
+      'drives.stats': {
+        async handler (ctx) {
+          return this.driveStats(ctx.params.key)
         }
       },
 
@@ -183,16 +153,19 @@ module.exports = function (broker) {
           return ctx.call('metrics.getHostStats')
         }
       },
+
       raw: {
         async handler (ctx) {
           return this.raw(ctx.params.key)
         }
       },
+
       'raw.event': {
         async handler (ctx) {
           return this.raw(ctx.params.key, ctx.params.event)
         }
       },
+
       heapdump: {
         async handler (ctx) {
           return this.heapdump()
@@ -201,31 +174,33 @@ module.exports = function (broker) {
     },
 
     methods: {
-      driveSize: {
-        async handler (key) {
-          const size = await this.broker.call('seeder.driveSize', { key })
-          return size
-        }
-      },
-
       driveInfo: {
         async handler (key) {
-          const info = await this.broker.call('seeder.driveInfo', { key })
-          return info
+          return this.drivesDatabase.get(key, 'info')
         }
       },
 
       drivePeers: {
         async handler (key) {
-          const peers = await this.broker.call('seeder.drivePeers', { key })
-          return peers
+          return this.drivesDatabase.get(key, 'peers')
+        }
+      },
+
+      driveSeedingStatus: {
+        async handler (key) {
+          return this.drivesDatabase.get(key, 'seedingStatus')
+        }
+      },
+
+      driveSize: {
+        async handler (key) {
+          return this.drivesDatabase.get(key, 'size')
         }
       },
 
       driveStats: {
         async handler (key) {
-          const stats = await this.broker.call('seeder.driveStats', { key })
-          return stats
+          return this.drivesDatabase.get(key, 'stats')
         }
       },
 

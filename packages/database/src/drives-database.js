@@ -1,72 +1,63 @@
-const assert = require('assert')
-
 const Database = require('./database')
 
+const FIELDS = [
+  'key',
+  'stats',
+  'size',
+  'peers',
+  'info',
+  'seedingStatus',
+  'updatedAt',
+  'createdAt'
+]
+
 class DrivesDatabase extends Database {
-  _cleanKeyData (data = {}) {
-    assert(Buffer.isBuffer(data.key) || typeof data.key === 'string', 'key should be string or buffer')
-    const key = typeof data.key === 'string' ? data.key : data.key.toString('hex')
-
-    return {
-      ...data,
-      key
-    }
-  }
-
-  async onPreSet (key, data) {
-    const cleanedData = this._cleanKeyData(data)
-    return cleanedData
-  }
-
-  /**
-   *
-   * @param {object} data keyRecord to add
-   */
-  async add (data) {
-    const initialData = {
-      stats: {},
-      size: {
+  async create (key) {
+    const initialData = [
+      ['key', key],
+      ['stats', {}],
+      ['size', {
         blocks: 0,
         bytes: 0,
-        downloadedBlocks: 0
-      },
-      peers: [],
-      info: {},
-      seedingStatus: 'WAITING',
-      updatedAt: Date.now(),
-      createdAt: Date.now(),
-      ...data
-    }
+        downloadedBlocks: 0,
+        downloadedBytes: 0
+      }],
+      ['peers', []],
+      ['info', {}],
+      ['seedingStatus', 'WAITING'],
+      ['updatedAt', Date.now()],
+      ['createdAt', Date.now()]
+    ]
 
-    await this.set(data.key, initialData)
+    await this._db.batch(initialData.map(([field, value]) => {
+      return { type: 'put', key: this._buildKey([key, field]), value }
+    }))
   }
 
-  /**
-   *
-   * @param {object} data keyRecord to update
-   *
-   */
-  async update (key, data = {}) {
-    const drive = await this.get(key)
+  async get (key, field) {
+    const fields = field ? [field] : FIELDS
+    const data = {}
 
-    if (!drive) {
-      await this.add(key, data)
-      return
+    for (const field of fields) {
+      data[field] = await super.get(key, field)
     }
 
-    await this.set(key, {
-      ...drive,
-      ...data,
-      updatedAt: Date.now()
-    })
+    if (!field && !data.key) return null
+
+    return field ? data[field] : data
+  }
+
+  async update (key, data = {}) {
+    await this._db.batch([
+      ...(Object.entries(data).map(([field, value]) => ({
+        type: 'put', key: this._buildKey([key, field]), value
+      }))),
+      { type: 'put', key: this._buildKey([key, 'updatedAt']), value: Date.now() }
+    ])
   }
 
   async remove (key) {
-    const drive = await this.get(key)
-
-    if (!drive) return
-
-    this.update(key, { deletedAt: Date.now() })
+    super.set(key, 'deletedAt', Date.now())
   }
 }
 

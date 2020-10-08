@@ -65,6 +65,14 @@ class Seeder extends EventEmitter {
     this.drives = new Map()
     this._unlistens = []
     this.ready = false
+
+    this.onDriveDownload = this.onDriveDownload.bind(this)
+    this.onDriveInfo = this.onDriveInfo.bind(this)
+    this.onDrivePeerAdd = this.onDrivePeerAdd.bind(this)
+    this.onDrivePeerRemove = this.onDrivePeerRemove.bind(this)
+    this.onDriveStats = this.onDriveStats.bind(this)
+    this.onDriveUpdate = this.onDriveUpdate.bind(this)
+    this.onDriveUpload = this.onDriveUpload.bind(this)
   }
 
   /**
@@ -133,6 +141,34 @@ class Seeder extends EventEmitter {
     return drive
   }
 
+  onDriveDownload (key, data) {
+    this.emit('drive-download', key, data)
+  }
+
+  onDriveInfo (key, data) {
+    this.emit('drive-info', key, data)
+  }
+
+  onDrivePeerAdd (key, data) {
+    this.emit('drive-peer-add', key, data)
+  }
+
+  onDrivePeerRemove (key, data) {
+    this.emit('drive-peer-remove', key, data)
+  }
+
+  onDriveStats (key, data) {
+    this.emit('drive-stats', key, data)
+  }
+
+  onDriveUpdate (key, data) {
+    this.emit('drive-update', key, data)
+  }
+
+  onDriveUpload (key) {
+    this.emit('drive-upload', key)
+  }
+
   /**
    * Seeds a key
    *
@@ -159,57 +195,26 @@ class Seeder extends EventEmitter {
     // Wait for readyness
     await drive.ready()
 
-    const onDriveUpdate = () => {
-      this.emit('drive-update', keyString)
-    }
-
-    const onDriveDownload = () => {
-      this.emit('drive-download', keyString)
-    }
-
-    const onDriveDownloadStarted = () => {
-      this.emit('drive-download-started', keyString)
-    }
-
-    const onDriveDownloadFinished = () => {
-      this.emit('drive-download-finished', keyString)
-    }
-
-    const onDriveUpload = () => {
-      this.emit('drive-upload', keyString)
-    }
-
-    const onDrivePeerAdd = () => {
-      this.emit('drive-peer-add', keyString)
-    }
-
-    const onDrivePeerRemove = () => {
-      this.emit('drive-peer-remove', keyString)
-    }
-
-    const onDriveStats = (stats) => {
-      this.emit('drive-stats', keyString, stats)
-    }
+    // Force download
+    drive.download()
 
     // Register event listeners
-    drive.on('download-finished', onDriveDownloadFinished)
-    drive.on('download-started', onDriveDownloadStarted)
-    drive.on('download', onDriveDownload)
-    drive.on('peer-add', onDrivePeerAdd)
-    drive.on('peer-remove', onDrivePeerRemove)
-    drive.on('stats', onDriveStats)
-    drive.on('update', onDriveUpdate)
-    drive.on('upload', onDriveUpload)
+    drive.on('download', this.onDriveDownload)
+    drive.on('info', this.onDriveInfo)
+    drive.on('peer-add', this.onDrivePeerAdd)
+    drive.on('peer-remove', this.onDrivePeerRemove)
+    drive.on('stats', this.onDriveStats)
+    drive.on('update', this.onDriveUpdate)
+    drive.on('upload', this.onDriveUpload)
 
     this._unlistens.push(() => {
-      drive.off('download-finished', onDriveDownloadFinished)
-      drive.off('download-started', onDriveDownloadStarted)
-      drive.off('download', onDriveDownload)
-      drive.off('peer-add', onDrivePeerAdd)
-      drive.off('peer-remove', onDrivePeerRemove)
-      drive.off('stats', onDriveStats)
-      drive.off('update', onDriveUpdate)
-      drive.off('upload', onDriveUpload)
+      drive.off('download', this.onDriveDownload)
+      drive.off('info', this.onDriveInfo)
+      drive.off('peer-add', this.onDrivePeerAdd)
+      drive.off('peer-remove', this.onDrivePeerRemove)
+      drive.off('stats', this.onDriveStats)
+      drive.off('update', this.onDriveUpdate)
+      drive.off('upload', this.onDriveUpload)
     })
 
     // Notify new drive
@@ -246,15 +251,19 @@ class Seeder extends EventEmitter {
   }
 
   async driveInfo (key) {
-    return this.getDrive(key).info()
+    return this.getDrive(key).getInfo()
   }
 
   driveSeedingStatus (key) {
-    return this.getDrive(key).seedingStatus()
+    return this.getDrive(key).getSeedingStatus()
   }
 
   loadDriveStats (key) {
     this.getDrive(key).loadStats()
+  }
+
+  loadDriveInfo (key) {
+    this.getDrive(key).loadInfo()
   }
 
   async driveNetwork (key) {

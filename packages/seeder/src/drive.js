@@ -1,8 +1,10 @@
 const { EventEmitter } = require('events')
 const { promisify } = require('util')
+
 const memoize = require('p-memoize')
 const timeout = require('p-timeout')
 const debounce = require('lodash.debounce')
+const fromEntries = require('fromentries')
 
 const hyperdrive = require('@geut/hyperdrive-promise')
 
@@ -39,7 +41,7 @@ class Drive extends EventEmitter {
     this._keyString = key.toString('hex')
     this._contentFeed = null
 
-    // this._onDownload = debounce(this._onDownload.bind(this), 500, { maxWait: 1000 * 2 })
+    this._emitDownload = debounce(this._emitDownload.bind(this), 500, { maxWait: 1000 * 2 })
     this._onDownload = this._onDownload.bind(this)
     this._onUpload = this._onUpload.bind(this)
     this._onUpdate = this._onUpdate.bind(this)
@@ -54,7 +56,7 @@ class Drive extends EventEmitter {
     this._getContentAsync = promisify(this._hyperdrive.getContent)
 
     this._memoGetStats = memoize(this._hyperdrive.stats, { cacheKey: () => `stats_${this._keyString}`, maxAge: CACHE_MAX_AGE })
-    this._readFile = memoize(this._hyperdrive.readFile, { cacheKey: () => `readFile_${this._keyString}`, maxAge: CACHE_MAX_AGE })
+    // this._readFile = memoize(this._hyperdrive.readFile, { cacheKey: () => `readFile_${this._keyString}`, maxAge: CACHE_MAX_AGE })
 
     this._downloadStarted = false
 
@@ -67,7 +69,10 @@ class Drive extends EventEmitter {
   }
 
   get peers () {
-    return this._hyperdrive.peers
+    return this._hyperdrive.peers.map(peer => ({
+      remoteAddress: peer.remoteAddress,
+      ...peer.stats
+    }))
   }
 
   get feedBlocks () {
@@ -86,8 +91,19 @@ class Drive extends EventEmitter {
     return this._downloadedBytes
   }
 
+  // Debounced
+  _emitDownload () {
+    const size = this.getSize()
+    this.emit('download', this._keyString, { size })
+  }
+
   _onUpdate () {
-    this.emit('update')
+    this.loadStats()
+
+    const size = this.getSize()
+    const seedingStatus = this.getSeedingStatus()
+
+    this.emit('update', this._keyString, { size, seedingStatus })
   }
 
   _onDownload (index, { length }) {
@@ -96,26 +112,41 @@ class Drive extends EventEmitter {
 
     if (!this._downloadStarted) {
       this._downloadStarted = true
-      return this.emit('download-started')
+
+      this.loadStats()
+      this.loadInfo()
+
+      return this.emit('download', this._keyString, {
+        started: true,
+        size: this.getSize(),
+        seedingStatus: this.getSeedingStatus()
+      })
     }
 
     if (this.downloadedBlocks >= this.feedBlocks) {
-      return this.emit('download-finished')
+      this.loadStats()
+      this.loadInfo()
+
+      return this.emit('download', this._keyString, {
+        finished: true,
+        size: this.getSize(),
+        seedingStatus: this.getSeedingStatus()
+      })
     }
 
-    this.emit('download')
+    this._emitDownload()
   }
 
   _onUpload () {
-    this.emit('upload')
+    this.emit('upload', this._keyString)
   }
 
   _onPeerAdd () {
-    this.emit('peer-add')
+    this.emit('peer-add', this._keyString, { peers: this.peers })
   }
 
   _onPeerRemove () {
-    this.emit('peer-remove')
+    this.emit('peer-remove', this._keyString, { peers: this.peers })
   }
 
   _onStats (err, stats) {
@@ -124,47 +155,15 @@ class Drive extends EventEmitter {
       return
     }
 
-    this.emit('stats', stats)
+    this.emit('stats', this._keyString, { stats: fromEntries(stats) })
   }
 
   async ready () {
     return this._hyperdrive.ready()
   }
 
-  download (path, cb) {
+  download (path = '/', cb) {
     return this._hyperdrive.download(path, cb)
-  }
-
-  async info () {
-    // returns drive info, ie: { version, index.json }
-    await this.ready()
-
-    let indexJSON = {}
-
-    try {
-      const raw = await timeout(this._readFile('index.json', 'utf-8'), TIMEOUT)
-      indexJSON = JSON.parse(raw)
-    } catch (_) {}
-
-    const version = this._hyperdrive.version
-
-    return {
-      version,
-      indexJSON
-    }
-  }
-
-  async destroy () {
-    this._hyperdrive.off('update', this._onUpdate)
-    this._hyperdrive.off('peer-add', this._onPeerAdd)
-    this._hyperdrive.off('peer-remove', this._onPeerRemove)
-
-    if (this._contentFeed) {
-      this._contentFeed.off('download', this._onDownload)
-      this._contentFeed.off('upload', this._onUpload)
-    }
-
-    await this._hyperdrive.close()
   }
 
   async getContentFeed () {
@@ -175,6 +174,8 @@ class Drive extends EventEmitter {
         console.error(error)
         return null
       }
+
+      this.loadInfo()
 
       this._contentFeed.on('download', this._onDownload)
       this._contentFeed.on('upload', this._onUpload)
@@ -193,14 +194,49 @@ class Drive extends EventEmitter {
 
   async getStats (path = '/', opts) {
     try {
-      return timeout(this._memoGetStats(path, opts), TIMEOUT)
+      const stats = timeout(this._memoGetStats(path, opts), TIMEOUT)
+      return fromEntries(stats)
     } catch (error) {
       console.error(error)
-      return new Map()
+      return {}
     }
   }
 
-  seedingStatus () {
+  async loadInfo () {
+    let indexJSON = {}
+
+    try {
+      const raw = await this._hyperdrive.readFile('index.json', 'utf-8')
+      indexJSON = JSON.parse(raw)
+    } catch (error) {
+      console.error(error, this._keyString, 'INDEX JSON')
+    }
+
+    const version = this._hyperdrive.version
+
+    this.emit('info', this._keyString, { info: { version, indexJSON } })
+  }
+
+  async getInfo () {
+    // returns drive info, ie: { version, index.json }
+    await this.ready()
+
+    let indexJSON = {}
+
+    try {
+      const raw = await timeout(this._readFile('index.json', 'utf-8'), TIMEOUT)
+      indexJSON = JSON.parse(raw)
+    } catch (_) {}
+
+    const version = this._hyperdrive.version
+
+    return {
+      version,
+      indexJSON
+    }
+  }
+
+  getSeedingStatus () {
     const size = this.getSize()
     let status = 'WAITING' // waiting for peers == orange
 
@@ -223,6 +259,19 @@ class Drive extends EventEmitter {
       downloadedBlocks: this.downloadedBlocks,
       downloadedBytes: this.downloadedBytes
     }
+  }
+
+  async destroy () {
+    this._hyperdrive.off('update', this._onUpdate)
+    this._hyperdrive.off('peer-add', this._onPeerAdd)
+    this._hyperdrive.off('peer-remove', this._onPeerRemove)
+
+    if (this._contentFeed) {
+      this._contentFeed.off('download', this._onDownload)
+      this._contentFeed.off('upload', this._onUpload)
+    }
+
+    await this._hyperdrive.close()
   }
 }
 
