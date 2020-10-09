@@ -45,7 +45,6 @@ function Dashboard () {
   const [, setAppBarTitle] = useAppBarTitle()
   const [addKeyDialogOpen, setAddKeyDialogOpen] = useState(false)
   const [addKeyDialogError, setAddKeyDialogError] = useState(null)
-  const [addKeyDialogKey, setAddKeyDialogKey] = useState(null)
   const [loadDrives] = useAsyncResource(fetchDrives, [])
 
   useEffect(() => {
@@ -56,9 +55,9 @@ function Dashboard () {
     setAddKeyDialogOpen(false)
   }
 
-  function handleKeyAddDialogOpen (key = '') {
+  function handleKeyAddDialogOpen (event) {
+    event.stopPropagation()
     setAddKeyDialogError(null)
-    setAddKeyDialogKey(key)
     setAddKeyDialogOpen(true)
   }
 
@@ -89,7 +88,6 @@ function Dashboard () {
     <>
       <AddKeyDialog
         open={addKeyDialogOpen}
-        keyToAdd={addKeyDialogKey}
         onAdd={handleKeyAdd}
         onClose={handleKeyAddDialogClose}
         error={addKeyDialogError}
@@ -97,7 +95,7 @@ function Dashboard () {
       <div className={classes.root}>
         <div className={classes.drives}>
           <Suspense fallback={<h1>Loading keys...</h1>}>
-            <DriveList loadDrives={loadDrives} onKeyAdd={() => handleKeyAddDialogOpen()} />
+            <DriveList loadDrives={loadDrives} onKeyAdd={handleKeyAddDialogOpen} />
           </Suspense>
         </div>
         <div className={classes.hostStats}>

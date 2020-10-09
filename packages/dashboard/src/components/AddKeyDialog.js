@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 
 import { makeStyles } from '@material-ui/core'
 import TextField from '@material-ui/core/TextField'
@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }))
 
-function AddKeyDialog ({ open, keyToAdd = '', error, onClose, onAdd }) {
+function AddKeyDialog ({ open, error, onClose, onAdd }) {
   const classes = useStyles()
   const [key, setKey] = useState('')
 
@@ -32,10 +32,6 @@ function AddKeyDialog ({ open, keyToAdd = '', error, onClose, onAdd }) {
   function handleKeyChange (event) {
     setKey(event.target.value)
   }
-
-  useEffect(() => {
-    setKey(keyToAdd)
-  }, [keyToAdd])
 
   return (
     <Dialog
