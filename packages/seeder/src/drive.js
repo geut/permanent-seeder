@@ -151,7 +151,7 @@ class Drive extends EventEmitter {
 
   _onStats (err, stats) {
     if (err) {
-      console.error(err)
+      console.warn(err)
       return
     }
 
@@ -171,11 +171,8 @@ class Drive extends EventEmitter {
       try {
         this._contentFeed = await this._getContentAsync()
       } catch (error) {
-        console.error(error)
         return null
       }
-
-      this.loadInfo()
 
       this._contentFeed.on('download', this._onDownload)
       this._contentFeed.on('upload', this._onUpload)
@@ -197,7 +194,7 @@ class Drive extends EventEmitter {
       const stats = timeout(this._memoGetStats(path, opts), TIMEOUT)
       return fromEntries(stats)
     } catch (error) {
-      console.error(error)
+      console.warn(error)
       return {}
     }
   }
@@ -209,31 +206,12 @@ class Drive extends EventEmitter {
       const raw = await this._hyperdrive.readFile('index.json', 'utf-8')
       indexJSON = JSON.parse(raw)
     } catch (error) {
-      console.error(error, this._keyString, 'INDEX JSON')
+      console.warn(error, this._keyString, 'INDEX JSON')
     }
 
     const version = this._hyperdrive.version
 
     this.emit('info', this._keyString, { info: { version, indexJSON } })
-  }
-
-  async getInfo () {
-    // returns drive info, ie: { version, index.json }
-    await this.ready()
-
-    let indexJSON = {}
-
-    try {
-      const raw = await timeout(this._readFile('index.json', 'utf-8'), TIMEOUT)
-      indexJSON = JSON.parse(raw)
-    } catch (_) {}
-
-    const version = this._hyperdrive.version
-
-    return {
-      version,
-      indexJSON
-    }
   }
 
   getSeedingStatus () {
