@@ -15,7 +15,7 @@ const getHomeTimeline = (node, delay) => {
   const timeline = new Timeline({ paused: true })
   const texts = node.querySelectorAll('.by-geut')
   timeline
-    .from(node, 0.15, { display: 'none', autoAlpha: 0, delay, ease: Back.easeOut.config(0.7) })
+    .from(node, 0.15, { display: 'none', autoAlpha: 0, delay, ease: Back.easeInOut.config(0.7) })
     .staggerFrom(texts, 0.375, { autoAlpha: 0, y: 25, ease: Power2.easeOut }, 0.125)
 
   return timeline
