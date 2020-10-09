@@ -238,24 +238,8 @@ class Seeder extends EventEmitter {
     await Promise.all(keys.map(this.seedKey.bind(this)))
   }
 
-  driveSize (key) {
-    return this.getDrive(key).getSize()
-  }
-
-  async driveStats (key) {
-    return this.getDrive(key).getStats()
-  }
-
   drivePeers (key) {
     return this.getDrive(key).peers
-  }
-
-  async driveInfo (key) {
-    return this.getDrive(key).getInfo()
-  }
-
-  driveSeedingStatus (key) {
-    return this.getDrive(key).getSeedingStatus()
   }
 
   loadDriveStats (key) {

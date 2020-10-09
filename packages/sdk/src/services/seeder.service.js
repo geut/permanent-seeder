@@ -36,48 +36,12 @@ module.exports = {
       }
     },
 
-    driveInfo: {
-      params: {
-        key: { type: 'string', length: '64', hex: true }
-      },
-      async handler (ctx) {
-        return this.driveInfo(ctx.params.key)
-      }
-    },
-
-    driveSize: {
-      params: {
-        key: { type: 'string', length: '64', hex: true }
-      },
-      handler (ctx) {
-        return this.driveSize(ctx.params.key)
-      }
-    },
-
     drivePeers: {
       params: {
         key: { type: 'string', length: '64', hex: true }
       },
       async handler (ctx) {
         return this.drivePeers(ctx.params.key)
-      }
-    },
-
-    driveStats: {
-      params: {
-        key: { type: 'string', length: '64', hex: true }
-      },
-      async handler (ctx) {
-        return this.driveStats(ctx.params.key)
-      }
-    },
-
-    driveSeedingStatus: {
-      params: {
-        key: { type: 'string', length: '64', hex: true }
-      },
-      async handler (ctx) {
-        return this.driveSeedingStatus(ctx.params.key)
       }
     },
 
@@ -115,24 +79,8 @@ module.exports = {
       return this.seeder.unseed(key)
     },
 
-    async driveInfo (key) {
-      return this.seeder.driveInfo(key)
-    },
-
     drivePeers (key) {
       return this.seeder.drivePeers(key)
-    },
-
-    driveSize (key) {
-      return this.seeder.driveSize(key)
-    },
-
-    driveSeedingStatus (key) {
-      return this.seeder.driveSeedingStatus(key)
-    },
-
-    async driveStats (key) {
-      return await this.seeder.driveStats(key)
     },
 
     loadDriveStats (key) {
