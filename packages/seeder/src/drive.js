@@ -1,7 +1,7 @@
 const { EventEmitter } = require('events')
 const { promisify } = require('util')
 
-const memoize = require('p-memoize')
+// const memoize = require('p-memoize')
 const timeout = require('p-timeout')
 const debounce = require('lodash.debounce')
 const fromEntries = require('fromentries')
@@ -13,7 +13,7 @@ const DEFAULT_OPTIONS = {
   latest: true
 }
 
-const CACHE_MAX_AGE = 1000 * 5
+// const CACHE_MAX_AGE = 1000 * 5
 const TIMEOUT = 1000
 
 // TODO(dk): check support for mounts
@@ -42,12 +42,17 @@ class Drive extends EventEmitter {
     this._contentFeed = null
 
     this._emitDownload = debounce(this._emitDownload.bind(this), 500, { maxWait: 1000 * 2 })
+
     this._onDownload = this._onDownload.bind(this)
-    this._onUpload = this._onUpload.bind(this)
-    this._onUpdate = this._onUpdate.bind(this)
-    this._onPeerAdd = debounce(this._onPeerAdd.bind(this), 1000 * 5, { maxWait: 1000 * 10 })
-    this._onPeerRemove = debounce(this._onPeerRemove.bind(this), 1000 * 5, { maxWait: 1000 * 10 })
+    // this._onPeerAdd = debounce(this._onPeerAdd.bind(this), 1000 * 5, { maxWait: 1000 * 10 })
+    // this._onPeerRemove = debounce(this._onPeerRemove.bind(this), 1000 * 5, { maxWait: 1000 * 10 })
+    this._onPeerAdd = this._onPeerAdd.bind(this)
+    this._onPeerRemove = this._onPeerRemove.bind(this)
     this._onStats = this._onStats.bind(this)
+    this._onUpdate = this._onUpdate.bind(this)
+    this._onUpload = this._onUpload.bind(this)
+
+    this.loadStats = debounce(this.loadStats.bind(this), 1000, { maxWait: 1000 * 3 })
 
     this._hyperdrive.on('update', this._onUpdate)
     this._hyperdrive.on('peer-add', this._onPeerAdd)
@@ -55,7 +60,7 @@ class Drive extends EventEmitter {
 
     this._getContentAsync = promisify(this._hyperdrive.getContent)
 
-    this._memoGetStats = memoize(this._hyperdrive.stats, { cacheKey: () => `stats_${this._keyString}`, maxAge: CACHE_MAX_AGE })
+    // this._memoGetStats = memoize(this._hyperdrive.stats, { cacheKey: () => `stats_${this._keyString}`, maxAge: CACHE_MAX_AGE })
     // this._readFile = memoize(this._hyperdrive.readFile, { cacheKey: () => `readFile_${this._keyString}`, maxAge: CACHE_MAX_AGE })
 
     this._downloadStarted = false
@@ -176,6 +181,7 @@ class Drive extends EventEmitter {
       }
 
       this.loadInfo()
+      this.loadStats()
 
       this._contentFeed.on('download', this._onDownload)
       this._contentFeed.on('upload', this._onUpload)
@@ -188,18 +194,9 @@ class Drive extends EventEmitter {
     return this._contentFeed
   }
 
+  // debounced
   loadStats (path = '/', opts) {
     this._hyperdrive.stats(path, opts, this._onStats)
-  }
-
-  async getStats (path = '/', opts) {
-    try {
-      const stats = timeout(this._memoGetStats(path, opts), TIMEOUT)
-      return fromEntries(stats)
-    } catch (error) {
-      console.error(error)
-      return {}
-    }
   }
 
   async loadInfo () {

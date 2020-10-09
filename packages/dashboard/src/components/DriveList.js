@@ -9,7 +9,7 @@ function buildDriveData (drive) {
     sizeBlocks: drive.size.blocks,
     sizeBytes: drive.size.bytes,
     downloadedBlocks: drive.size.downloadedBlocks,
-    downloadedPercent: Math.round(drive.size.downloadedBlocks / (drive.size.blocks || 1) * 100),
+    downloadedPercent: drive.size.blocks > 0 ? Math.floor(drive.size.downloadedBlocks / drive.size.blocks * 100) : 0,
     title: drive.info.indexJSON?.title || `Drive-${drive.key.substring(0, 6)}`,
     peers: drive.peers,
     files: drive.stats,
