@@ -82,7 +82,7 @@ const useStyles = makeStyles((theme) => ({
 function DrivesTable ({ drives, onKeyAdd }) {
   const classes = useStyles()
   const [order, setOrder] = useState('asc')
-  const [orderBy, setOrderBy] = useState('key')
+  const [orderBy, setOrderBy] = useState('seedingStatus')
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc'
