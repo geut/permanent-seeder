@@ -2,6 +2,8 @@ import React, { Suspense, useEffect, useState } from 'react'
 import { useAsyncResource } from 'use-async-resource'
 
 import { makeStyles } from '@material-ui/core'
+import Box from '@material-ui/core/Box'
+import LinearProgress from '@material-ui/core/LinearProgress'
 
 import { API_URL } from '../config'
 
@@ -17,6 +19,15 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     flexWrap: 'nowrap'
+  },
+
+  fullLoaderWrapper: {
+    marginLeft: -theme.spacing(7),
+    width: '100vw'
+  },
+  fullLoader: {
+    width: '100vw',
+    height: 5
   },
 
   expand: {
@@ -96,7 +107,13 @@ function Dashboard () {
       />
       <div className={classes.root}>
         <div className={classes.drives}>
-          <Suspense fallback={<h1>Loading keys...</h1>}>
+          <Suspense fallback={
+            <Box className={classes.fullLoaderWrapper}>
+              <LinearProgress color='secondary' className={classes.fullLoader} />
+            </Box>
+          }
+          >
+
             <DriveList loadDrives={loadDrives} onKeyAdd={() => handleKeyAddDialogOpen()} />
           </Suspense>
         </div>
