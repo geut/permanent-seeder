@@ -249,7 +249,7 @@ class Drive extends EventEmitter {
       this._contentFeed.off('upload', this._onUpload)
     }
 
-    await this._hyperdrive.close()
+    await this._hyperdrive.destroyStorage()
   }
 }
 
