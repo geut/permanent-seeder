@@ -86,6 +86,9 @@ module.exports = {
       const updated = updateResult.filter(({ updated }) => updated).map(({ keyRecord }) => keyRecord)
       const created = updateResult.filter(({ created }) => created).map(({ keyRecord }) => keyRecord)
 
+      if (updated.length || created.length) {
+        this.broker.cacher.clean()
+      }
       updated.length && this.broker.broadcast('keys.updated', { keys: updated })
       created.length && this.broker.broadcast('keys.created', { keys: created })
     }
