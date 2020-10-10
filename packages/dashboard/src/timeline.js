@@ -1,15 +1,5 @@
 import { TimelineMax as Timeline, Power1, Power2, Back } from 'gsap'
 
-const getDefaultTimeline = (node, delay) => {
-  if (!node) return
-  const timeline = new Timeline({ paused: true })
-
-  timeline
-    .from(node, 0.3, { display: 'none', autoAlpha: 0, delay, ease: Power2.easeIn })
-
-  return timeline
-}
-
 const getHomeTimeline = (node, delay) => {
   if (!node) return
   const timeline = new Timeline({ paused: true })
@@ -29,10 +19,7 @@ export const play = (pathname, node, appears) => {
 
   if (pathname === '/') {
     timeline = getHomeTimeline(node, delay)
-  } else {
-    timeline = getDefaultTimeline(node, delay)
   }
-
   const loadPromise = new Promise(function (resolve) {
     if (document.readyState === 'loading') { // Loading hasn't finished yet
       window.addEventListener('DOMContentLoaded', resolve)
