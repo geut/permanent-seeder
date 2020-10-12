@@ -179,9 +179,6 @@ class Drive extends EventEmitter {
         return null
       }
 
-      this.loadInfo()
-      this.loadStats()
-
       this._contentFeed.on('download', this._onDownload)
       this._contentFeed.on('upload', this._onUpload)
       this._contentFeed.on('close', () => {
