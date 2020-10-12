@@ -83,14 +83,6 @@ module.exports = {
       return this.seeder.drivePeers(key)
     },
 
-    loadDriveStats (key) {
-      this.seeder.loadDriveStats(key)
-    },
-
-    loadDriveInfo (key) {
-      this.seeder.loadDriveInfo(key)
-    },
-
     async onDriveAdd (key) {
       this.broker.broadcast('seeder.drive.add', { key })
     },

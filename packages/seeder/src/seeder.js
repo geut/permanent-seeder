@@ -242,14 +242,6 @@ class Seeder extends EventEmitter {
     return this.getDrive(key).peers
   }
 
-  loadDriveStats (key) {
-    this.getDrive(key).loadStats()
-  }
-
-  loadDriveInfo (key) {
-    this.getDrive(key).loadInfo()
-  }
-
   async driveNetwork (key) {
     const drive = this.getDrive(key)
     return this.networker.status(drive.discoveryKey)
