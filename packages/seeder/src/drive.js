@@ -44,15 +44,13 @@ class Drive extends EventEmitter {
     this._emitDownload = debounce(this._emitDownload.bind(this), 500, { maxWait: 1000 * 2 })
 
     this._onDownload = this._onDownload.bind(this)
-    // this._onPeerAdd = debounce(this._onPeerAdd.bind(this), 1000 * 5, { maxWait: 1000 * 10 })
-    // this._onPeerRemove = debounce(this._onPeerRemove.bind(this), 1000 * 5, { maxWait: 1000 * 10 })
-    this._onPeerAdd = this._onPeerAdd.bind(this)
-    this._onPeerRemove = this._onPeerRemove.bind(this)
+    this._onPeerAdd = debounce(this._onPeerAdd.bind(this), 1000 * 5, { maxWait: 1000 * 10 })
+    this._onPeerRemove = debounce(this._onPeerRemove.bind(this), 1000 * 5, { maxWait: 1000 * 10 })
     this._onStats = this._onStats.bind(this)
     this._onUpdate = this._onUpdate.bind(this)
     this._onUpload = this._onUpload.bind(this)
 
-    this.loadStats = debounce(this.loadStats.bind(this), 1000, { maxWait: 1000 * 3 })
+    this._loadStats = debounce(this._loadStats.bind(this), 1000, { maxWait: 1000 * 3 })
 
     this._hyperdrive.on('update', this._onUpdate)
     this._hyperdrive.on('peer-add', this._onPeerAdd)
@@ -96,6 +94,26 @@ class Drive extends EventEmitter {
     return this._downloadedBytes
   }
 
+  // debounced
+  _loadStats (path = '/', opts) {
+    this._hyperdrive.stats(path, opts, this._onStats)
+  }
+
+  async _loadInfo () {
+    let indexJSON = {}
+
+    try {
+      const raw = await this._hyperdrive.readFile('index.json', 'utf-8')
+      indexJSON = JSON.parse(raw)
+    } catch (error) {
+      console.warn(error, this._keyString, 'INDEX JSON')
+    }
+
+    const version = this._hyperdrive.version
+
+    this.emit('info', this._keyString, { info: { version, indexJSON } })
+  }
+
   // Debounced
   _emitDownload () {
     const size = this.getSize()
@@ -103,37 +121,38 @@ class Drive extends EventEmitter {
   }
 
   _onUpdate () {
-    this.loadStats()
+    this._loadStats()
 
-    const size = this.getSize()
-    const seedingStatus = this.getSeedingStatus()
+    // Size on update after restart seeder is = 0
+    // If no download event is triggered after 'update'
+    // Size will be showed as 0
 
-    this.emit('update', this._keyString, { size, seedingStatus })
+    // const size = this.getSize()
+    // const seedingStatus = this.getSeedingStatus()
+
+    // this.emit('update', this._keyString, { size, seedingStatus })
   }
 
   _onDownload (index, { length }) {
     this._downloadedBlocks++
     this._downloadedBytes += length
 
-    if (!this._downloadStarted) {
+    const started = this._downloadStarted
+    const finished = this.downloadedBlocks >= this.feedBlocks
+
+    if (!started) {
       this._downloadStarted = true
-
-      this.loadStats()
-      this.loadInfo()
-
-      return this.emit('download', this._keyString, {
-        started: true,
-        size: this.getSize(),
-        seedingStatus: this.getSeedingStatus()
-      })
     }
 
-    if (this.downloadedBlocks >= this.feedBlocks) {
-      this.loadStats()
-      this.loadInfo()
+    if (started || finished) {
+      this._downloadStarted = true
+
+      this._loadStats()
+      this._loadInfo()
 
       return this.emit('download', this._keyString, {
-        finished: true,
+        started,
+        finished,
         size: this.getSize(),
         seedingStatus: this.getSeedingStatus()
       })
@@ -190,33 +209,12 @@ class Drive extends EventEmitter {
     return this._contentFeed
   }
 
-  // debounced
-  loadStats (path = '/', opts) {
-    this._hyperdrive.stats(path, opts, this._onStats)
-  }
-
-  async loadInfo () {
-    let indexJSON = {}
-
-    try {
-      const raw = await this._hyperdrive.readFile('index.json', 'utf-8')
-      indexJSON = JSON.parse(raw)
-    } catch (error) {
-      console.warn(error, this._keyString, 'INDEX JSON')
-    }
-
-    const version = this._hyperdrive.version
-
-    this.emit('info', this._keyString, { info: { version, indexJSON } })
-  }
-
   getSeedingStatus () {
-    const size = this.getSize()
     let status = 'WAITING' // waiting for peers == orange
 
-    if (this.feedBlocks > 0 && size.downloadedBlocks >= this.feedBlocks) {
+    if (this.feedBlocks > 0 && this.downloadedBlocks >= this.feedBlocks) {
       status = 'SEEDING' // green
-    } else if (size.downloadedBlocks > 0) {
+    } else if (this.downloadedBlocks > 0) {
       status = 'DOWNLOADING' // yellow
     }
 
