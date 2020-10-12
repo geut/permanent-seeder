@@ -4,8 +4,7 @@ import { useSocket } from 'use-socketio'
 import DrivesTable from './DrivesTable'
 
 function getPercentage (value, total, precision = 1) {
-  // drive.size.blocks > 0 ? Math.floor(drive.size.downloadedBlocks / drive.size.blocks * 100) : 0,
-  return parseFloat((value * 100 / (total || 1)).toFixed(precision))
+  return total > 0 ? parseFloat((value * 100 / total).toFixed(precision)) : 0
 }
 
 function buildDriveData (drive) {
