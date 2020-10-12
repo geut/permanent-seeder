@@ -10,7 +10,7 @@ import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline'
 import { makeStyles } from '@material-ui/core'
 
 const headCells = [
-  { id: 'seedingStatus', numeric: false, label: 'Status', width: '40px', sort: false },
+  { id: 'seedingStatus', numeric: false, label: 'Status', width: '40px' },
   {
     id: 'key',
     numeric: false,

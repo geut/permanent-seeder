@@ -82,7 +82,7 @@ function NetworkIndicator () {
               }
             />
             <TooltipInfoItem
-              label='Peers'
+              label='Total Peers'
               value={
                 <StatusChip label={network.swarm.currentPeers.length} />
               }

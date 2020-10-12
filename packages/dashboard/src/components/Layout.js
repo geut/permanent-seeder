@@ -16,7 +16,7 @@ import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
 
-import { DRAWER_WITH } from '../constants'
+import { DRAWER_WIDTH } from '../constants'
 
 import { useLeftSidebar } from '../hooks/layout'
 
@@ -37,7 +37,7 @@ const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     position: 'relative',
     whiteSpace: 'nowrap',
-    width: DRAWER_WITH,
+    width: DRAWER_WIDTH,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen

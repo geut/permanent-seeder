@@ -3,13 +3,18 @@ import { useSocket } from 'use-socketio'
 
 import DrivesTable from './DrivesTable'
 
+function getPercentage (value, total, precision = 1) {
+  // drive.size.blocks > 0 ? Math.floor(drive.size.downloadedBlocks / drive.size.blocks * 100) : 0,
+  return parseFloat((value * 100 / (total || 1)).toFixed(precision))
+}
+
 function buildDriveData (drive) {
   return {
     key: drive.key,
     sizeBlocks: drive.size.blocks,
     sizeBytes: drive.size.bytes,
     downloadedBlocks: drive.size.downloadedBlocks,
-    downloadedPercent: drive.size.blocks > 0 ? Math.floor(drive.size.downloadedBlocks / drive.size.blocks * 100) : 0,
+    downloadedPercent: getPercentage(drive.size.downloadedBlocks, drive.size.blocks),
     title: drive.info.indexJSON?.title || `Drive-${drive.key.substring(0, 6)}`,
     peers: drive.peers,
     files: drive.stats,

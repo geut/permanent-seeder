@@ -2,7 +2,7 @@ const { EventEmitter } = require('events')
 const { promisify } = require('util')
 
 // const memoize = require('p-memoize')
-const timeout = require('p-timeout')
+// const timeout = require('p-timeout')
 const debounce = require('lodash.debounce')
 const fromEntries = require('fromentries')
 
@@ -14,7 +14,7 @@ const DEFAULT_OPTIONS = {
 }
 
 // const CACHE_MAX_AGE = 1000 * 5
-const TIMEOUT = 1000
+// const TIMEOUT = 1000
 
 // TODO(dk): check support for mounts
 // const mounts = await drive.getAllMounts({ memory: true, recursive: !!opts.recursive })
@@ -156,7 +156,7 @@ class Drive extends EventEmitter {
 
   _onStats (err, stats) {
     if (err) {
-      console.error(err)
+      console.warn(err)
       return
     }
 
@@ -176,7 +176,6 @@ class Drive extends EventEmitter {
       try {
         this._contentFeed = await this._getContentAsync()
       } catch (error) {
-        console.error(error)
         return null
       }
 
@@ -206,31 +205,12 @@ class Drive extends EventEmitter {
       const raw = await this._hyperdrive.readFile('index.json', 'utf-8')
       indexJSON = JSON.parse(raw)
     } catch (error) {
-      console.error(error, this._keyString, 'INDEX JSON')
+      console.warn(error, this._keyString, 'INDEX JSON')
     }
 
     const version = this._hyperdrive.version
 
     this.emit('info', this._keyString, { info: { version, indexJSON } })
-  }
-
-  async getInfo () {
-    // returns drive info, ie: { version, index.json }
-    await this.ready()
-
-    let indexJSON = {}
-
-    try {
-      const raw = await timeout(this._readFile('index.json', 'utf-8'), TIMEOUT)
-      indexJSON = JSON.parse(raw)
-    } catch (_) {}
-
-    const version = this._hyperdrive.version
-
-    return {
-      version,
-      indexJSON
-    }
   }
 
   getSeedingStatus () {
@@ -268,7 +248,7 @@ class Drive extends EventEmitter {
       this._contentFeed.off('upload', this._onUpload)
     }
 
-    await this._hyperdrive.close()
+    await this._hyperdrive.destroyStorage()
   }
 }
 

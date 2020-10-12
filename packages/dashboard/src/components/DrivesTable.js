@@ -7,7 +7,30 @@ import TableBody from '@material-ui/core/TableBody'
 import DrivesTableHead from './DrivesTableHead'
 import DrivesTableRow from './DrivesTableRow'
 
+const SEEDING_ORDER = {
+  WAITING: 3,
+  DOWNLOADING: 2,
+  SEEDING: 1
+}
+
+function seedingStatusComparator (a, b) {
+  const valueA = SEEDING_ORDER[a.seedingStatus]
+  const valueB = SEEDING_ORDER[b.seedingStatus]
+
+  if (valueB < valueA) {
+    return -1
+  }
+  if (valueB > valueA) {
+    return 1
+  }
+  return 0
+}
+
 function descendingComparator (a, b, orderBy) {
+  if (orderBy === 'seedingStatus') {
+    return seedingStatusComparator(a, b)
+  }
+
   if (b[orderBy] < a[orderBy]) {
     return -1
   }
@@ -59,7 +82,7 @@ const useStyles = makeStyles((theme) => ({
 function DrivesTable ({ drives, onKeyAdd }) {
   const classes = useStyles()
   const [order, setOrder] = useState('asc')
-  const [orderBy, setOrderBy] = useState('key')
+  const [orderBy, setOrderBy] = useState('seedingStatus')
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc'

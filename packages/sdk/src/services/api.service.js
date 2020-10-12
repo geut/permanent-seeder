@@ -99,6 +99,7 @@ module.exports = function (broker) {
 
     actions: {
       drives: {
+        cache: true,
         async handler (ctx) {
           return this.drives(ctx.params.key)
         }
@@ -109,6 +110,7 @@ module.exports = function (broker) {
           await ctx.call('keys.add', {
             key: encode(ctx.params.key)
           })
+          this.broker.cacher.clean()
         }
       },
 
