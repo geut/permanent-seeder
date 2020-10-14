@@ -68,7 +68,9 @@ module.exports = {
           dbDrive = await this.database.get(keyString)
         }
 
-        keysToSeed.push({ key, size: dbDrive.size })
+        if (!dbDrive.deletedAt) {
+          keysToSeed.push({ key, size: dbDrive.size })
+        }
       }
 
       return this.seeder.seed(keysToSeed)
@@ -101,7 +103,7 @@ module.exports = {
     async onDriveInfo (key, { info }) {
       await this.database.update(key, { info })
 
-      this.broker.broadcast('seeder.drive.ready', { key })
+      this.broker.broadcast('seeder.drive.info', { key })
     },
 
     async onDriveDownload (key, { size, seedingStatus, started = false, finished = false }) {
