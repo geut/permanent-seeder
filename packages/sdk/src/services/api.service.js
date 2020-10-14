@@ -213,7 +213,7 @@ module.exports = function (broker) {
           if (key) {
             keys.push(await this.broker.call('keys.get', { key }))
           } else {
-            keys = await this.broker.call('keys.getAll')
+            keys = await this.broker.call('keys.getAll') || []
           }
 
           let drives = []
