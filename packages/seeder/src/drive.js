@@ -144,9 +144,7 @@ class Drive extends EventEmitter {
       this._downloadStarted = true
     }
 
-    if (started || finished) {
-      this._downloadStarted = true
-
+    if (!started || finished) {
       this._loadStats()
       this._loadInfo()
 
