@@ -57,7 +57,7 @@ class DrivesDatabase extends Database {
   }
 
   async remove (key) {
-    super.set(key, 'deletedAt', Date.now())
+    return this.update(key, { deletedAt: Date.now() })
   }
 }
 
