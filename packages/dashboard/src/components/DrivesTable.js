@@ -118,6 +118,8 @@ function DrivesTable ({ drives, onKeyAdd }) {
               downloadedPercent={drive.downloadedPercent}
               peers={drive.peers}
               files={drive.files}
+              fsBlocks={drive.fsBlocks}
+              fsBytes={drive.fsBytes}
               info={drive.info}
               seedingStatus={drive.seedingStatus}
             />

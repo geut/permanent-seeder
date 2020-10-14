@@ -28,11 +28,13 @@ const headCells = [
         </IconButton>
       )
   },
-  { id: 'title', numeric: false, label: 'Title', width: '30%' },
+  { id: 'title', numeric: false, label: 'Title', width: '25%' },
+  { id: 'fsBlocks', numeric: true, label: <span>File System<br />Blocks</span> },
+  { id: 'fsBytes', numeric: true, label: <span>File System<br />Size</span> },
   { id: 'sizeBlocks', numeric: true, label: 'Blocks' },
   { id: 'sizeBytes', numeric: true, label: 'Size' },
-  { id: 'downloadedBlocks', numeric: true, label: 'Downloaded blocks' },
-  { id: 'downloadedPercent', numeric: true, label: 'Downloaded (%)' },
+  { id: 'downloadedBlocks', numeric: true, label: <span>Downloaded<br />blocks</span> },
+  { id: 'downloadedPercent', numeric: true, label: <span>Downloaded<br />(%)</span> },
   { id: 'peers', numeric: true, label: 'Peers' }
 ]
 
@@ -50,6 +52,7 @@ const useStyles = makeStyles((theme) => ({
   },
 
   tableHeadCell: {
+    padding: '6px 8px 6px 8px',
     '& > span > svg': {
       position: 'absolute',
       top: 2,
@@ -68,7 +71,7 @@ function DrivesTableHead ({ order, orderBy, onRequestSort, rowCount, ...props })
   return (
     <TableHead>
       <MuiTableRow>
-        <TableCell key='expand'>{rowCount} Key{rowCount !== 1 ? 's' : ''}</TableCell>
+        <TableCell key='expand' align='center'><strong>{rowCount}</strong> Key{rowCount !== 1 ? 's' : ''}</TableCell>
         {headCells.map(({ extra: ExtraComponent, ...headCell }) => (
           <TableCell
             key={headCell.id}

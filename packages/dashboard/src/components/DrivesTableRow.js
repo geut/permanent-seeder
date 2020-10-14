@@ -18,9 +18,14 @@ import DriveDetailsDialog from './DriveDetailsDialog'
 import DriveSeedingStatusIndicator from './DriveSeedingStatusIndicator'
 
 const useStyles = makeStyles((theme) => ({
-  row: {
-    cursor: 'pointer'
+  root: {
+    cursor: 'pointer',
+
+    '& > td': {
+      padding: '6px 8px 6px 8px'
+    }
   },
+
   collapse: {
     padding: 0,
     '&:last-child': {
@@ -42,6 +47,8 @@ const DrivesTableRow = React.memo(
     downloadedPercent,
     peers,
     files,
+    fsBlocks,
+    fsBytes,
     info,
     seedingStatus,
     onClick
@@ -68,7 +75,7 @@ const DrivesTableRow = React.memo(
           tabIndex={-1}
           key={driveKey}
           onClick={handleOpenDetails}
-          className={classes.row}
+          className={classes.root}
         >
           <TableCell padding='none' align='center'>
             <IconButton aria-label='expand row' size='small' onClick={handleToggleInfo}>
@@ -91,6 +98,8 @@ const DrivesTableRow = React.memo(
             </div>
           </TableCell>
           <TableCell>{title}</TableCell>
+          <TableCell align='center'>{fsBlocks}</TableCell>
+          <TableCell align='center'>{humanizedBytes(fsBytes).pretty}</TableCell>
           <TableCell align='center'>{sizeBlocks}</TableCell>
           <TableCell align='center'>{humanizedBytes(sizeBytes).pretty}</TableCell>
           <TableCell align='center'>{downloadedBlocks}</TableCell>
@@ -98,7 +107,7 @@ const DrivesTableRow = React.memo(
           <TableCell align='center'>{peers.length}</TableCell>
         </MuiTableRow>
         <MuiTableRow>
-          <TableCell className={classes.collapse} colSpan={9}>
+          <TableCell className={classes.collapse} colSpan={11}>
             <Collapse in={open} timeout='auto' unmountOnExit>
               <DriveInfo peers={peers} files={files} sizeBytes={sizeBytes} />
             </Collapse>
