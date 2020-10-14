@@ -29,8 +29,6 @@ const headCells = [
       )
   },
   { id: 'title', numeric: false, label: 'Title', width: '25%' },
-  { id: 'fsBlocks', numeric: true, label: <span>File System<br />Blocks</span> },
-  { id: 'fsBytes', numeric: true, label: <span>File System<br />Size</span> },
   { id: 'sizeBlocks', numeric: true, label: 'Blocks' },
   { id: 'sizeBytes', numeric: true, label: 'Size' },
   { id: 'downloadedBlocks', numeric: true, label: <span>Downloaded<br />blocks</span> },

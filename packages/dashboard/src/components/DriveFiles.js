@@ -20,8 +20,11 @@ const useStyles = makeStyles(theme => ({
     tableLayout: 'fixed'
   },
   row: {
-    '& > td': {
+    '& > td, & > th': {
       padding: '6px 8px 6px 8px'
+    },
+    '& > *:first-child': {
+      paddingLeft: theme.spacing(2)
     }
   },
   cellSize: {
@@ -32,8 +35,9 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-function DriveFiles ({ files }) {
+function DriveFiles ({ files, blocks, bytes }) {
   const classes = useStyles()
+  const totalFiles = Object.entries(files).length
 
   return (
     <TableContainer square component={Paper} className={classes.container}>
@@ -46,6 +50,11 @@ function DriveFiles ({ files }) {
           </TableRow>
         </TableHead>
         <TableBody>
+          <TableRow className={classes.row}>
+            <TableCell size='small'><strong>{totalFiles} file{totalFiles === 1 ? '' : 's'}</strong></TableCell>
+            <TableCell align='right'><strong>{humanizedBytes(bytes).pretty}</strong></TableCell>
+            <TableCell align='right'><strong>{blocks}</strong></TableCell>
+          </TableRow>
           {Object.entries(files).map(([fileName, { size, blocks }]) => (
             <TableRow key={fileName} className={classes.row}>
               <TableCell size='small'>{fileName}</TableCell>

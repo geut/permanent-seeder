@@ -22,7 +22,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-function DriveInfo ({ peers, files, sizeBytes }) {
+function DriveInfo ({ peers, files, sizeBytes, fsBlocks, fsBytes }) {
   const classes = useStyles()
 
   return (
@@ -34,7 +34,7 @@ function DriveInfo ({ peers, files, sizeBytes }) {
         </Grid>
         <Grid item xs={4} className={classes.infoItem}>
           {Object.values(files).length === 0 && <Typography key='files-header-empty' className={classes.noItems} variant='h6'>No files to show</Typography>}
-          {Object.values(files).length > 0 && <DriveFiles files={files} />}
+          {Object.values(files).length > 0 && <DriveFiles files={files} blocks={fsBlocks} bytes={fsBytes} />}
         </Grid>
       </Grid>
     </div>
