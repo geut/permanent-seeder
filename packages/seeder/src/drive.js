@@ -188,6 +188,10 @@ class Drive extends EventEmitter {
     return this._hyperdrive.download(path, cb)
   }
 
+  log (message, level = 'log') {
+    console[level](message)
+  }
+
   async getContentFeed () {
     if (!this._contentFeed) {
       try {
@@ -196,11 +200,17 @@ class Drive extends EventEmitter {
         return null
       }
 
+      const logWarn = (err) => {
+        this.log(err.message, 'warn')
+      }
+
+      this._contentFeed.on('error', logWarn)
       this._contentFeed.on('download', this._onDownload)
       this._contentFeed.on('upload', this._onUpload)
       this._contentFeed.on('close', () => {
         this._contentFeed.off('download', this._onDownload)
         this._contentFeed.off('upload', this._onUpload)
+        this._contentFeed.off('error', logWarn)
       })
     }
 
