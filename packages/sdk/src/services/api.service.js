@@ -1,12 +1,10 @@
 const { readFileSync } = require('fs')
-const { join, dirname, resolve } = require('path')
-const { homedir } = require('os')
+const { dirname, resolve } = require('path')
 
 const ApiGatewayService = require('moleculer-web')
 const IO = require('socket.io')
 const compression = require('compression')
 const { encode } = require('dat-encoding')
-const heapdump = require('heapdump')
 
 const { DrivesDatabase } = require('@geut/permanent-seeder-database')
 const dashboard = require.resolve('@geut/permanent-seeder-dashboard')
@@ -65,7 +63,6 @@ module.exports = function (broker) {
           'GET api/stats/host': 'api.stats.host',
           'GET api/stats/network': 'api.stats.network',
           'GET api/raw/:key': 'api.raw',
-          'GET api/heapdump': 'api.heapdump',
           'POST api/drives': 'api.drives.add'
         }
       }],
@@ -145,6 +142,9 @@ module.exports = function (broker) {
       },
 
       'stats.network': {
+        cache: {
+          ttl: 5
+        },
         async handler (ctx) {
           return ctx.call('metrics.getNetworkStats')
         }
@@ -165,12 +165,6 @@ module.exports = function (broker) {
       'raw.event': {
         async handler (ctx) {
           return this.raw(ctx.params.key, ctx.params.event)
-        }
-      },
-
-      heapdump: {
-        async handler (ctx) {
-          return this.heapdump()
         }
       }
     },
@@ -239,22 +233,6 @@ module.exports = function (broker) {
         // get all keys from timestamp (optional)
           const stats = await this.broker.call('metrics.get', { key, timestamp })
           return stats
-        }
-      },
-
-      heapdump: {
-        async handler () {
-          return new Promise((resolve, reject) => {
-            const dest = join(homedir(), `heapDump-${Date.now()}.heapsnapshot`)
-            heapdump.writeSnapshot(dest, (err) => {
-              if (err) {
-                this.logger.error(err)
-                return reject(err)
-              }
-
-              return resolve({ dest })
-            })
-          })
         }
       }
     },
