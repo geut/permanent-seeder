@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 
 import { makeStyles } from '@material-ui/core'
 import TextField from '@material-ui/core/TextField'
@@ -15,11 +15,12 @@ const useStyles = makeStyles((theme) => ({
     color: theme.palette.text.primary
   },
   input: {
-    fontFamily: 'monospace'
+    fontFamily: 'monospace',
+    fontSize: '1.3rem'
   }
 }))
 
-function AddKeyDialog ({ open, keyToAdd = '', error, onClose, onAdd }) {
+function AddKeyDialog ({ open, error, onClose, onAdd }) {
   const classes = useStyles()
   const [key, setKey] = useState('')
 
@@ -32,15 +33,11 @@ function AddKeyDialog ({ open, keyToAdd = '', error, onClose, onAdd }) {
     setKey(event.target.value)
   }
 
-  useEffect(() => {
-    setKey(keyToAdd)
-  }, [keyToAdd])
-
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth='sm'
+      maxWidth='md'
       fullWidth
       aria-labelledby='form-dialog-title'
     >

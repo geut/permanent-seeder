@@ -1,116 +1,43 @@
 import React from 'react'
 
-import { makeStyles, useTheme } from '@material-ui/core/styles'
-import useMediaQuery from '@material-ui/core/useMediaQuery'
-import Chip from '@material-ui/core/Chip'
-import Dialog from '@material-ui/core/Dialog'
+import { makeStyles } from '@material-ui/core'
 import Grid from '@material-ui/core/Grid'
-import MuiDialogTitle from '@material-ui/core/DialogTitle'
-import DialogContent from '@material-ui/core/DialogContent'
-import Paper from '@material-ui/core/Paper'
-import IconButton from '@material-ui/core/IconButton'
-import CloseIcon from '@material-ui/icons/Close'
 import Typography from '@material-ui/core/Typography'
+import indigo from '@material-ui/core/colors/indigo'
 
-import ReactJson from 'react-json-view'
+import DrivePeers from './DrivePeers'
+import DriveFiles from './DriveFiles'
 
 const useStyles = makeStyles(theme => ({
-  dialogTitle: {
-    margin: 0,
-    padding: theme.spacing(2)
+  root: {
+    padding: 8
   },
-  dialogSubTitle: {
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(2)
+
+  infoItem: {
+    backgroundColor: indigo[100]
   },
-  dialogContent: {
-    padding: theme.spacing(2)
-  },
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500]
+
+  noItems: {
+    margin: theme.spacing()
   }
 }))
 
-const DialogTitle = (props) => {
+function DriveInfo ({ peers, files, sizeBytes, fsBlocks, fsBytes }) {
   const classes = useStyles()
-  const { children, onClose, ...other } = props
-  return (
-    <MuiDialogTitle disableTypography className={classes.dialogTitle} {...other}>
-      <Typography variant='h6'>{children}</Typography>
-      {onClose ? (
-        <IconButton aria-label='close' className={classes.closeButton} onClick={onClose}>
-          <CloseIcon />
-        </IconButton>
-      ) : null}
-    </MuiDialogTitle>
-  )
-}
-
-function DriveInfo ({ info = {}, onClose, open, title }) {
-  const theme = useTheme()
-  const classes = useStyles()
-  const { version, indexJSON = {} } = info
-  const fullScreen = useMediaQuery(theme.breakpoints.down('md'))
-  const versionLabel = ({ version }) => (
-    <Chip
-      label={version}
-      color='secondary'
-      variant='outlined'
-    />
-  )
-
-  const handleCopy = (copy) => {
-    navigator.clipboard.writeText(JSON.stringify(copy.src, null, '\t'))
-  }
 
   return (
-    <Dialog
-      scroll='paper'
-      fullScreen={fullScreen}
-      onClose={onClose}
-      aria-labelledby='drive-details-title'
-      open={open}
-      fullWidth
-    >
-
-      <DialogTitle id='drive-details-title' onClose={onClose}>
-        Drive Info
-      </DialogTitle>
-      <Grid container alignItems='center' className={classes.dialogSubTitle}>
-        <Grid item xs>
-          <Typography gutterBottom color='textSecondary' variant='h6'>
-            {title}
-          </Typography>
+    <div className={classes.root}>
+      <Grid container spacing={2}>
+        <Grid item xs className={classes.infoItem}>
+          {peers.length === 0 && <Typography key='peers-header-empty' className={classes.noItems} variant='h6'>No peers to show</Typography>}
+          {peers.length > 0 && <DrivePeers peers={peers} driveSize={sizeBytes} />}
         </Grid>
-        <Grid item>
-          <Typography gutterBottom variant='h6'>
-            {versionLabel({ version })}
-          </Typography>
+        <Grid item xs={4} className={classes.infoItem}>
+          {Object.values(files).length === 0 && <Typography key='files-header-empty' className={classes.noItems} variant='h6'>No files to show</Typography>}
+          {Object.values(files).length > 0 && <DriveFiles files={files} blocks={fsBlocks} bytes={fsBytes} />}
         </Grid>
       </Grid>
-      <DialogContent className={classes.dialogContent} dividers>
-        <div style={{ marginBottom: '1em' }}>
-          <Typography variant='overline' style={{ fontWeight: 'bold' }} display='block'>
-          index.json
-          </Typography>
-
-          <Paper>
-            <ReactJson
-              src={indexJSON}
-              style={{ minWidth: '500px', borderRadius: theme.shape.borderRadius, padding: theme.spacing(1), fontSize: theme.typography.fontSize }}
-              displayDataTypes={false}
-              indentWidth={2}
-              collapseStringsAfterLength={15}
-              enableClipboard={handleCopy}
-              theme='solarized'
-            />
-          </Paper>
-        </div>
-      </DialogContent>
-    </Dialog>
+    </div>
   )
 }
 

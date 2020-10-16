@@ -1,18 +1,17 @@
-import React, { useEffect, useState } from 'react'
-import { useSocket } from 'use-socketio'
-import useFetch from 'use-http'
-import { HotKeys } from 'react-hotkeys'
-import { encode } from 'dat-encoding'
+import React, { Suspense, useEffect, useState } from 'react'
+import { useAsyncResource } from 'use-async-resource'
 
 import { makeStyles } from '@material-ui/core'
+import Box from '@material-ui/core/Box'
+import LinearProgress from '@material-ui/core/LinearProgress'
 
 import { API_URL } from '../config'
+
 import { useAppBarTitle } from '../hooks/layout'
 
-import DriveItem from '../components/DriveItem'
-import DriveItemHeader from '../components/DriveItemHeader'
 import HostStats from '../components/HostStats'
 import AddKeyDialog from '../components/AddKeyDialog'
+import DriveList from '../components/DriveList'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -20,6 +19,15 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     flexWrap: 'nowrap'
+  },
+
+  fullLoaderWrapper: {
+    marginLeft: -theme.spacing(7),
+    width: '100vw'
+  },
+  fullLoader: {
+    width: '100vw',
+    height: 5
   },
 
   expand: {
@@ -41,110 +49,77 @@ const useStyles = makeStyles((theme) => ({
   }
 }))
 
+const fetchDrives = () => window.fetch(`${API_URL}/drives`).then(res => res.json())
+
 function Dashboard () {
   const classes = useStyles()
   const [, setAppBarTitle] = useAppBarTitle()
-  const [keys, setKeys] = useState({})
   const [addKeyDialogOpen, setAddKeyDialogOpen] = useState(false)
   const [addKeyDialogError, setAddKeyDialogError] = useState(null)
-  const [addKeyDialogKey, setAddKeyDialogKey] = useState(null)
+  const [loadDrives] = useAsyncResource(fetchDrives, [])
 
   useEffect(() => {
     setAppBarTitle('Permanent Seeder')
   }, [setAppBarTitle])
 
-  const { get, post, response, error } = useFetch(API_URL)
-
-  // New keys
-  const { unsubscribe: unsubscribeKeyAdd } = useSocket('drive.add', key => {
-    setKeys(keys => ({ ...keys, [key]: key }))
-  })
-
-  // Removed keys
-  const { unsubscribe: unsubscribeKeyRemove } = useSocket('drive.remove', key => {
-    setKeys(keys => {
-      const { [key]: deletedKey, ...newKeys } = keys
-      return newKeys
-    })
-  })
-
-  // Existing keys
-  useEffect(() => {
-    async function fetchInitalData () {
-      const drives = await get('/drives')
-      if (response.ok) {
-        setKeys(drives.reduce((keys, drive) => {
-          keys[drive.key.publicKey] = drive.key.publicKey
-          return keys
-        }, {}))
-      }
-    }
-
-    fetchInitalData()
-
-    return () => {
-      unsubscribeKeyAdd()
-      unsubscribeKeyRemove()
-    }
-  }, [])
-
   function handleKeyAddDialogClose () {
     setAddKeyDialogOpen(false)
   }
 
-  function handleKeyAddDialogOpen (key = '') {
+  function handleKeyAddDialogOpen (event) {
+    event.stopPropagation()
     setAddKeyDialogError(null)
-    setAddKeyDialogKey(key)
     setAddKeyDialogOpen(true)
   }
 
   async function handleKeyAdd (key) {
-    await post('/drives', { key })
-    if (response.ok) {
+    try {
+      const response = await window.fetch(`${API_URL}/drives`, {
+        method: 'POST',
+        headers: {
+          accept: 'application/json, text/plain, */*',
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({ key })
+      })
+
+      if (!response.ok) {
+        const errorMessage = await response.text()
+        throw new Error(errorMessage)
+      }
+
       handleKeyAddDialogClose()
       setAddKeyDialogError(null)
-    } else {
-      setAddKeyDialogError(error ? error.message : response.data)
-    }
-  }
-
-  const keyMap = {
-    PASTE_KEY: 'ctrl+v'
-  }
-
-  const handlers = {
-    PASTE_KEY: async event => {
-      const key = await navigator.clipboard.readText()
-      try {
-        const validKey = encode(key)
-        handleKeyAddDialogOpen(validKey)
-      } catch (error) {
-        console.warn(error)
-      }
+    } catch (error) {
+      setAddKeyDialogError(error.message)
     }
   }
 
   return (
-    <HotKeys keyMap={keyMap} className={classes.expand}>
-      <HotKeys handlers={handlers} className={classes.expand}>
-        <AddKeyDialog
-          open={addKeyDialogOpen}
-          keyToAdd={addKeyDialogKey}
-          onAdd={handleKeyAdd}
-          onClose={handleKeyAddDialogClose}
-          error={addKeyDialogError}
-        />
-        <div className={classes.root}>
-          <div className={classes.drives}>
-            <DriveItemHeader onKeyAdd={() => handleKeyAddDialogOpen()} />
-            {Object.values(keys).map(key => <DriveItem key={key} driveKey={key} />)}
-          </div>
-          <div className={classes.hostStats}>
-            <HostStats />
-          </div>
+    <>
+      <AddKeyDialog
+        open={addKeyDialogOpen}
+        onAdd={handleKeyAdd}
+        onClose={handleKeyAddDialogClose}
+        error={addKeyDialogError}
+      />
+      <div className={classes.root}>
+        <div className={classes.drives}>
+          <Suspense fallback={
+            <Box className={classes.fullLoaderWrapper}>
+              <LinearProgress color='secondary' className={classes.fullLoader} />
+            </Box>
+          }
+          >
+
+            <DriveList loadDrives={loadDrives} onKeyAdd={handleKeyAddDialogOpen} />
+          </Suspense>
         </div>
-      </HotKeys>
-    </HotKeys>
+        <div className={classes.hostStats}>
+          <HostStats />
+        </div>
+      </div>
+    </>
   )
 }
 

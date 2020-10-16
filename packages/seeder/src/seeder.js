@@ -21,7 +21,7 @@ const MAX_PEERS = 256
 const DEFAULT_OPTS = {
   announce: true,
   lookup: true,
-  storageLocation: join(homedir(), 'permanent-seeder'),
+  storageLocation: join(homedir(), 'permanent-seeder', '.hyper'),
   corestoreOpts: {
     sparse: false,
     cache: {
@@ -44,9 +44,8 @@ const DEFAULT_OPTS = {
  * @param {} storageLocation
  * @param {} name
  */
-const getCoreStore = (storageLocation, name) => {
-  const location = join(storageLocation, name)
-  return file => raf(join(location, file))
+const getCoreStore = (storageLocation) => {
+  return file => raf(join(storageLocation, file))
 }
 
 /**
@@ -66,6 +65,14 @@ class Seeder extends EventEmitter {
     this.drives = new Map()
     this._unlistens = []
     this.ready = false
+
+    this.onDriveDownload = this.onDriveDownload.bind(this)
+    this.onDriveInfo = this.onDriveInfo.bind(this)
+    this.onDrivePeerAdd = this.onDrivePeerAdd.bind(this)
+    this.onDrivePeerRemove = this.onDrivePeerRemove.bind(this)
+    this.onDriveStats = this.onDriveStats.bind(this)
+    this.onDriveUpdate = this.onDriveUpdate.bind(this)
+    this.onDriveUpload = this.onDriveUpload.bind(this)
   }
 
   /**
@@ -75,7 +82,7 @@ class Seeder extends EventEmitter {
     if (this.ready) return
 
     this.store = new Corestore(
-      getCoreStore(this.opts.storageLocation, '.hyper'),
+      getCoreStore(this.opts.storageLocation),
       this.opts.corestoreOpts
     )
 
@@ -134,12 +141,40 @@ class Seeder extends EventEmitter {
     return drive
   }
 
+  onDriveDownload (key, data) {
+    this.emit('drive-download', key, data)
+  }
+
+  onDriveInfo (key, data) {
+    this.emit('drive-info', key, data)
+  }
+
+  onDrivePeerAdd (key, data) {
+    this.emit('drive-peer-add', key, data)
+  }
+
+  onDrivePeerRemove (key, data) {
+    this.emit('drive-peer-remove', key, data)
+  }
+
+  onDriveStats (key, data) {
+    this.emit('drive-stats', key, data)
+  }
+
+  onDriveUpdate (key, data) {
+    this.emit('drive-update', key, data)
+  }
+
+  onDriveUpload (key) {
+    this.emit('drive-upload', key)
+  }
+
   /**
    * Seeds a key
    *
    * @param {string|Buffer} key key to seed
    */
-  async seedKey (key) {
+  async seedKey ({ key, size }) {
     const keyString = encode(key)
 
     // Check if drive present
@@ -152,7 +187,7 @@ class Seeder extends EventEmitter {
     console.log('------------------------------------------------------------------\n')
 
     // Create drive
-    drive = new Drive(key, this.store)
+    drive = new Drive(decode(key), this.store, size)
 
     // Store drive
     this.drives.set(keyString, drive)
@@ -160,41 +195,26 @@ class Seeder extends EventEmitter {
     // Wait for readyness
     await drive.ready()
 
-    drive.download('/')
-
-    const onDriveUpdate = () => {
-      this.emit('drive-update', keyString)
-    }
-
-    const onDriveDownload = () => {
-      this.emit('drive-download', keyString)
-    }
-
-    const onDriveUpload = () => {
-      this.emit('drive-upload', keyString)
-    }
-
-    const onDrivePeerAdd = () => {
-      this.emit('drive-peer-add', keyString)
-    }
-
-    const onDrivePeerRemove = () => {
-      this.emit('drive-peer-remove', keyString)
-    }
+    // Force download
+    drive.download()
 
     // Register event listeners
-    drive.on('update', onDriveUpdate)
-    drive.on('download', onDriveDownload)
-    drive.on('upload', onDriveUpload)
-    drive.on('peer-add', onDrivePeerAdd)
-    drive.on('peer-remove', onDrivePeerRemove)
+    drive.on('download', this.onDriveDownload)
+    drive.on('info', this.onDriveInfo)
+    drive.on('peer-add', this.onDrivePeerAdd)
+    drive.on('peer-remove', this.onDrivePeerRemove)
+    drive.on('stats', this.onDriveStats)
+    drive.on('update', this.onDriveUpdate)
+    drive.on('upload', this.onDriveUpload)
 
     this._unlistens.push(() => {
-      drive.off('update', onDriveUpdate)
-      drive.off('download', onDriveDownload)
-      drive.off('upload', onDriveUpload)
-      drive.off('peer-add', onDrivePeerAdd)
-      drive.off('peer-remove', onDrivePeerRemove)
+      drive.off('download', this.onDriveDownload)
+      drive.off('info', this.onDriveInfo)
+      drive.off('peer-add', this.onDrivePeerAdd)
+      drive.off('peer-remove', this.onDrivePeerRemove)
+      drive.off('stats', this.onDriveStats)
+      drive.off('update', this.onDriveUpdate)
+      drive.off('upload', this.onDriveUpload)
     })
 
     // Notify new drive
@@ -205,9 +225,6 @@ class Seeder extends EventEmitter {
 
     // Wait for content ready
     await drive.getContentFeed()
-
-    // force the first fetch for drive info
-    this.emit('drive-indexjson', keyString)
   }
 
   /**
@@ -221,24 +238,8 @@ class Seeder extends EventEmitter {
     await Promise.all(keys.map(this.seedKey.bind(this)))
   }
 
-  async driveSize (key) {
-    return this.getDrive(key).getSize()
-  }
-
-  async driveStats (key) {
-    return this.getDrive(key).getStats()
-  }
-
-  async driveLstat (key) {
-    return this.getDrive(key).getLstat()
-  }
-
   drivePeers (key) {
     return this.getDrive(key).peers
-  }
-
-  async driveInfo (key) {
-    return this.getDrive(key).info()
   }
 
   async driveNetwork (key) {

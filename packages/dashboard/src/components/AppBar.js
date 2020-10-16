@@ -9,7 +9,7 @@ import Typography from '@material-ui/core/Typography'
 import IconButton from '@material-ui/core/IconButton'
 import MenuIcon from '@material-ui/icons/Menu'
 
-import { DRAWER_WITH } from '../constants'
+import { DRAWER_WIDTH } from '../constants'
 import PSIcon from './PSIcon'
 
 import { useLeftSidebar, useAppBarTitle, useDarkMode } from '../hooks/layout'
@@ -26,8 +26,8 @@ const useStyles = makeStyles((theme) => ({
     })
   },
   appBarShift: {
-    marginLeft: DRAWER_WITH,
-    width: `calc(100% - ${DRAWER_WITH}px)`,
+    marginLeft: DRAWER_WIDTH,
+    width: `calc(100% - ${DRAWER_WIDTH}px)`,
     transition: theme.transitions.create(['width', 'margin'], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen

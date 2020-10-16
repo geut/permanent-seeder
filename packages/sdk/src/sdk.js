@@ -13,6 +13,12 @@ class SDK extends EventEmitter {
 
   _createBroker (name, options = {}) {
     this._broker = new ServiceBroker({
+      cacher: {
+        type: 'Memory',
+        options: {
+          maxParamsLength: 60
+        }
+      },
       nodeID: name ? `${name}-${Date.now()}` : undefined,
       transporter: {
         type: 'TCP',

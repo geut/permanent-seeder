@@ -1,13 +1,15 @@
 const { readFileSync } = require('fs')
-const { join, dirname } = require('path')
-const { homedir } = require('os')
+const { dirname, resolve } = require('path')
 
 const ApiGatewayService = require('moleculer-web')
 const IO = require('socket.io')
 const compression = require('compression')
 const { encode } = require('dat-encoding')
-const heapdump = require('heapdump')
+
+const { DrivesDatabase } = require('@geut/permanent-seeder-database')
 const dashboard = require.resolve('@geut/permanent-seeder-dashboard')
+
+const { Config } = require('../mixins/config.mixin')
 
 module.exports = function (broker) {
   let { api: { https, port = 3001 } = {} } = broker.metadata.config
@@ -26,11 +28,10 @@ module.exports = function (broker) {
   return {
     name: 'api',
 
-    mixins: [ApiGatewayService],
+    mixins: [ApiGatewayService, Config],
 
     dependencies: [
       'metrics',
-      'seeder',
       'keys'
     ],
 
@@ -58,10 +59,10 @@ module.exports = function (broker) {
           'GET api/drives/:key/peers': 'api.drives.peers',
           'GET api/drives/:key/stats': 'api.drives.stats',
           'GET api/drives/:key/info': 'api.drives.info',
+          'GET api/drives/:key/seedingStatus': 'api.drives.seedingStatus',
           'GET api/stats/host': 'api.stats.host',
           'GET api/stats/network': 'api.stats.network',
           'GET api/raw/:key': 'api.raw',
-          'GET api/heapdump': 'api.heapdump',
           'POST api/drives': 'api.drives.add'
         }
       }],
@@ -76,32 +77,12 @@ module.exports = function (broker) {
     },
 
     events: {
-      'seeder.drive.add' (ctx) {
-        this.io.emit('drive.add', ctx.params.key)
-      },
+      'seeder.drive.*' (ctx) {
+        if (ctx.eventName === 'seeder.drive.remove') {
+          return this.io.emit('drive.remove', ctx.params.key)
+        }
 
-      'seeder.drive.remove' (ctx) {
-        this.io.emit('drive.remove', ctx.params.key)
-      },
-
-      'seeder.drive.download' (ctx) {
-        this.io.emit(`drive.${ctx.params.key}.download`, ctx.params.key)
-      },
-
-      'seeder.drive.upload' (ctx) {
-        this.io.emit(`drive.${ctx.params.key}.upload`, ctx.params.key)
-      },
-
-      'seeder.drive.indexjson.update' (ctx) {
-        this.io.emit(`drive.${ctx.params.key}.indexjson.update`, ctx.params.key)
-      },
-
-      'seeder.drive.peer.add' (ctx) {
-        this.io.emit(`drive.${ctx.params.key}.peer.add`, ctx.params.key)
-      },
-
-      'seeder.drive.peer.remove' (ctx) {
-        this.io.emit(`drive.${ctx.params.key}.peer.remove`, ctx.params.key)
+        return this.emitDriveUpdate(ctx.params.key)
       },
 
       'stats.host' (ctx) {
@@ -111,19 +92,22 @@ module.exports = function (broker) {
       'stats.network' (ctx) {
         this.io.emit('stats.network', ctx.params.stats)
       }
-
     },
 
     actions: {
       drives: {
+        cache: true,
         async handler (ctx) {
           return this.drives(ctx.params.key)
         }
       },
 
-      'drives.size': {
+      'drives.add': {
         async handler (ctx) {
-          return this.driveSize(ctx.params.key)
+          await ctx.call('keys.add', {
+            key: encode(ctx.params.key)
+          })
+          this.broker.cacher.clean()
         }
       },
 
@@ -139,21 +123,28 @@ module.exports = function (broker) {
         }
       },
 
+      'drives.size': {
+        async handler (ctx) {
+          return this.driveSize(ctx.params.key)
+        }
+      },
+
+      'drives.seedingStatus': {
+        async handler (ctx) {
+          return this.driveSeedingStatus(ctx.params.key)
+        }
+      },
+
       'drives.stats': {
         async handler (ctx) {
           return this.driveStats(ctx.params.key)
         }
       },
 
-      'drives.add': {
-        async handler (ctx) {
-          await ctx.call('keys.add', {
-            key: encode(ctx.params.key)
-          })
-        }
-      },
-
       'stats.network': {
+        cache: {
+          ttl: 5
+        },
         async handler (ctx) {
           return ctx.call('metrics.getNetworkStats')
         }
@@ -164,49 +155,48 @@ module.exports = function (broker) {
           return ctx.call('metrics.getHostStats')
         }
       },
+
       raw: {
         async handler (ctx) {
           return this.raw(ctx.params.key)
         }
       },
+
       'raw.event': {
         async handler (ctx) {
           return this.raw(ctx.params.key, ctx.params.event)
-        }
-      },
-      heapdump: {
-        async handler (ctx) {
-          return this.heapdump()
         }
       }
     },
 
     methods: {
-      driveSize: {
-        async handler (key) {
-          const size = await this.broker.call('seeder.driveSize', { key })
-          return size
-        }
-      },
-
       driveInfo: {
         async handler (key) {
-          const info = await this.broker.call('seeder.driveInfo', { key })
-          return info
+          return this.drivesDatabase.get(key, 'info')
         }
       },
 
       drivePeers: {
         async handler (key) {
-          const peers = await this.broker.call('seeder.drivePeers', { key })
-          return peers
+          return this.drivesDatabase.get(key, 'peers')
+        }
+      },
+
+      driveSeedingStatus: {
+        async handler (key) {
+          return this.drivesDatabase.get(key, 'seedingStatus')
+        }
+      },
+
+      driveSize: {
+        async handler (key) {
+          return this.drivesDatabase.get(key, 'size')
         }
       },
 
       driveStats: {
         async handler (key) {
-          const stats = await this.broker.call('seeder.driveStats', { key })
-          return stats
+          return this.drivesDatabase.get(key, 'stats')
         }
       },
 
@@ -217,47 +207,40 @@ module.exports = function (broker) {
           if (key) {
             keys.push(await this.broker.call('keys.get', { key }))
           } else {
-            keys = await this.broker.call('keys.getAll')
+            keys = await this.broker.call('keys.getAll') || []
           }
 
           let drives = []
 
-          drives = await Promise.all(keys.map(async ({ key: publicKey }) => {
-            return {
-              key: {
-                publicKey
-              },
-              stats: await this.driveStats(publicKey),
-              size: await this.driveSize(publicKey),
-              peers: await this.drivePeers(publicKey)
-            }
+          drives = await Promise.all(keys.map(({ key }) => {
+            return this.drivesDatabase.get(key)
           }))
 
           return key ? drives[0] : drives
         }
       },
+
+      emitDriveUpdate: {
+        async handler (key) {
+          const drive = await this.drives(key)
+
+          return this.io.emit('update', drive)
+        }
+      },
+
       raw: {
         async handler (key, timestamp) {
         // get all keys from timestamp (optional)
           const stats = await this.broker.call('metrics.get', { key, timestamp })
           return stats
         }
-      },
-      heapdump: {
-        async handler () {
-          return new Promise((resolve, reject) => {
-            const dest = join(homedir(), `heapDump-${Date.now()}.heapsnapshot`)
-            heapdump.writeSnapshot(dest, (err) => {
-              if (err) {
-                this.logger.error(err)
-                return reject(err)
-              }
-
-              return resolve({ dest })
-            })
-          })
-        }
       }
+    },
+
+    created () {
+      const drivesDbPath = resolve(this.settings.config.path, 'drives.db')
+
+      this.drivesDatabase = new DrivesDatabase(drivesDbPath)
     },
 
     async started () {
@@ -268,26 +251,6 @@ module.exports = function (broker) {
 
         client.on('disconnect', () => {
           this.logger.info('SOCKET: Client disconnected')
-        })
-
-        client.on('drive.size', async (key, done) => {
-          const size = await this.driveSize(key)
-          done(size)
-        })
-
-        client.on('drive.peers', async (key, done) => {
-          const peers = await this.drivePeers(key)
-          done(peers)
-        })
-
-        client.on('drive.stats', async (key, done) => {
-          const stats = await this.driveStats(key)
-          done(stats)
-        })
-
-        client.on('drive.info', async (key, done) => {
-          const info = await this.driveInfo(key)
-          done(info)
         })
       })
     }
