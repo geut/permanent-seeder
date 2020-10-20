@@ -2,10 +2,13 @@ const { resolve } = require('path')
 
 const { MetricsDatabase } = require('@geut/permanent-seeder-database')
 const top = require('process-top')()
-// const { getDiskInfo } = require('node-disk-info')
+const trammel = require('trammel')
+const pMemoize = require('p-memoize')
 const isOnline = require('is-online')
 
 const { Config } = require('../mixins/config.mixin')
+
+const dirSize = pMemoize(trammel, { maxAge: 2000 })
 
 module.exports = {
   name: 'metrics',
@@ -68,10 +71,10 @@ module.exports = {
   methods: {
     getHostStats: {
       async handler () {
-        const disk = []
+        let disk = ''
 
         try {
-          // disk = await getDiskInfo()
+          disk = await dirSize(this.config.path, { stopOnError: true })
         } catch (error) {
           console.error(error)
         }
@@ -81,7 +84,7 @@ module.exports = {
           mem: top.memory().percent,
           uptime: top.time(),
           loadavg: top.loadavg(),
-          disk
+          disk: { directory: disk }
         }
       }
     },
@@ -128,7 +131,8 @@ module.exports = {
 
   created () {
     this.config = {
-      saveStats: this.settings.config.save_stats
+      saveStats: this.settings.config.save_stats,
+      path: this.settings.config.path
     }
 
     const metricsDbPath = resolve(this.settings.config.path, 'metrics.db')
