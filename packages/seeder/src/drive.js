@@ -97,7 +97,7 @@ class Drive extends EventEmitter {
       const raw = await this._hyperdrive.readFile('index.json', 'utf-8')
       indexJSON = JSON.parse(raw)
     } catch (error) {
-      this._logger.warn({ error, key: this._key, info: true })
+      this._logger.warn({ error, key: this._key, info: true }, error.message)
     }
 
     const version = this._hyperdrive.version
@@ -164,7 +164,7 @@ class Drive extends EventEmitter {
 
   _onStats (error, stats) {
     if (error) {
-      this._logger.warn({ error, key: this._key, stats: true })
+      this._logger.warn({ error, key: this._key, stats: true }, error.message)
       return
     }
 
@@ -187,17 +187,17 @@ class Drive extends EventEmitter {
         return null
       }
 
-      const logWarn = (error) => {
-        this._logger.warn({ key: this._key, error, contentFeed: true })
+      const logError = (error) => {
+        this._logger.error({ key: this._key, error, contentFeed: true }, error.message)
       }
 
-      this._contentFeed.on('error', logWarn)
+      this._contentFeed.on('error', logError)
       this._contentFeed.on('download', this._onDownload)
       this._contentFeed.on('upload', this._onUpload)
       this._contentFeed.on('close', () => {
         this._contentFeed.off('download', this._onDownload)
         this._contentFeed.off('upload', this._onUpload)
-        this._contentFeed.off('error', logWarn)
+        this._contentFeed.off('error', logError)
       })
     }
 

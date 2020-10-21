@@ -32,6 +32,9 @@ class SDK extends EventEmitter {
           options: {
             level: 'info',
             pino: {
+              options: {
+                base: null // Hide pid, hostname
+              },
               destination: join(this._config.path, 'logs', 'output.log')
             }
           }
@@ -39,8 +42,11 @@ class SDK extends EventEmitter {
         {
           type: 'Pino',
           options: {
-            level: 'error',
+            level: 'warn',
             pino: {
+              options: {
+                base: null // Hide pid, hostname
+              },
               destination: join(this._config.path, 'logs', 'error.log')
             }
           }

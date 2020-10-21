@@ -22,7 +22,8 @@ class TailCommand extends BaseCommand {
     const pinoPretty = PinoPretty({
       colorize: true,
       translateTime: true,
-      ignore: 'nodeID,ns'
+      ignore: 'nodeID,ns',
+      search: !error ? 'level < `40`' : undefined // Ignore higher levels than info (30)
     })
 
     const pinoPrettyTransformer = new Transform({
