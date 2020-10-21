@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Update: pass optional swarm port to seeder
   - Api port setting
   - Api https settings
+  - Pino as default logger
 - packages/seeder
   - Fix: use corestoreOpts + allow optional preferredPort setting
 - packages/metrics
@@ -23,3 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - packages/cli
   - Use api config to open dashboard in browser
+
+### Added
+- packages/cli
+  - Pretty print logs

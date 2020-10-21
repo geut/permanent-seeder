@@ -65,6 +65,7 @@ class Seeder extends EventEmitter {
     this.drives = new Map()
     this._unlistens = []
     this.ready = false
+    this.logger = this.opts.logger || console
 
     this.onDriveDownload = this.onDriveDownload.bind(this)
     this.onDriveInfo = this.onDriveInfo.bind(this)
@@ -183,11 +184,10 @@ class Seeder extends EventEmitter {
     // Already downloading
     if (drive) return
 
-    console.log('\n-----------------------------SEEDING------------------------------\n', keyString)
-    console.log('------------------------------------------------------------------\n')
+    this.logger.info({ key: keyString }, 'Seeding key')
 
     // Create drive
-    drive = new Drive(decode(key), this.store, size)
+    drive = new Drive(decode(key), this.store, size, { logger: this.logger })
 
     // Store drive
     this.drives.set(keyString, drive)

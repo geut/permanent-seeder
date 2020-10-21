@@ -245,14 +245,6 @@ module.exports = function (broker) {
 
     async started () {
       this.io = IO.listen(this.server)
-
-      this.io.on('connection', client => {
-        this.logger.info('SOCKET: Client connected via websocket!')
-
-        client.on('disconnect', () => {
-          this.logger.info('SOCKET: Client disconnected')
-        })
-      })
     }
   }
 }
