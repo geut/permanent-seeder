@@ -1,8 +1,10 @@
 
 const { resolve } = require('path')
-const { promises: { readFile } } = require('fs')
+const { createReadStream } = require('fs')
+const { Transform } = require('readable-stream')
 
 const { flags } = require('@oclif/command')
+const PinoPretty = require('pino-pretty')
 
 const Tail = require('tail').Tail
 
@@ -15,17 +17,37 @@ class TailCommand extends BaseCommand {
     const config = this.checkConfig()
 
     const file = resolve(config.path, 'logs', `${error ? 'error' : 'output'}.log`)
+    const stream = createReadStream(file, 'utf8')
+
+    const pinoPretty = PinoPretty({
+      colorize: true,
+      translateTime: true,
+      ignore: 'nodeID,ns'
+    })
+
+    const pinoPrettyTransformer = new Transform({
+      transform (chunk, enc, callback) {
+        chunk
+          .toString()
+          .split('\n')
+          .map((data = '') => data && this.push(pinoPretty(data)))
+        callback()
+      }
+    })
 
     if (!live) {
-      const data = await readFile(file, 'utf8')
-      console.log(data)
-      process.exit(0)
+      stream
+        .pipe(pinoPrettyTransformer)
+        .pipe(process.stdout)
+        .on('end', () => process.exit(0))
+
+      return
     }
 
     const tail = new Tail(file, { fromBeginning: all, flushAtEOF: true })
 
     tail.on('line', function (data) {
-      console.log(data)
+      process.stdout.write(pinoPretty(data))
     })
   }
 }
