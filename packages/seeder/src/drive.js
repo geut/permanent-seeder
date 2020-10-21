@@ -1,41 +1,44 @@
 const { EventEmitter } = require('events')
 const { promisify } = require('util')
 
+const { decode } = require('dat-encoding')
 const debounce = require('lodash.debounce')
 const fromEntries = require('fromentries')
-
 const hyperdrive = require('@geut/hyperdrive-promise')
 
 const DEFAULT_OPTIONS = {
   sparse: false,
-  latest: true
+  latest: true,
+  size: {
+    downloadedBlocks: 0,
+    downloadedBytes: 0
+  }
 }
 
 // TODO(dk): check support for mounts
 // const mounts = await drive.getAllMounts({ memory: true, recursive: !!opts.recursive })
 
-const defaultTransferSizes = {
-  downloadedBlocks: 0,
-  downloadedBytes: 0
-}
-
 /**
  * Drive class
  */
 class Drive extends EventEmitter {
-  constructor (key, store, transferSizes = defaultTransferSizes, opts = {}) {
+  /**
+   * Constructor
+   *
+   * @param {string} key
+   * @param {import('corestore')} store
+   * @param {object} opts
+   */
+  constructor (key, store, opts = {}) {
     super()
 
-    this._opts = {
+    opts = {
       ...DEFAULT_OPTIONS,
       ...opts
     }
 
-    this.logger = this._opts.logger || console
-
-    this._hyperdrive = hyperdrive(store, key, this._opts)
+    this._hyperdrive = hyperdrive(store, decode(key), opts)
     this._key = key
-    this._keyString = key.toString('hex')
     this._contentFeed = null
 
     this._emitDownload = debounce(this._emitDownload.bind(this), 500, { maxWait: 1000 * 2 })
@@ -57,8 +60,10 @@ class Drive extends EventEmitter {
 
     this._downloadStarted = false
 
-    this._downloadedBlocks = transferSizes.downloadedBlocks || 0
-    this._downloadedBytes = transferSizes.downloadedBytes || 0
+    this._downloadedBlocks = opts.size.downloadedBlocks || 0
+    this._downloadedBytes = opts.size.downloadedBytes || 0
+
+    this._logger = opts.logger || console
   }
 
   get discoveryKey () {
@@ -80,14 +85,6 @@ class Drive extends EventEmitter {
     return this._contentFeed ? this._contentFeed.byteLength : 0
   }
 
-  get downloadedBlocks () {
-    return this._downloadedBlocks
-  }
-
-  get downloadedBytes () {
-    return this._downloadedBytes
-  }
-
   // debounced
   _loadStats (path = '/', opts) {
     this._hyperdrive.stats(path, opts, this._onStats)
@@ -100,18 +97,18 @@ class Drive extends EventEmitter {
       const raw = await this._hyperdrive.readFile('index.json', 'utf-8')
       indexJSON = JSON.parse(raw)
     } catch (error) {
-      this.logger.warn({ error, key: this._keyString, info: true })
+      this._logger.warn({ error, key: this._key, info: true })
     }
 
     const version = this._hyperdrive.version
 
-    this.emit('info', this._keyString, { info: { version, indexJSON } })
+    this.emit('info', this._key, { info: { version, indexJSON } })
   }
 
   // Debounced
   _emitDownload () {
     const size = this.getSize()
-    this.emit('download', this._keyString, { size })
+    this.emit('download', this._key, { size })
   }
 
   _onUpdate () {
@@ -124,7 +121,7 @@ class Drive extends EventEmitter {
     // const size = this.getSize()
     // const seedingStatus = this.getSeedingStatus()
 
-    // this.emit('update', this._keyString, { size, seedingStatus })
+    // this.emit('update', this._key, { size, seedingStatus })
   }
 
   _onDownload (index, { length }) {
@@ -132,7 +129,7 @@ class Drive extends EventEmitter {
     this._downloadedBytes += length
 
     const started = this._downloadStarted
-    const finished = this.downloadedBlocks >= this.feedBlocks
+    const finished = this._downloadedBlocks >= this.feedBlocks
 
     if (!started) {
       this._downloadStarted = true
@@ -142,7 +139,7 @@ class Drive extends EventEmitter {
       this._loadStats()
       this._loadInfo()
 
-      return this.emit('download', this._keyString, {
+      return this.emit('download', this._key, {
         started,
         finished,
         size: this.getSize(),
@@ -154,24 +151,24 @@ class Drive extends EventEmitter {
   }
 
   _onUpload () {
-    this.emit('upload', this._keyString)
+    this.emit('upload', this._key)
   }
 
   _onPeerAdd () {
-    this.emit('peer-add', this._keyString, { peers: this.peers })
+    this.emit('peer-add', this._key, { peers: this.peers })
   }
 
   _onPeerRemove () {
-    this.emit('peer-remove', this._keyString, { peers: this.peers })
+    this.emit('peer-remove', this._key, { peers: this.peers })
   }
 
   _onStats (error, stats) {
     if (error) {
-      this.logger.warn({ error, key: this._keyString, stats: true })
+      this._logger.warn({ error, key: this._key, stats: true })
       return
     }
 
-    this.emit('stats', this._keyString, { stats: fromEntries(stats) })
+    this.emit('stats', this._key, { stats: fromEntries(stats) })
   }
 
   async ready () {
@@ -182,10 +179,6 @@ class Drive extends EventEmitter {
     return this._hyperdrive.download(path, cb)
   }
 
-  log (message, level = 'log') {
-    console[level](message)
-  }
-
   async getContentFeed () {
     if (!this._contentFeed) {
       try {
@@ -194,8 +187,8 @@ class Drive extends EventEmitter {
         return null
       }
 
-      const logWarn = (err) => {
-        this.log(err.message, 'warn')
+      const logWarn = (error) => {
+        this._logger.warn({ key: this._key, error, contentFeed: true })
       }
 
       this._contentFeed.on('error', logWarn)
@@ -214,9 +207,9 @@ class Drive extends EventEmitter {
   getSeedingStatus () {
     let status = 'WAITING' // waiting for peers == orange
 
-    if (this.feedBlocks > 0 && this.downloadedBlocks >= this.feedBlocks) {
+    if (this.feedBlocks > 0 && this._downloadedBlocks >= this.feedBlocks) {
       status = 'SEEDING' // green
-    } else if (this.downloadedBlocks > 0) {
+    } else if (this._downloadedBlocks > 0) {
       status = 'DOWNLOADING' // yellow
     }
 
@@ -230,8 +223,8 @@ class Drive extends EventEmitter {
     return {
       blocks: this.feedBlocks,
       bytes: this.feedBytes,
-      downloadedBlocks: this.downloadedBlocks,
-      downloadedBytes: this.downloadedBytes
+      downloadedBlocks: this._downloadedBlocks,
+      downloadedBytes: this._downloadedBytes
     }
   }
 

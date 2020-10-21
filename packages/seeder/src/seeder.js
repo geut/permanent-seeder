@@ -3,7 +3,7 @@ const { homedir } = require('os')
 const { join } = require('path')
 const { promisify } = require('util')
 
-const { encode, decode } = require('dat-encoding')
+const { decode } = require('dat-encoding')
 const Corestore = require('corestore')
 const crypto = require('hypercore-crypto')
 const HypercoreCache = require('hypercore-cache')
@@ -61,43 +61,153 @@ class Seeder extends EventEmitter {
    */
   constructor (opts = {}) {
     super()
-    this.opts = { ...DEFAULT_OPTS, ...opts }
-    this.drives = new Map()
+    this._opts = { ...DEFAULT_OPTS, ...opts }
+    this._drives = new Map()
     this._unlistens = []
-    this.ready = false
-    this.logger = this.opts.logger || console
+    this._ready = false
+    this._logger = this._opts.logger || console
 
-    this.onDriveDownload = this.onDriveDownload.bind(this)
-    this.onDriveInfo = this.onDriveInfo.bind(this)
-    this.onDrivePeerAdd = this.onDrivePeerAdd.bind(this)
-    this.onDrivePeerRemove = this.onDrivePeerRemove.bind(this)
-    this.onDriveStats = this.onDriveStats.bind(this)
-    this.onDriveUpdate = this.onDriveUpdate.bind(this)
-    this.onDriveUpload = this.onDriveUpload.bind(this)
+    this._onDriveDownload = this._onDriveDownload.bind(this)
+    this._onDriveInfo = this._onDriveInfo.bind(this)
+    this._onDrivePeerAdd = this._onDrivePeerAdd.bind(this)
+    this._onDrivePeerRemove = this._onDrivePeerRemove.bind(this)
+    this._onDriveStats = this._onDriveStats.bind(this)
+    this._onDriveUpdate = this._onDriveUpdate.bind(this)
+    this._onDriveUpload = this._onDriveUpload.bind(this)
+  }
+
+  /**
+   * Get drive from map
+   *
+   * @param {string | buffer} key drive key
+   */
+  _getDrive (key) {
+    const drive = this._drives.get(key)
+
+    if (!drive) {
+      throw new Error(`Drive not found. Key: ${key}`)
+    }
+
+    return drive
+  }
+
+  _onDriveDownload (key, data) {
+    this.emit('drive-download', key, data)
+  }
+
+  _onDriveInfo (key, data) {
+    this.emit('drive-info', key, data)
+  }
+
+  _onDrivePeerAdd (key, data) {
+    this.emit('drive-peer-add', key, data)
+  }
+
+  _onDrivePeerRemove (key, data) {
+    this.emit('drive-peer-remove', key, data)
+  }
+
+  _onDriveStats (key, data) {
+    this.emit('drive-stats', key, data)
+  }
+
+  _onDriveUpdate (key, data) {
+    this.emit('drive-update', key, data)
+  }
+
+  _onDriveUpload (key) {
+    this.emit('drive-upload', key)
+  }
+
+  _registerDriveEvents (drive) {
+    drive.on('download', this._onDriveDownload)
+    drive.on('info', this._onDriveInfo)
+    drive.on('peer-add', this._onDrivePeerAdd)
+    drive.on('peer-remove', this._onDrivePeerRemove)
+    drive.on('stats', this._onDriveStats)
+    drive.on('update', this._onDriveUpdate)
+    drive.on('upload', this._onDriveUpload)
+
+    this._unlistens.push(() => {
+      drive.off('download', this._onDriveDownload)
+      drive.off('info', this._onDriveInfo)
+      drive.off('peer-add', this._onDrivePeerAdd)
+      drive.off('peer-remove', this._onDrivePeerRemove)
+      drive.off('stats', this._onDriveStats)
+      drive.off('update', this._onDriveUpdate)
+      drive.off('upload', this._onDriveUpload)
+    })
+  }
+
+  /**
+   * Seeds a key
+   *
+   * @param {object} keyRecord
+   * @param {string} keyRecord.key key to seed
+   * @param {object} keyRecord.size current drive sizes
+   * @param {number} keyRecord.size.downloadedBlocks downloaded blocks
+   * @param {number} keyRecord.size.downloadedBytes downloaded bytes
+   */
+  async _seedKey ({ key, size }) {
+    // Check if drive present
+    let drive = this._drives.get(key)
+
+    // Already downloading
+    if (drive) return
+
+    this._logger.info({ key }, 'Seeding key')
+
+    // Create drive
+    drive = new Drive(key, this._store, { size, logger: this._logger })
+
+    // Store drive
+    this._drives.set(key, drive)
+
+    // Wait for readyness
+    await drive.ready()
+
+    // Force download
+    drive.download()
+
+    // Register event listeners
+    this._registerDriveEvents(drive)
+
+    // Notify new drive
+    this.emit('drive-add', key)
+
+    // Connect to network
+    await this._networker.configure(
+      drive.discoveryKey,
+      { announce: this._opts.announce, lookup: this._opts.lookup }
+    )
+
+    // Wait for content ready
+    await drive.getContentFeed()
   }
 
   /**
    * init.
    */
   async init () {
-    if (this.ready) return
+    if (this._ready) return
 
-    this.store = new Corestore(
-      getCoreStore(this.opts.storageLocation),
-      this.opts.corestoreOpts
+    this._store = new Corestore(
+      getCoreStore(this._opts.storageLocation),
+      this._opts.corestoreOpts
     )
 
-    await this.store.ready()
+    await this._store.ready()
 
-    this.networker = new Networker(this.store, {
+    this._networker = new Networker(this._store, {
       announceLocalNetwork: true,
       maxPeers: MAX_PEERS,
       ephemeral: false,
-      ...this.opts.networker
+      ...this._opts.networker
     })
-    await this.networker.listen()
 
-    this.connectivity = promisify(this.networker.swarm.connectivity).bind(this.networker.swarm)
+    await this._networker.listen()
+
+    this._connectivity = promisify(this._networker.swarm.connectivity).bind(this._networker.swarm)
 
     const onPeerAdd = (peer) => {
       this.emit('networker-peer-add', {
@@ -117,114 +227,14 @@ class Seeder extends EventEmitter {
       })
     }
 
-    this.networker.on('peer-add', onPeerAdd)
-    this.networker.on('peer-remove', onPeerRemove)
+    this._networker.on('peer-add', onPeerAdd)
+    this._networker.on('peer-remove', onPeerRemove)
     this._unlistens.push(() => {
-      this.networker.off('peer-add', onPeerAdd)
-      this.networker.off('peer-remove', onPeerRemove)
+      this._networker.off('peer-add', onPeerAdd)
+      this._networker.off('peer-remove', onPeerRemove)
     })
 
-    this.ready = true
-  }
-
-  /**
-   * getDrive.
-   *
-   * @param {string | buffer} key drive key
-   */
-  getDrive (key) {
-    const drive = this.drives.get(encode(key))
-
-    if (!drive) {
-      throw new Error(`Drive not found. Key: ${encode(key)}`)
-    }
-
-    return drive
-  }
-
-  onDriveDownload (key, data) {
-    this.emit('drive-download', key, data)
-  }
-
-  onDriveInfo (key, data) {
-    this.emit('drive-info', key, data)
-  }
-
-  onDrivePeerAdd (key, data) {
-    this.emit('drive-peer-add', key, data)
-  }
-
-  onDrivePeerRemove (key, data) {
-    this.emit('drive-peer-remove', key, data)
-  }
-
-  onDriveStats (key, data) {
-    this.emit('drive-stats', key, data)
-  }
-
-  onDriveUpdate (key, data) {
-    this.emit('drive-update', key, data)
-  }
-
-  onDriveUpload (key) {
-    this.emit('drive-upload', key)
-  }
-
-  /**
-   * Seeds a key
-   *
-   * @param {string|Buffer} key key to seed
-   */
-  async seedKey ({ key, size }) {
-    const keyString = encode(key)
-
-    // Check if drive present
-    let drive = this.drives.get(keyString)
-
-    // Already downloading
-    if (drive) return
-
-    this.logger.info({ key: keyString }, 'Seeding key')
-
-    // Create drive
-    drive = new Drive(decode(key), this.store, size, { logger: this.logger })
-
-    // Store drive
-    this.drives.set(keyString, drive)
-
-    // Wait for readyness
-    await drive.ready()
-
-    // Force download
-    drive.download()
-
-    // Register event listeners
-    drive.on('download', this.onDriveDownload)
-    drive.on('info', this.onDriveInfo)
-    drive.on('peer-add', this.onDrivePeerAdd)
-    drive.on('peer-remove', this.onDrivePeerRemove)
-    drive.on('stats', this.onDriveStats)
-    drive.on('update', this.onDriveUpdate)
-    drive.on('upload', this.onDriveUpload)
-
-    this._unlistens.push(() => {
-      drive.off('download', this.onDriveDownload)
-      drive.off('info', this.onDriveInfo)
-      drive.off('peer-add', this.onDrivePeerAdd)
-      drive.off('peer-remove', this.onDrivePeerRemove)
-      drive.off('stats', this.onDriveStats)
-      drive.off('update', this.onDriveUpdate)
-      drive.off('upload', this.onDriveUpload)
-    })
-
-    // Notify new drive
-    this.emit('drive-add', keyString)
-
-    // Connect to network
-    await this.networker.configure(drive.discoveryKey, { announce: this.opts.announce, lookup: this.opts.lookup })
-
-    // Wait for content ready
-    await drive.getContentFeed()
+    this._ready = true
   }
 
   /**
@@ -235,17 +245,17 @@ class Seeder extends EventEmitter {
   async seed (keys = []) {
     await this.init()
 
-    await Promise.all(keys.map(this.seedKey.bind(this)))
+    await Promise.all(keys.map(this._seedKey.bind(this)))
   }
 
   drivePeers (key) {
-    return this.getDrive(key).peers
+    return this._getDrive(key).peers
   }
 
-  async driveNetwork (key) {
-    const drive = this.getDrive(key)
-    return this.networker.status(drive.discoveryKey)
-  }
+  // async driveNetwork (key) {
+  //   const drive = this._getDrive(key)
+  //   return this._networker.status(drive.discoveryKey)
+  // }
 
   /**
    * getSwarmStats
@@ -260,11 +270,11 @@ class Seeder extends EventEmitter {
   async getSwarmStats () {
     await this.init()
 
-    const { holepunched, bootstrapped } = await this.connectivity()
-    const ra = this.networker.swarm.remoteAddress()
+    const { holepunched, bootstrapped } = await this._connectivity()
+    const ra = this._networker.swarm.remoteAddress()
     const remoteAddress = ra ? `${ra.host}:${ra.port}` : ''
     const currentPeers = Array
-      .from(this.networker.peers.values())
+      .from(this._networker.peers.values())
       .reduce((acc, curr) => {
         acc.push({
           remoteAddress: curr.remoteAddress,
@@ -295,12 +305,12 @@ class Seeder extends EventEmitter {
     if (key) {
       discoveryKeys.push(crypto.discoveryKey(decode(key)))
     } else {
-      discoveryKeys = this.drives.values().map(drive => drive.discoveryKey)
+      discoveryKeys = this._drives.values().map(drive => drive.discoveryKey)
     }
 
-    await Promise.all(discoveryKeys.map(discoveryKey => this.networker.configure(discoveryKey, { announce: false, lookup: false })))
+    await Promise.all(discoveryKeys.map(discoveryKey => this._networker.configure(discoveryKey, { announce: false, lookup: false })))
 
-    this.drives.delete(key)
+    this._drives.delete(key)
 
     this.emit('drive-remove', key)
   }
@@ -312,22 +322,25 @@ class Seeder extends EventEmitter {
     for (const unlisten of this._unlistens) {
       unlisten()
     }
+
     this._unlistens = []
+
     // close all drives
     try {
-      await Promise.all(Array.from(this.drives.values()).map(drive => drive.destroy()))
-    } catch (err) {
-      console.warn(err.message)
+      await Promise.all(Array.from(this._drives.values()).map(drive => drive.destroy()))
+    } catch (error) {
+      this._logger.warn({ error })
     }
 
-    if (this.networker) {
+    if (this._networker) {
       try {
-        await this.networker.close()
-      } catch (err) {
-        console.warn(err.message)
+        await this._networker.close()
+      } catch (error) {
+        this._logger.warn({ error })
       }
     }
-    console.info('Destroy seeder OK')
+
+    this._logger.info('Destroy seeder OK')
   }
 }
 
