@@ -39,6 +39,8 @@ module.exports = {
 
   methods: {
     async runUpdate (endpoint) {
+      this.logger.info({ endpoint }, 'Running update key job for endpoint')
+
       let hook = defaultHook
 
       if (endpoint.hook) {
@@ -83,14 +85,14 @@ module.exports = {
   started () {
     this.crons.forEach(cron => {
       cron.job.start()
-      this.logger.info(`Job for key update started - ${cron.url}`)
+      this.logger.info({ url: cron.url }, 'Job for key update started')
     })
   },
 
   stopped () {
     this.crons.forEach(cron => {
       cron.job.stop()
-      this.logger.info(`Job for key update stopped - ${cron.url}`)
+      this.logger.info({ url: cron.url }, 'Job for key update stopped')
     })
   }
 }

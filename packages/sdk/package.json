@@ -45,6 +45,7 @@
     "moleculer-repl": "^0.6.4",
     "moleculer-web": "^0.9.1",
     "node-disk-info": "^1.1.0",
+    "pino": "^6.7.0",
     "process-top": "^1.1.0",
     "socket.io": "^2.3.0"
   },
