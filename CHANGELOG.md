@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Api https settings
 - packages/seeder
   - Fix: use corestoreOpts + allow optional preferredPort setting
+- packages/metrics
+  - Update: use trammel to get directory size of ps work dir
 - Docs update
 
 ### Fixed
