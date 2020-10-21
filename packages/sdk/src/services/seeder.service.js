@@ -77,7 +77,7 @@ module.exports = {
     },
 
     async unseed (key) {
-      this.logger.info(`Unseed key: ${key}`)
+      this.logger.info({ key }, 'Unseed key')
       return this.seeder.unseed(key)
     },
 
@@ -151,7 +151,8 @@ module.exports = {
 
     this.seeder = new Seeder({
       storageLocation: resolve(this.settings.config.path, '.hyper'),
-      networker
+      networker,
+      logger: this.logger
     })
 
     const drivesDbPath = resolve(this.settings.config.path, 'drives.db')

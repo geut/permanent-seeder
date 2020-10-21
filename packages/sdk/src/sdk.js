@@ -1,5 +1,5 @@
 const { EventEmitter } = require('events')
-const { resolve } = require('path')
+const { resolve, join } = require('path')
 
 const { ServiceBroker } = require('moleculer')
 
@@ -11,7 +11,7 @@ class SDK extends EventEmitter {
     this._config = config
   }
 
-  _createBroker (name, options = {}) {
+  _createBroker (options = {}) {
     this._broker = new ServiceBroker({
       cacher: {
         type: 'Memory',
@@ -19,23 +19,43 @@ class SDK extends EventEmitter {
           maxParamsLength: 60
         }
       },
-      nodeID: name ? `${name}-${Date.now()}` : undefined,
+      nodeID: 'seeder',
       transporter: {
         type: 'TCP',
         options: {
           udpDiscovery: false
         }
       },
+      logger: [
+        {
+          type: 'Pino',
+          options: {
+            level: 'info',
+            pino: {
+              destination: join(this._config.path, 'logs', 'output.log')
+            }
+          }
+        },
+        {
+          type: 'Pino',
+          options: {
+            level: 'error',
+            pino: {
+              destination: join(this._config.path, 'logs', 'error.log')
+            }
+          }
+        }
+      ],
       ...options
     })
   }
 
-  async start (name = 'seeder') {
+  async start () {
     if (this._broker) return
 
     const self = this
 
-    this._createBroker(name, {
+    this._createBroker({
       metadata: {
         config: this._config
       },
@@ -49,7 +69,7 @@ class SDK extends EventEmitter {
       }
     })
 
-    this._broker.logger.info('\nConfig: ', JSON.stringify(this._config, null, 2), '\n')
+    this._broker.logger.info(this._config, 'SDK config')
 
     this._broker.loadServices(servicesPath)
 
@@ -60,10 +80,10 @@ class SDK extends EventEmitter {
     await this._broker.stop()
   }
 
-  async connect (name) {
+  async connect () {
     if (this._broker) return
 
-    this._createBroker(name)
+    this._createBroker()
 
     await this._broker.start()
   }

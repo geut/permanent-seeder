@@ -44,6 +44,7 @@
     "moleculer": "^0.14.11",
     "moleculer-repl": "^0.6.4",
     "moleculer-web": "^0.9.1",
+    "pino": "^6.7.0",
     "process-top": "^1.1.0",
     "socket.io": "^2.3.0",
     "trammel": "^4.0.0"

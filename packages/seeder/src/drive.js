@@ -1,20 +1,16 @@
 const { EventEmitter } = require('events')
 const { promisify } = require('util')
 
-// const memoize = require('p-memoize')
-// const timeout = require('p-timeout')
 const debounce = require('lodash.debounce')
 const fromEntries = require('fromentries')
 
 const hyperdrive = require('@geut/hyperdrive-promise')
 
 const DEFAULT_OPTIONS = {
+  logger: console,
   sparse: false,
   latest: true
 }
-
-// const CACHE_MAX_AGE = 1000 * 5
-// const TIMEOUT = 1000
 
 // TODO(dk): check support for mounts
 // const mounts = await drive.getAllMounts({ memory: true, recursive: !!opts.recursive })
@@ -35,6 +31,8 @@ class Drive extends EventEmitter {
       ...DEFAULT_OPTIONS,
       ...opts
     }
+
+    this.logger = this._opts.logger
 
     this._hyperdrive = hyperdrive(store, key, this._opts)
     this._key = key
@@ -57,9 +55,6 @@ class Drive extends EventEmitter {
     this._hyperdrive.on('peer-remove', this._onPeerRemove)
 
     this._getContentAsync = promisify(this._hyperdrive.getContent)
-
-    // this._memoGetStats = memoize(this._hyperdrive.stats, { cacheKey: () => `stats_${this._keyString}`, maxAge: CACHE_MAX_AGE })
-    // this._readFile = memoize(this._hyperdrive.readFile, { cacheKey: () => `readFile_${this._keyString}`, maxAge: CACHE_MAX_AGE })
 
     this._downloadStarted = false
 
@@ -106,7 +101,7 @@ class Drive extends EventEmitter {
       const raw = await this._hyperdrive.readFile('index.json', 'utf-8')
       indexJSON = JSON.parse(raw)
     } catch (error) {
-      console.warn(error, this._keyString, 'INDEX JSON')
+      this.logger.warn({ error, key: this._keyString, info: true })
     }
 
     const version = this._hyperdrive.version
@@ -171,9 +166,9 @@ class Drive extends EventEmitter {
     this.emit('peer-remove', this._keyString, { peers: this.peers })
   }
 
-  _onStats (err, stats) {
-    if (err) {
-      console.warn(err)
+  _onStats (error, stats) {
+    if (error) {
+      this.logger.warn({ error, key: this._keyString, stats: true })
       return
     }
 
@@ -249,9 +244,9 @@ class Drive extends EventEmitter {
     if (this._contentFeed) {
       this._contentFeed.off('download', this._onDownload)
       this._contentFeed.off('upload', this._onUpload)
-    }
 
-    await this._hyperdrive.destroyStorage()
+      await this._hyperdrive.destroyStorage()
+    }
   }
 }
 
