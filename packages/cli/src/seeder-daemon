@@ -13,7 +13,7 @@ const seederDaemon = async () => {
 
   sdk.on('ready', () => process.send('ready'))
 
-  await sdk.start('seeder')
+  await sdk.start()
 }
 
 const messageHandlers = {

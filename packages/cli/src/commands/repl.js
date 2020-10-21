@@ -5,7 +5,7 @@ const BaseCommand = require('../base-command')
 class ReplCommand extends BaseCommand {
   async run () {
     const sdk = new SDK()
-    await sdk.connect('repl')
+    await sdk.connect()
     sdk.repl()
   }
 }
