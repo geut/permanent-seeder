@@ -30,7 +30,7 @@ class TailCommand extends BaseCommand {
         chunk
           .toString()
           .split('\n')
-          .map(data => data && this.push(pinoPretty(data)))
+          .map((data = '') => data && this.push(pinoPretty(data)))
         callback()
       }
     })
