@@ -56,16 +56,15 @@ module.exports = {
     async seed (keys) {
       const keysToSeed = []
 
-      for (const bufferKey of keys) {
-        const key = Buffer.isBuffer(bufferKey) ? bufferKey : Buffer.from(bufferKey, 'hex')
-        const keyString = encode(key)
+      for (let key of keys) {
+        key = encode(key)
 
         // TODO(Esteban): Move from here
-        let dbDrive = await this.database.get(keyString)
+        let dbDrive = await this.database.get(key)
 
         if (!dbDrive) {
-          await this.database.create(keyString)
-          dbDrive = await this.database.get(keyString)
+          await this.database.create(key)
+          dbDrive = await this.database.get(key)
         }
 
         if (!dbDrive.deletedAt) {

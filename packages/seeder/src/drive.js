@@ -1,41 +1,44 @@
 const { EventEmitter } = require('events')
 const { promisify } = require('util')
 
+const { decode } = require('dat-encoding')
 const debounce = require('lodash.debounce')
 const fromEntries = require('fromentries')
-
 const hyperdrive = require('@geut/hyperdrive-promise')
 
 const DEFAULT_OPTIONS = {
   sparse: false,
-  latest: true
+  latest: true,
+  size: {
+    downloadedBlocks: 0,
+    downloadedBytes: 0
+  }
 }
 
 // TODO(dk): check support for mounts
 // const mounts = await drive.getAllMounts({ memory: true, recursive: !!opts.recursive })
 
-const defaultTransferSizes = {
-  downloadedBlocks: 0,
-  downloadedBytes: 0
-}
-
 /**
  * Drive class
  */
 class Drive extends EventEmitter {
-  constructor (key, store, transferSizes = defaultTransferSizes, opts = {}) {
+  /**
+   * Constructor
+   *
+   * @param {string} key
+   * @param {import('corestore')} store
+   * @param {object} opts
+   */
+  constructor (key, store, opts = {}) {
     super()
 
-    this._opts = {
+    opts = {
       ...DEFAULT_OPTIONS,
       ...opts
     }
 
-    this.logger = this._opts.logger || console
-
-    this._hyperdrive = hyperdrive(store, key, this._opts)
+    this._hyperdrive = hyperdrive(store, decode(key), opts)
     this._key = key
-    this._keyString = key.toString('hex')
     this._contentFeed = null
 
     this._emitDownload = debounce(this._emitDownload.bind(this), 500, { maxWait: 1000 * 2 })
@@ -57,8 +60,10 @@ class Drive extends EventEmitter {
 
     this._downloadStarted = false
 
-    this._downloadedBlocks = transferSizes.downloadedBlocks || 0
-    this._downloadedBytes = transferSizes.downloadedBytes || 0
+    this._downloadedBlocks = opts.size.downloadedBlocks || 0
+    this._downloadedBytes = opts.size.downloadedBytes || 0
+
+    this._logger = opts.logger || console
   }
 
   get discoveryKey () {
@@ -100,7 +105,7 @@ class Drive extends EventEmitter {
       const raw = await this._hyperdrive.readFile('index.json', 'utf-8')
       indexJSON = JSON.parse(raw)
     } catch (error) {
-      this.logger.warn({ error, key: this._keyString, info: true })
+      this._logger.warn({ error, key: this._keyString, info: true })
     }
 
     const version = this._hyperdrive.version
@@ -167,7 +172,7 @@ class Drive extends EventEmitter {
 
   _onStats (error, stats) {
     if (error) {
-      this.logger.warn({ error, key: this._keyString, stats: true })
+      this._logger.warn({ error, key: this._keyString, stats: true })
       return
     }
 
