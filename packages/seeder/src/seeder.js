@@ -19,7 +19,6 @@ const DATA_CACHE_SIZE = TOTAL_CACHE_SIZE * (1 - CACHE_RATIO)
 const MAX_PEERS = 256
 
 const DEFAULT_OPTS = {
-  logger: console,
   announce: true,
   lookup: true,
   storageLocation: join(homedir(), 'permanent-seeder', '.hyper'),
@@ -66,7 +65,7 @@ class Seeder extends EventEmitter {
     this.drives = new Map()
     this._unlistens = []
     this.ready = false
-    this.logger = this.opts.logger
+    this.logger = this.opts.logger || console
 
     this.onDriveDownload = this.onDriveDownload.bind(this)
     this.onDriveInfo = this.onDriveInfo.bind(this)

@@ -7,7 +7,6 @@ const fromEntries = require('fromentries')
 const hyperdrive = require('@geut/hyperdrive-promise')
 
 const DEFAULT_OPTIONS = {
-  logger: console,
   sparse: false,
   latest: true
 }
@@ -32,7 +31,7 @@ class Drive extends EventEmitter {
       ...opts
     }
 
-    this.logger = this._opts.logger
+    this.logger = this._opts.logger || console
 
     this._hyperdrive = hyperdrive(store, key, this._opts)
     this._key = key
