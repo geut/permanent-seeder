@@ -97,18 +97,18 @@ class Drive extends EventEmitter {
       const raw = await this._hyperdrive.readFile('index.json', 'utf-8')
       indexJSON = JSON.parse(raw)
     } catch (error) {
-      this._logger.warn({ error, key: this._keyString, info: true })
+      this._logger.warn({ error, key: this._key, info: true })
     }
 
     const version = this._hyperdrive.version
 
-    this.emit('info', this._keyString, { info: { version, indexJSON } })
+    this.emit('info', this._key, { info: { version, indexJSON } })
   }
 
   // Debounced
   _emitDownload () {
     const size = this.getSize()
-    this.emit('download', this._keyString, { size })
+    this.emit('download', this._key, { size })
   }
 
   _onUpdate () {
@@ -121,7 +121,7 @@ class Drive extends EventEmitter {
     // const size = this.getSize()
     // const seedingStatus = this.getSeedingStatus()
 
-    // this.emit('update', this._keyString, { size, seedingStatus })
+    // this.emit('update', this._key, { size, seedingStatus })
   }
 
   _onDownload (index, { length }) {
@@ -139,7 +139,7 @@ class Drive extends EventEmitter {
       this._loadStats()
       this._loadInfo()
 
-      return this.emit('download', this._keyString, {
+      return this.emit('download', this._key, {
         started,
         finished,
         size: this.getSize(),
@@ -151,24 +151,24 @@ class Drive extends EventEmitter {
   }
 
   _onUpload () {
-    this.emit('upload', this._keyString)
+    this.emit('upload', this._key)
   }
 
   _onPeerAdd () {
-    this.emit('peer-add', this._keyString, { peers: this.peers })
+    this.emit('peer-add', this._key, { peers: this.peers })
   }
 
   _onPeerRemove () {
-    this.emit('peer-remove', this._keyString, { peers: this.peers })
+    this.emit('peer-remove', this._key, { peers: this.peers })
   }
 
   _onStats (error, stats) {
     if (error) {
-      this._logger.warn({ error, key: this._keyString, stats: true })
+      this._logger.warn({ error, key: this._key, stats: true })
       return
     }
 
-    this.emit('stats', this._keyString, { stats: fromEntries(stats) })
+    this.emit('stats', this._key, { stats: fromEntries(stats) })
   }
 
   async ready () {

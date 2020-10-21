@@ -65,7 +65,6 @@ class Seeder extends EventEmitter {
     this._drives = new Map()
     this._unlistens = []
     this._ready = false
-
     this._logger = this._opts.logger || console
 
     this._onDriveDownload = this._onDriveDownload.bind(this)
@@ -329,15 +328,15 @@ class Seeder extends EventEmitter {
     // close all drives
     try {
       await Promise.all(Array.from(this._drives.values()).map(drive => drive.destroy()))
-    } catch (err) {
-      this._logger.warn(err.message)
+    } catch (error) {
+      this._logger.warn({ error })
     }
 
     if (this._networker) {
       try {
         await this._networker.close()
-      } catch (err) {
-        this._logger.warn(err.message)
+      } catch (error) {
+        this._logger.warn({ error })
       }
     }
 
