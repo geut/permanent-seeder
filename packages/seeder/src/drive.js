@@ -85,14 +85,6 @@ class Drive extends EventEmitter {
     return this._contentFeed ? this._contentFeed.byteLength : 0
   }
 
-  get downloadedBlocks () {
-    return this._downloadedBlocks
-  }
-
-  get downloadedBytes () {
-    return this._downloadedBytes
-  }
-
   // debounced
   _loadStats (path = '/', opts) {
     this._hyperdrive.stats(path, opts, this._onStats)
@@ -137,7 +129,7 @@ class Drive extends EventEmitter {
     this._downloadedBytes += length
 
     const started = this._downloadStarted
-    const finished = this.downloadedBlocks >= this.feedBlocks
+    const finished = this._downloadedBlocks >= this.feedBlocks
 
     if (!started) {
       this._downloadStarted = true
@@ -187,10 +179,6 @@ class Drive extends EventEmitter {
     return this._hyperdrive.download(path, cb)
   }
 
-  log (message, level = 'log') {
-    console[level](message)
-  }
-
   async getContentFeed () {
     if (!this._contentFeed) {
       try {
@@ -199,8 +187,8 @@ class Drive extends EventEmitter {
         return null
       }
 
-      const logWarn = (err) => {
-        this.log(err.message, 'warn')
+      const logWarn = (error) => {
+        this._logger.warn({ key: this._key, error, contentFeed: true })
       }
 
       this._contentFeed.on('error', logWarn)
@@ -219,9 +207,9 @@ class Drive extends EventEmitter {
   getSeedingStatus () {
     let status = 'WAITING' // waiting for peers == orange
 
-    if (this.feedBlocks > 0 && this.downloadedBlocks >= this.feedBlocks) {
+    if (this.feedBlocks > 0 && this._downloadedBlocks >= this.feedBlocks) {
       status = 'SEEDING' // green
-    } else if (this.downloadedBlocks > 0) {
+    } else if (this._downloadedBlocks > 0) {
       status = 'DOWNLOADING' // yellow
     }
 
@@ -235,8 +223,8 @@ class Drive extends EventEmitter {
     return {
       blocks: this.feedBlocks,
       bytes: this.feedBytes,
-      downloadedBlocks: this.downloadedBlocks,
-      downloadedBytes: this.downloadedBytes
+      downloadedBlocks: this._downloadedBlocks,
+      downloadedBytes: this._downloadedBytes
     }
   }
 
