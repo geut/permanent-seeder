@@ -53,8 +53,8 @@ module.exports.init = (configFolderPath, options = {}) => {
 
   // Create logs
   mkdirSync(join(configFolderPath, 'logs'), { recursive: true })
-  writeFileSync(join(configFolderPath, 'logs', 'output.log'), '', { encoding: 'utf8' })
-  writeFileSync(join(configFolderPath, 'logs', 'error.log'), '', { encoding: 'utf8' })
+  writeFileSync(join(configFolderPath, 'logs', 'output.log'), '', { encoding: 'utf-8' })
+  writeFileSync(join(configFolderPath, 'logs', 'error.log'), '', { encoding: 'utf-8' })
 
   // Set initial runtime config
   this.set('path', configFolderPath, { configFolderPath })

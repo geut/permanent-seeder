@@ -20,6 +20,7 @@ class TailCommand extends BaseCommand {
     const stream = createReadStream(file, 'utf8')
 
     const pinoPretty = PinoPretty({
+      crlf: true,
       colorize: true,
       translateTime: true,
       ignore: 'nodeID,ns',
@@ -48,7 +49,12 @@ class TailCommand extends BaseCommand {
     const tail = new Tail(file, { fromBeginning: all, flushAtEOF: true })
 
     tail.on('line', function (data) {
-      process.stdout.write(pinoPretty(data))
+      const line = pinoPretty(data)
+      if (!line) {
+        return
+      }
+
+      process.stdout.write(line)
     })
   }
 }

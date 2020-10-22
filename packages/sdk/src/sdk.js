@@ -33,6 +33,7 @@ class SDK extends EventEmitter {
             level: 'info',
             pino: {
               options: {
+                crlf: true,
                 base: null // Hide pid, hostname
               },
               destination: join(this._config.path, 'logs', 'output.log')
@@ -45,6 +46,7 @@ class SDK extends EventEmitter {
             level: 'warn',
             pino: {
               options: {
+                crlf: true,
                 base: null // Hide pid, hostname
               },
               destination: join(this._config.path, 'logs', 'error.log')
