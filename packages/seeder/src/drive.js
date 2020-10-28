@@ -112,7 +112,7 @@ class Drive extends EventEmitter {
     }
     const downloaded = this._downloadedBlocks
     const total = this.feedBlocks
-    if (downloaded <= total) {
+    if (downloaded < total) {
       if (this._contentFeed.downloaded() > this._downloadedBlocks) {
         this._downloadedBlocks = this._contentFeed.downloaded()
       }
