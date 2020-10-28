@@ -20,10 +20,12 @@ module.exports = {
   actions: {
     seed: {
       params: {
-        keys: { type: 'array', min: 1 }
+        keys: { type: 'array', min: 1 },
+        created: { type: 'boolean', optional: true, default: false }
       },
       async handler (ctx) {
-        return this.seed(ctx.params.keys)
+        this.logger.info({ created: ctx.params.created }, 'seeder actions created?')
+        return this.seed(ctx.params.keys, ctx.params.created)
       }
     },
 
@@ -53,7 +55,7 @@ module.exports = {
   },
 
   methods: {
-    async seed (keys) {
+    async seed (keys, created) {
       const keysToSeed = []
 
       for (let key of keys) {
@@ -72,7 +74,7 @@ module.exports = {
         }
       }
 
-      return this.seeder.seed(keysToSeed)
+      return this.seeder.seed(keysToSeed, created)
     },
 
     async unseed (key) {
