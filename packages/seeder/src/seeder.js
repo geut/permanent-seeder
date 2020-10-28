@@ -68,6 +68,7 @@ class Seeder extends EventEmitter {
     this._logger = this._opts.logger || console
 
     this._onDriveDownload = this._onDriveDownload.bind(this)
+    this._onDriveDownloadResume = this._onDriveDownloadResume.bind(this)
     this._onDriveInfo = this._onDriveInfo.bind(this)
     this._onDrivePeerAdd = this._onDrivePeerAdd.bind(this)
     this._onDrivePeerRemove = this._onDrivePeerRemove.bind(this)
@@ -153,7 +154,7 @@ class Seeder extends EventEmitter {
    * @param {number} keyRecord.size.downloadedBlocks downloaded blocks
    * @param {number} keyRecord.size.downloadedBytes downloaded bytes
    */
-  async _seedKey ({ key, size }) {
+  async _seedKey ({ key, size }, created = false) {
     // Check if drive was already seeded (in-mem)
     let drive = this._drives.get(key)
 
@@ -175,7 +176,9 @@ class Seeder extends EventEmitter {
     this._registerDriveEvents(key, drive)
 
     // Notify new drive
-    this.emit('drive-add', key)
+    if (size.blocks === 0 && created) {
+      this.emit('drive-add', key)
+    }
 
     // Connect to network
     await this._networker.configure(
@@ -248,11 +251,11 @@ class Seeder extends EventEmitter {
    *
    * @param {} keys
    */
-  async seed (keys = []) {
+  async seed (keys = [], created) {
     await this.init()
 
     for (const key of keys) {
-      this._seedKey(key).catch(error => this._logger.error({ key, error }, `Seeding error: ${error.message}`))
+      this._seedKey(key, created).catch(error => this._logger.error({ key, error }, `Seeding error: ${error.message}`))
     }
   }
 
