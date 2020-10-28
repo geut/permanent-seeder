@@ -24,6 +24,7 @@ const DEFAULT_OPTS = {
   storageLocation: join(homedir(), 'permanent-seeder', '.hyper'),
   corestoreOpts: {
     sparse: false,
+    sparseMetadata: false,
     cache: {
       data: new HypercoreCache({
         maxByteSize: DATA_CACHE_SIZE,
@@ -33,8 +34,7 @@ const DEFAULT_OPTS = {
         maxByteSize: TREE_CACHE_SIZE,
         estimateSize: val => 40
       })
-    },
-    ifAvailable: true
+    }
   }
 }
 
@@ -63,7 +63,7 @@ class Seeder extends EventEmitter {
     super()
     this._opts = { ...DEFAULT_OPTS, ...opts }
     this._drives = new Map()
-    this._unlistens = []
+    this._unlistens = new Map()
     this._ready = false
     this._logger = this._opts.logger || console
 
@@ -95,6 +95,10 @@ class Seeder extends EventEmitter {
     this.emit('drive-download', key, data)
   }
 
+  _onDriveDownloadResume (key, data) {
+    this.emit('drive-download-resume', key, data)
+  }
+
   _onDriveInfo (key, data) {
     this.emit('drive-info', key, data)
   }
@@ -119,8 +123,9 @@ class Seeder extends EventEmitter {
     this.emit('drive-upload', key)
   }
 
-  _registerDriveEvents (drive) {
+  _registerDriveEvents (key, drive) {
     drive.on('download', this._onDriveDownload)
+    drive.on('download-resume', this._onDriveDownloadResume)
     drive.on('info', this._onDriveInfo)
     drive.on('peer-add', this._onDrivePeerAdd)
     drive.on('peer-remove', this._onDrivePeerRemove)
@@ -128,7 +133,7 @@ class Seeder extends EventEmitter {
     drive.on('update', this._onDriveUpdate)
     drive.on('upload', this._onDriveUpload)
 
-    this._unlistens.push(() => {
+    this._unlistens.set(key, () => {
       drive.off('download', this._onDriveDownload)
       drive.off('info', this._onDriveInfo)
       drive.off('peer-add', this._onDrivePeerAdd)
@@ -149,7 +154,7 @@ class Seeder extends EventEmitter {
    * @param {number} keyRecord.size.downloadedBytes downloaded bytes
    */
   async _seedKey ({ key, size }) {
-    // Check if drive present
+    // Check if drive was already seeded (in-mem)
     let drive = this._drives.get(key)
 
     // Already downloading
@@ -166,11 +171,8 @@ class Seeder extends EventEmitter {
     // Wait for readyness
     await drive.ready()
 
-    // Force download
-    drive.download()
-
     // Register event listeners
-    this._registerDriveEvents(drive)
+    this._registerDriveEvents(key, drive)
 
     // Notify new drive
     this.emit('drive-add', key)
@@ -181,8 +183,12 @@ class Seeder extends EventEmitter {
       { announce: this._opts.announce, lookup: this._opts.lookup }
     )
 
+    drive.download('/')
     // Wait for content ready
     await drive.getContentFeed()
+
+    // Resume Download
+    drive.resume()
   }
 
   /**
@@ -229,7 +235,7 @@ class Seeder extends EventEmitter {
 
     this._networker.on('peer-add', onPeerAdd)
     this._networker.on('peer-remove', onPeerRemove)
-    this._unlistens.push(() => {
+    this._unlistens.set('init', () => {
       this._networker.off('peer-add', onPeerAdd)
       this._networker.off('peer-remove', onPeerRemove)
     })
@@ -245,7 +251,9 @@ class Seeder extends EventEmitter {
   async seed (keys = []) {
     await this.init()
 
-    await Promise.all(keys.map(this._seedKey.bind(this)))
+    for (const key of keys) {
+      this._seedKey(key).catch(error => this._logger.error({ key, error }, `Seeding error: ${error.message}`))
+    }
   }
 
   drivePeers (key) {
@@ -308,6 +316,13 @@ class Seeder extends EventEmitter {
       discoveryKeys = this._drives.values().map(drive => drive.discoveryKey)
     }
 
+    if (this._unlistens.has(key)) {
+      const unlisten = this._unlistens.get(key)
+      // remove listeners attached to this key/drive
+      unlisten()
+      this._unlistens.delete(key)
+    }
+
     await Promise.all(discoveryKeys.map(discoveryKey => this._networker.configure(discoveryKey, { announce: false, lookup: false })))
 
     this._drives.delete(key)
@@ -319,11 +334,11 @@ class Seeder extends EventEmitter {
    * destroy.
    */
   async destroy () {
-    for (const unlisten of this._unlistens) {
+    for (const unlisten of this._unlistens.values()) {
       unlisten()
     }
 
-    this._unlistens = []
+    this._unlistens.clear()
 
     // close all drives
     try {
