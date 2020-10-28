@@ -91,6 +91,7 @@ module.exports = {
     async onDriveRemove (key) {
       await this.database.remove(key)
       this.broker.broadcast('seeder.drive.remove', { key })
+      this.broker.cacher.clean()
     },
 
     async onDriveUpdate (key, { size, seedingStatus }) {
@@ -105,18 +106,31 @@ module.exports = {
       this.broker.broadcast('seeder.drive.info', { key })
     },
 
+    async onDriveDownloadResume (key, { size, seedingStatus }) {
+      await this.database.update(key, {
+        size,
+        ...{ seedingStatus }
+      })
+      this.broker.broadcast('seeder.drive.download.resume', { key, size })
+    },
+
     async onDriveDownload (key, { size, seedingStatus, started = false, finished = false }) {
       await this.database.update(key, {
         size,
         ...(started || finished ? { seedingStatus } : undefined)
       })
 
-      this.broker.broadcast('seeder.drive.download', { key })
+      if (started) {
+        this.broker.broadcast('seeder.drive.download-started', { key, size })
+      } else if (finished) {
+        this.broker.broadcast('seeder.drive.download-finished', { key, size })
+      } else {
+        this.broker.broadcast('seeder.drive.download', { key, size })
+      }
     },
 
     async onDriveUpload (key) {
-      // await this.updateDriveData(key, { size: true })
-      // this.broker.broadcast('seeder.drive.upload', { key })
+      this.broker.broadcast('seeder.drive.upload', { key })
     },
 
     async onDrivePeerAdd (key, { peers }) {
@@ -166,6 +180,7 @@ module.exports = {
 
     this.seeder.on('drive-add', this.onDriveAdd)
     this.seeder.on('drive-download', this.onDriveDownload)
+    this.seeder.on('drive-download-resume', this.onDriveDownloadResume)
     this.seeder.on('drive-info', this.onDriveInfo)
     this.seeder.on('drive-peer-add', this.onDrivePeerAdd)
     this.seeder.on('drive-peer-remove', this.onDrivePeerRemove)
@@ -183,6 +198,7 @@ module.exports = {
     // remove listeners
     this.seeder.off('drive-add', this.onDriveAdd)
     this.seeder.off('drive-download', this.onDriveDownload)
+    this.seeder.off('drive-download-resume', this.onDriveDownloadResume)
     this.seeder.off('drive-info', this.onDriveInfo)
     this.seeder.off('drive-peer-add', this.onDrivePeerAdd)
     this.seeder.off('drive-peer-remove', this.onDrivePeerRemove)
