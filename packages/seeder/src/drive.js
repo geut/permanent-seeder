@@ -41,7 +41,7 @@ class Drive extends EventEmitter {
     this._key = key
     this._contentFeed = null
 
-    this._emitDownload = debounce(this._emitDownload.bind(this), 500, { maxWait: 1000 * 2 })
+    this._emitDownload = debounce(this._emitDownload.bind(this), 50, { maxWait: 100 * 2, leading: true })
 
     this._onDownload = this._onDownload.bind(this)
     this._onPeerAdd = debounce(this._onPeerAdd.bind(this), 1000 * 5, { maxWait: 1000 * 10 })
@@ -50,7 +50,7 @@ class Drive extends EventEmitter {
     this._onUpdate = this._onUpdate.bind(this)
     this._onUpload = this._onUpload.bind(this)
 
-    this._loadStats = debounce(this._loadStats.bind(this), 1000, { maxWait: 1000 * 3 })
+    this._loadStats = debounce(this._loadStats.bind(this), 1000, { maxWait: 1000 * 3, leading: true })
 
     this._hyperdrive.on('update', this._onUpdate)
     this._hyperdrive.on('peer-add', this._onPeerAdd)
@@ -105,6 +105,29 @@ class Drive extends EventEmitter {
     this.emit('info', this._key, { info: { version, indexJSON } })
   }
 
+  resume () {
+    if (!this._contentFeed) {
+      this._logger.warn({ key: this._key }, 'content feed not available')
+      return
+    }
+    const downloaded = this._downloadedBlocks
+    const total = this.feedBlocks
+    if (downloaded <= total) {
+      if (this._contentFeed.downloaded() > this._downloadedBlocks) {
+        this._downloadedBlocks = this._contentFeed.downloaded()
+      }
+      this._logger.info({ key: this._key }, 'Resuming download...')
+      this._contentFeed.download()
+
+      this._loadStats()
+      this._loadInfo()
+      this.emit('download-resume', this._key, {
+        size: this.getSize(),
+        seedingStatus: this.getSeedingStatus()
+      })
+    }
+  }
+
   // Debounced
   _emitDownload () {
     const size = this.getSize()
@@ -116,7 +139,7 @@ class Drive extends EventEmitter {
 
     // Size on update after restart seeder is = 0
     // If no download event is triggered after 'update'
-    // Size will be showed as 0
+    // Size will be shown as 0
 
     // const size = this.getSize()
     // const seedingStatus = this.getSeedingStatus()
@@ -128,8 +151,8 @@ class Drive extends EventEmitter {
     this._downloadedBlocks++
     this._downloadedBytes += length
 
-    const started = this._downloadStarted
     const finished = this._downloadedBlocks >= this.feedBlocks
+    const started = this._downloadStarted
 
     if (!started) {
       this._downloadStarted = true
@@ -140,7 +163,7 @@ class Drive extends EventEmitter {
       this._loadInfo()
 
       return this.emit('download', this._key, {
-        started,
+        started: !started && !finished,
         finished,
         size: this.getSize(),
         seedingStatus: this.getSeedingStatus()
@@ -183,12 +206,13 @@ class Drive extends EventEmitter {
     if (!this._contentFeed) {
       try {
         this._contentFeed = await this._getContentAsync()
+        await new Promise(resolve => setTimeout(resolve, 200))
       } catch (error) {
         return null
       }
 
       const logError = (error) => {
-        this._logger.error({ key: this._key, error, contentFeed: true }, error.message)
+        this._logger.warn({ key: this._key, error, contentFeed: true }, error.message)
       }
 
       this._contentFeed.on('error', logError)
