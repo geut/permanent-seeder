@@ -19,6 +19,9 @@ const useStyles = makeStyles(theme => ({
     width: '100%',
     tableLayout: 'fixed'
   },
+  cell: {
+    overflowY: 'hidden'
+  },
   row: {
     '& > td, & > th': {
       padding: '6px 8px 6px 8px'
@@ -57,7 +60,7 @@ function DriveFiles ({ files, blocks, bytes }) {
           </TableRow>
           {Object.entries(files).map(([fileName, { size, blocks }]) => (
             <TableRow key={fileName} className={classes.row}>
-              <TableCell size='small'>{fileName}</TableCell>
+              <TableCell className={classes.cell} size='small'>{fileName}</TableCell>
               <TableCell align='right'>{humanizedBytes(size).pretty}</TableCell>
               <TableCell align='right'>{blocks}</TableCell>
             </TableRow>
