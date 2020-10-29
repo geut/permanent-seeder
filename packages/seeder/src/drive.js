@@ -50,7 +50,7 @@ class Drive extends EventEmitter {
     this._onUpdate = this._onUpdate.bind(this)
     this._onUpload = this._onUpload.bind(this)
 
-    this._loadStats = debounce(this._loadStats.bind(this), 1000, { maxWait: 1000 * 3, leading: true })
+    this._loadStats = debounce(this._loadStats.bind(this), 100, { maxWait: 100 * 3, leading: true })
 
     this._hyperdrive.on('update', this._onUpdate)
     this._hyperdrive.on('peer-add', this._onPeerAdd)
