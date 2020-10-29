@@ -3,6 +3,7 @@
 ### Description
 
 - `drive-add`: emitted once when the key is added to the Permanent Seeder
+- `drive-download-resume`: emitted if there is a difference between total feed blocks and downloaded
 - `drive-download`: emitted on feed download.
     - `started`: set to `true` when download starts
         - updates seeding status: `waiting` => `downloading`
@@ -35,6 +36,7 @@
 Events are ordered from the _beggining_, i.e.: when they are added to the permanent seeder, to _end_ or when they are downloaded completely.
 
 - `drive-add`
+- `drive-download-resume`
 - `drive-download`
 - `drive-download` [**started**] [once]
     - `drive-info` [after-started]
