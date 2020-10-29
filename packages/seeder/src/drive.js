@@ -112,6 +112,7 @@ class Drive extends EventEmitter {
     }
     const downloaded = this._downloadedBlocks
     const total = this.feedBlocks
+
     if (downloaded < total) {
       if (this._contentFeed.downloaded() > this._downloadedBlocks) {
         this._downloadedBlocks = this._contentFeed.downloaded()
@@ -124,6 +125,13 @@ class Drive extends EventEmitter {
       this.emit('download-resume', this._key, {
         size: this.getSize(),
         seedingStatus: this.getSeedingStatus()
+      })
+    } else if (downloaded > total) {
+      // correct values
+      this._logger.info({ key: this._key }, 'Adjusting download values')
+      this._downloadedBlocks = this.feedBlocks
+      this.emit('download-fix', this._key, {
+        size: this.getSize()
       })
     }
   }
