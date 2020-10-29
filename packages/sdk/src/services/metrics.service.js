@@ -1,14 +1,15 @@
 const { resolve } = require('path')
+const { promisify } = require('util')
 
 const { MetricsDatabase } = require('@geut/permanent-seeder-database')
 const top = require('process-top')()
-const trammel = require('trammel')
+const { fsize } = require('nodejs-fs-utils')
 const pMemoize = require('p-memoize')
 const isOnline = require('is-online')
 
 const { Config } = require('../mixins/config.mixin')
 
-const dirSize = pMemoize(trammel, { maxAge: 2000 })
+const dirSize = pMemoize(promisify(fsize), { maxAge: 2000 })
 
 module.exports = {
   name: 'metrics',
@@ -73,7 +74,7 @@ module.exports = {
         let disk = ''
 
         try {
-          disk = await dirSize(this.config.path, { stopOnError: true })
+          disk = await dirSize(this.config.path, { skipErrors: true })
         } catch (error) {
           console.error(error)
         }
