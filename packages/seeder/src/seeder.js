@@ -69,6 +69,7 @@ class Seeder extends EventEmitter {
 
     this._onDriveDownload = this._onDriveDownload.bind(this)
     this._onDriveDownloadResume = this._onDriveDownloadResume.bind(this)
+    this._onDriveDownloadFix = this._onDriveDownloadFix.bind(this)
     this._onDriveInfo = this._onDriveInfo.bind(this)
     this._onDrivePeerAdd = this._onDrivePeerAdd.bind(this)
     this._onDrivePeerRemove = this._onDrivePeerRemove.bind(this)
@@ -100,6 +101,10 @@ class Seeder extends EventEmitter {
     this.emit('drive-download-resume', key, data)
   }
 
+  _onDriveDownloadFix (key, data) {
+    this.emit('drive-download-fix', key, data)
+  }
+
   _onDriveInfo (key, data) {
     this.emit('drive-info', key, data)
   }
@@ -127,6 +132,7 @@ class Seeder extends EventEmitter {
   _registerDriveEvents (key, drive) {
     drive.on('download', this._onDriveDownload)
     drive.on('download-resume', this._onDriveDownloadResume)
+    drive.on('download-fix', this._onDriveDownloadFix)
     drive.on('info', this._onDriveInfo)
     drive.on('peer-add', this._onDrivePeerAdd)
     drive.on('peer-remove', this._onDrivePeerRemove)
@@ -136,6 +142,8 @@ class Seeder extends EventEmitter {
 
     this._unlistens.set(key, () => {
       drive.off('download', this._onDriveDownload)
+      drive.off('download-resume', this._onDriveDownloadResume)
+      drive.off('download-fix', this._onDriveDownloadFix)
       drive.off('info', this._onDriveInfo)
       drive.off('peer-add', this._onDrivePeerAdd)
       drive.off('peer-remove', this._onDrivePeerRemove)
