@@ -116,6 +116,12 @@ module.exports = {
       this.broker.broadcast('seeder.drive.download.resume', { key, size })
     },
 
+    async onDriveDownloadFix (key, { size }) {
+      await this.database.update(key, {
+        size
+      })
+    },
+
     async onDriveDownload (key, { size, seedingStatus, started = false, finished = false }) {
       await this.database.update(key, {
         size,
@@ -183,6 +189,7 @@ module.exports = {
     this.seeder.on('drive-add', this.onDriveAdd)
     this.seeder.on('drive-download', this.onDriveDownload)
     this.seeder.on('drive-download-resume', this.onDriveDownloadResume)
+    this.seeder.on('drive-download-fix', this.onDriveDownloadFix)
     this.seeder.on('drive-info', this.onDriveInfo)
     this.seeder.on('drive-peer-add', this.onDrivePeerAdd)
     this.seeder.on('drive-peer-remove', this.onDrivePeerRemove)
@@ -201,6 +208,7 @@ module.exports = {
     this.seeder.off('drive-add', this.onDriveAdd)
     this.seeder.off('drive-download', this.onDriveDownload)
     this.seeder.off('drive-download-resume', this.onDriveDownloadResume)
+    this.seeder.off('drive-download-fix', this.onDriveDownloadFix)
     this.seeder.off('drive-info', this.onDriveInfo)
     this.seeder.off('drive-peer-add', this.onDrivePeerAdd)
     this.seeder.off('drive-peer-remove', this.onDrivePeerRemove)
