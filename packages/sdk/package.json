@@ -47,7 +47,7 @@
     "pino": "^6.7.0",
     "process-top": "^1.1.0",
     "socket.io": "^2.3.0",
-    "trammel": "^4.0.0"
+    "nodejs-fs-utils": "^1.2.5"
   },
   "devDependencies": {
     "@geut/chan": "^2.0.0",

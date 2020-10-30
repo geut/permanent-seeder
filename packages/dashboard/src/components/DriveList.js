@@ -33,6 +33,7 @@ function buildDriveData (drive) {
     fsBlocks: fsSize.blocks,
     fsBytes: fsSize.bytes,
     info: drive.info,
+    recentlyAdded: drive.recentlyAdded,
     seedingStatus: drive.seedingStatus
   }
 }

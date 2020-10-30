@@ -11,6 +11,7 @@ import CircularProgress from './CircularProgress'
 
 import { API_URL } from '../config'
 import { useMilisecondsToHms } from '../hooks/unit'
+import { humanizedBytes } from '../format'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -35,7 +36,7 @@ function Uptime ({ uptime }) {
 const DiskData = ({ disk = { directory: 0 } }) => {
   return (
     <Typography style={{ verticalAlign: 'center' }} variant='h6' component='div' color='textSecondary' gutterBottom>
-      {disk.directory}
+      {humanizedBytes(disk.directory).pretty}
     </Typography>
   )
 }

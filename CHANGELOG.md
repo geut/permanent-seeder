@@ -20,8 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Pino as default logger
 - packages/seeder
   - Fix: use corestoreOpts + allow optional preferredPort setting
+  - Update: add new drive-download-resume event, avoid emitting drive-add multiple times on restart
 - packages/metrics
   - Update: use trammel to get directory size of ps work dir
+  - Update: update to reflect latest events (drive life cycle)
 - Docs update
 
 ### Fixed
