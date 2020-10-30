@@ -3,6 +3,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard'
 import fastDeepEqual from 'fast-deep-equal'
 
 import { makeStyles } from '@material-ui/core'
+import FiberNewOutlinedIcon from '@material-ui/icons/FiberNewOutlined'
 import TableCell from '@material-ui/core/TableCell'
 import MuiTableRow from '@material-ui/core/TableRow'
 import IconButton from '@material-ui/core/IconButton'
@@ -34,7 +35,11 @@ const useStyles = makeStyles((theme) => ({
   },
   key: {
     cursor: 'pointer'
+  },
+  newItem: {
+    width: '10px'
   }
+
 }))
 
 const DrivesTableRow = React.memo(
@@ -51,11 +56,13 @@ const DrivesTableRow = React.memo(
     fsBytes,
     info,
     seedingStatus,
+    recentlyAdded,
     onClick
   }) {
     const classes = useStyles()
     const [open, setOpen] = useState(false)
     const [detailsOpen, setDetailsOpen] = useState(false)
+    const [sawRecentlyAdded, setSawRecentlyAdded] = useState(recentlyAdded)
 
     function handleToggleInfo (event) {
       event.stopPropagation()
@@ -65,6 +72,12 @@ const DrivesTableRow = React.memo(
     function handleOpenDetails (event) {
       event.stopPropagation()
       setDetailsOpen(true)
+    }
+
+    function sawNewItem (event) {
+      event.stopPropagation()
+      // mark as seen
+      setSawRecentlyAdded(false)
     }
 
     return (
@@ -77,6 +90,15 @@ const DrivesTableRow = React.memo(
           onClick={handleOpenDetails}
           className={classes.root}
         >
+          <TableCell className={classes.newItem} padding='none' align='center'>
+            {sawRecentlyAdded
+              ? (
+                <IconButton size='small' onClick={sawNewItem}>
+                  <FiberNewOutlinedIcon />
+                </IconButton>
+              )
+              : ''}
+          </TableCell>
           <TableCell padding='none' align='center'>
             <IconButton aria-label='expand row' size='small' onClick={handleToggleInfo}>
               {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
@@ -97,7 +119,9 @@ const DrivesTableRow = React.memo(
               </CopyToClipboard>
             </div>
           </TableCell>
-          <TableCell>{title}</TableCell>
+          <TableCell>
+            {title}
+          </TableCell>
           <TableCell align='center'>{sizeBlocks}</TableCell>
           <TableCell align='center'>{humanizedBytes(sizeBytes).pretty}</TableCell>
           <TableCell align='center'>{downloadedBlocks}</TableCell>
@@ -105,7 +129,7 @@ const DrivesTableRow = React.memo(
           <TableCell align='center'>{peers.length}</TableCell>
         </MuiTableRow>
         <MuiTableRow>
-          <TableCell className={classes.collapse} colSpan={9}>
+          <TableCell className={classes.collapse} colSpan={10}>
             <Collapse in={open} timeout='auto' unmountOnExit>
               <DriveInfo
                 peers={peers}
