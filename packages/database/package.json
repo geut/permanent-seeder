@@ -1,6 +1,6 @@
 {
   "name": "@geut/permanent-seeder-database",
-  "version": "0.0.1-alpha.6",
+  "version": "1.0.0",
   "description": "Permanent Seeder Database",
   "keywords": [
     "seeder",

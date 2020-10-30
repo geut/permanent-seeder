@@ -1,6 +1,6 @@
 {
   "name": "@geut/permanent-seeder-sdk",
-  "version": "0.0.1-alpha.7",
+  "version": "1.0.0",
   "description": "Permanent Seeder SDK",
   "keywords": [
     "seeder",
@@ -32,9 +32,9 @@
     ]
   },
   "dependencies": {
-    "@geut/permanent-seeder-core": "^0.0.1-alpha.6",
-    "@geut/permanent-seeder-dashboard": "^0.0.1-alpha.7",
-    "@geut/permanent-seeder-database": "^0.0.1-alpha.6",
+    "@geut/permanent-seeder-core": "^1.0.0",
+    "@geut/permanent-seeder-dashboard": "^1.0.0",
+    "@geut/permanent-seeder-database": "^1.0.0",
     "compression": "^1.7.4",
     "cron": "^1.8.2",
     "deep-equal": "^2.0.4",
@@ -44,10 +44,10 @@
     "moleculer": "^0.14.11",
     "moleculer-repl": "^0.6.4",
     "moleculer-web": "^0.9.1",
+    "nodejs-fs-utils": "^1.2.5",
     "pino": "^6.7.0",
     "process-top": "^1.1.0",
-    "socket.io": "^2.3.0",
-    "nodejs-fs-utils": "^1.2.5"
+    "socket.io": "^2.3.0"
   },
   "devDependencies": {
     "@geut/chan": "^2.0.0",
