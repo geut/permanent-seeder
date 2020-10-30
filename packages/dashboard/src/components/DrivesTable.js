@@ -121,6 +121,7 @@ function DrivesTable ({ drives, onKeyAdd }) {
               fsBlocks={drive.fsBlocks}
               fsBytes={drive.fsBytes}
               info={drive.info}
+              recentlyAdded={drive.recentlyAdded}
               seedingStatus={drive.seedingStatus}
             />
           ))}
