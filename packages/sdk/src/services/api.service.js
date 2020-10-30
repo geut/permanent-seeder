@@ -107,6 +107,7 @@ module.exports = function (broker) {
           await ctx.call('keys.add', {
             key: encode(ctx.params.key)
           })
+          this.recentlyAdded.set(ctx.params.key, true)
           this.broker.cacher.clean()
         }
       },
@@ -205,7 +206,10 @@ module.exports = function (broker) {
           let keys = []
 
           if (key) {
-            keys.push(await this.broker.call('keys.get', { key }))
+            const value = await this.broker.call('keys.get', { key })
+            if (value) {
+              keys.push(value)
+            }
           } else {
             keys = await this.broker.call('keys.getAll') || []
           }
@@ -216,7 +220,17 @@ module.exports = function (broker) {
             return this.drivesDatabase.get(key)
           }))
 
-          return key ? drives[0] : drives
+          drives.forEach((item, idx) => {
+            const key = item.key
+            const recentlyAdded = this.recentlyAdded.get(key)
+
+            drives[idx].recentlyAdded = !!recentlyAdded
+            if (recentlyAdded) {
+              this.recentlyAdded.set(key, false)
+            }
+          })
+
+          return key && drives[0] ? drives[0] : drives
         }
       },
 
@@ -241,6 +255,7 @@ module.exports = function (broker) {
       const drivesDbPath = resolve(this.settings.config.path, 'drives.db')
 
       this.drivesDatabase = new DrivesDatabase(drivesDbPath)
+      this.recentlyAdded = new Map()
     },
 
     async started () {
