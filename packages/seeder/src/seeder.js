@@ -3,9 +3,7 @@ const { homedir } = require('os')
 const { join } = require('path')
 const { promisify } = require('util')
 
-const { decode } = require('dat-encoding')
 const Corestore = require('corestore')
-const crypto = require('hypercore-crypto')
 const HypercoreCache = require('hypercore-cache')
 const Networker = require('@corestore/networker')
 const raf = require('random-access-file')
@@ -84,10 +82,11 @@ class Seeder extends EventEmitter {
    * @param {string | buffer} key drive key
    */
   _getDrive (key) {
+    this._logger.info({ key }, '_getDrive: looking for key in mem')
     const drive = this._drives.get(key)
 
     if (!drive) {
-      throw new Error(`Drive not found. Key: ${key}`)
+      this._logger.warn({ key }, '_getDrive: key not found in memory structure')
     }
 
     return drive
@@ -166,22 +165,23 @@ class Seeder extends EventEmitter {
     // Check if drive was already seeded (in-mem)
     let drive = this._drives.get(key)
 
-    // Already downloading
-    if (drive) return
+    this._logger.info({ key }, '_seedKey: starting seeding process...')
 
-    this._logger.info({ key }, 'Seeding key')
+    if (!drive) {
+      // get namespace
+      const store = this._store.namespace(key)
+      // Create drive
+      drive = new Drive(key, store, { size, logger: this._logger })
+      await drive.ready()
+      this._logger.info({ key }, '_seedKey: drive instantiated OK')
+      // Store drive in mem
+      this._drives.set(key, drive)
+      this._logger.info({ key }, '_seedKey: drive stored in mem')
 
-    // Create drive
-    drive = new Drive(key, this._store, { size, logger: this._logger })
-
-    // Store drive
-    this._drives.set(key, drive)
-
-    // Wait for readyness
-    await drive.ready()
-
-    // Register event listeners
-    this._registerDriveEvents(key, drive)
+      // Register event listeners
+      this._registerDriveEvents(key, drive)
+      this._logger.info({ key }, '_seedKey: event listeners attached to drive')
+    }
 
     // Notify new drive
     if (size.blocks === 0 && created) {
@@ -193,13 +193,22 @@ class Seeder extends EventEmitter {
       drive.discoveryKey,
       { announce: this._opts.announce, lookup: this._opts.lookup }
     )
+    this._logger.info({ key }, '_seedKey: drive announced to swarm')
 
     drive.download('/')
+    this._logger.info({ key }, '_seedKey: drive download called')
     // Wait for content ready
-    await drive.getContentFeed()
+    try {
+      await drive.getContentFeed()
+    } catch (err) {
+      this._logger.warn({ key, error: err }, '_seedKey: Problems obtaining drive content feed')
+    }
+    this._logger.info({ key }, '_seedKey: drive content feed OK')
 
     // Resume Download
+    this._logger.info({ key }, '_seedKey: resuming drive download')
     drive.resume()
+    this._logger.info({ key }, '_seedKey: completed OK')
   }
 
   /**
@@ -208,10 +217,14 @@ class Seeder extends EventEmitter {
   async init () {
     if (this._ready) return
 
+    this._ready = true
+
     this._store = new Corestore(
       getCoreStore(this._opts.storageLocation),
       this._opts.corestoreOpts
     )
+
+    this._store.on('error', (err) => this._logger.warn({ error: err, corestore: true }, err.message))
 
     await this._store.ready()
 
@@ -250,8 +263,6 @@ class Seeder extends EventEmitter {
       this._networker.off('peer-add', onPeerAdd)
       this._networker.off('peer-remove', onPeerRemove)
     })
-
-    this._ready = true
   }
 
   /**
@@ -268,7 +279,9 @@ class Seeder extends EventEmitter {
   }
 
   drivePeers (key) {
-    return this._getDrive(key).peers
+    const drive = this._getDrive(key)
+    if (!drive) { return }
+    return drive.peers
   }
 
   // async driveNetwork (key) {
@@ -319,26 +332,36 @@ class Seeder extends EventEmitter {
    */
   async unseed (key) {
     await this.init()
-    let discoveryKeys = []
 
-    if (key) {
-      discoveryKeys.push(crypto.discoveryKey(decode(key)))
-    } else {
-      discoveryKeys = this._drives.values().map(drive => drive.discoveryKey)
+    if (!key) {
+      throw new Error('A key to remove is required')
     }
+
+    const drive = this._getDrive(key)
+    if (!drive) return
 
     if (this._unlistens.has(key)) {
       const unlisten = this._unlistens.get(key)
       // remove listeners attached to this key/drive
       unlisten()
       this._unlistens.delete(key)
+      this._logger.info({ key }, 'unseed: remove listeners attached to key')
     }
 
-    await Promise.all(discoveryKeys.map(discoveryKey => this._networker.configure(discoveryKey, { announce: false, lookup: false })))
-
+    this._networker.configure(drive.discoveryKey, { announce: false, lookup: false })
+    this._logger.info({ key }, 'unseed: unnanouncing discoveryKey')
     this._drives.delete(key)
 
+    try {
+      await drive.destroy()
+      this._logger.info({ key }, 'unseed: destroying and closing drive')
+    } catch (err) {
+      this._logger.warn({ key }, `unseed: ${err.message}`)
+    }
+
     this.emit('drive-remove', key)
+
+    this._logger.info({ key }, 'unseed: completed OK')
   }
 
   /**
@@ -353,7 +376,7 @@ class Seeder extends EventEmitter {
 
     // close all drives
     try {
-      await Promise.all(Array.from(this._drives.values()).map(drive => drive.destroy()))
+      await Promise.all(Array.from(this._drives.values()).map(drive => drive.close()))
     } catch (error) {
       this._logger.warn({ error })
     }
