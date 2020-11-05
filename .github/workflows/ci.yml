@@ -34,7 +34,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - name: npm install
-        run: npm ci
+        run: npm i
       - name: bootstrap
         run: npm run lerna bootstrap --ci
       - name: build
