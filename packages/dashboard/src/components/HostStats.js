@@ -58,7 +58,7 @@ function HostStats () {
     fetchInitalData()
 
     return () => unsubscribe()
-  }, [])
+  }, [get, response.ok, unsubscribe])
 
   useEffect(() => {
     if (!liveHostStat) return

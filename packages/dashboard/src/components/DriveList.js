@@ -72,7 +72,7 @@ function DriveList ({ loadDrives, onKeyAdd }) {
       unsubscribeKeyUpdate()
       unsubscribeKeyRemove()
     }
-  }, [])
+  }, [unsubscribeKeyUpdate, unsubscribeKeyRemove])
 
   if (!drives) { return null }
 

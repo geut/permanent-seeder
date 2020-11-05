@@ -22,8 +22,10 @@
     "test": "lerna run test",
     "posttest": "npm run lint",
     "lerna": "lerna",
-    "version": "chan release --allow-yanked --ghrelease ${npm_package_version} && git add .",
-    "publish": "lerna publish"
+    "release": "lerna version",
+    "postversion": "chan release --allow-yanked --ghrelease $(node -p -e \"require('./lerna.json').version\") && git add CHANGELOG.md && git commit -m \"Update: changelog\"",
+    "publish": "lerna publish",
+    "publish:ci": "lerna publish from-git --yes"
   },
   "husky": {
     "hooks": {

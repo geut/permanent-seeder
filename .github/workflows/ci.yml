@@ -1,0 +1,42 @@
+name: CI
+on:
+  push:
+    branches_ignore:
+      - 'gh-pages'
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: npx standard@14
+  build:
+    needs: lint
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: get npm cache directory
+        id: npm-cache
+        run: |
+          echo "::set-output name=dir::$(npm config get cache)"
+      - name: cache node modules
+        if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'windows')
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.npm-cache.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: npm install
+        run: npm i
+      - name: bootstrap
+        run: npm run lerna bootstrap --ci
+      - name: build
+        run: npm run build
+

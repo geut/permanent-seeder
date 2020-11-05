@@ -46,7 +46,7 @@ function NetworkIndicator () {
     }
 
     fetchInitalData()
-  }, [])
+  }, [get, response, error])
 
   const color = !network.online
     ? 'error'
