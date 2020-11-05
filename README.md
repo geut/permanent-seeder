@@ -240,6 +240,13 @@ As you can see the project does a couple of things. To do this we decided to use
 
 Returns the raw data that feed into the dashboard.
 
+## Release
+
+For releasing we are using GitHub actions :rocket: This is a 2 step process:
+1. First, we need to create the new version. This new version will trigger a changelog update and prepare the new release using **GitHub Releases**.
+    - `npm run release`
+2. When the new GitHub Release is **published**, a custom action will be triggered uploading the new version to npm :new: :package:
+
 ## <a name="issues"></a> Issues
 
 :bug: If you found an issue we encourage you to report it on [github](https://github.com/geut/permanent-seeder/issues). Please specify your OS and the actions to reproduce it.
