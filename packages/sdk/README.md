@@ -1,4 +1,4 @@
-# permanent-seeeder-sdk
+# permanent-seeder-sdk
 
 [![Build Status](https://travis-ci.com/geut/permanent-seeder.svg?branch=master)](https://travis-ci.com/geut/permanent-seeder)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
