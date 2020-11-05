@@ -111,7 +111,7 @@ module.exports = {
         if (data.event === 'seeder.drive.download-started' || data.event === 'seeder.drive.download-finished') {
           data.host = await this.getHostStats()
         }
-        if (data.event !== 'seeder.drive.download' && data.event !== 'seeder.drive.remove') {
+        if (data.event !== 'seeder.drive.add' && data.event !== 'seeder.drive.download' && data.event !== 'seeder.drive.remove') {
           data.peers = await this.broker.call('seeder.drivePeers', { key: data.key })
         }
         return this.database.add(data)

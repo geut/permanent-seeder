@@ -9,20 +9,18 @@ const BaseCommand = require('../../base-command')
 class RemoveCommand extends KeyCommand {
   async run () {
     if (await cli.confirm('Are you sure?')) {
-      if (await cli.confirm('Really?')) {
-        const keys = await this.keysDatabase.getAll()
+      const keys = await this.keysDatabase.getAll()
 
-        for await (const { key } of keys) {
-          await this.keysDatabase.remove(key)
-          try {
-            await sendMessage(SEEDER_DAEMON, MESSAGE_SEEDER_UNSEED, { key })
-          } catch (error) {
-            this.error(error.message)
-          }
+      for await (const { key } of keys) {
+        await this.keysDatabase.remove(key)
+        try {
+          await sendMessage(SEEDER_DAEMON, MESSAGE_SEEDER_UNSEED, { key })
+        } catch (error) {
+          this.error(error.message)
         }
-
-        this.log('Keys removed')
       }
+
+      this.log('Keys removed')
     }
 
     this.exit(0)

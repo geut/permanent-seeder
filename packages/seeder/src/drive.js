@@ -49,6 +49,7 @@ class Drive extends EventEmitter {
     this._onStats = this._onStats.bind(this)
     this._onUpdate = this._onUpdate.bind(this)
     this._onUpload = this._onUpload.bind(this)
+    this._logError = this._logError.bind(this)
 
     this._loadStats = debounce(this._loadStats.bind(this), 100, { maxWait: 100 * 3, leading: true })
 
@@ -202,6 +203,10 @@ class Drive extends EventEmitter {
     this.emit('stats', this._key, { stats: fromEntries(stats) })
   }
 
+  _logError (error = {}) {
+    this._logger.warn({ key: this._key, error, contentFeed: true }, error.message)
+  }
+
   async ready () {
     return this._hyperdrive.ready()
   }
@@ -219,18 +224,9 @@ class Drive extends EventEmitter {
         return null
       }
 
-      const logError = (error) => {
-        this._logger.warn({ key: this._key, error, contentFeed: true }, error.message)
-      }
-
-      this._contentFeed.on('error', logError)
+      this._contentFeed.on('error', this._logError)
       this._contentFeed.on('download', this._onDownload)
       this._contentFeed.on('upload', this._onUpload)
-      this._contentFeed.on('close', () => {
-        this._contentFeed.off('download', this._onDownload)
-        this._contentFeed.off('upload', this._onUpload)
-        this._contentFeed.off('error', logError)
-      })
     }
 
     return this._contentFeed
@@ -260,6 +256,25 @@ class Drive extends EventEmitter {
     }
   }
 
+  async close () {
+    this._hyperdrive.off('update', this._onUpdate)
+    this._hyperdrive.off('peer-add', this._onPeerAdd)
+    this._hyperdrive.off('peer-remove', this._onPeerRemove)
+
+    if (this._contentFeed) {
+      this._contentFeed.off('download', this._onDownload)
+      this._contentFeed.off('upload', this._onUpload)
+      this._contentFeed.off('error', this._logError)
+    }
+
+    try {
+      await this._hyperdrive.close()
+      this._logger.info({ key: this._key }, 'drive closed OK')
+    } catch (err) {
+      this._logger.error({ key: this._key, error: err.message }, 'Unable to close drive')
+    }
+  }
+
   async destroy () {
     this._hyperdrive.off('update', this._onUpdate)
     this._hyperdrive.off('peer-add', this._onPeerAdd)
@@ -268,8 +283,15 @@ class Drive extends EventEmitter {
     if (this._contentFeed) {
       this._contentFeed.off('download', this._onDownload)
       this._contentFeed.off('upload', this._onUpload)
-
-      await this._hyperdrive.destroyStorage()
+      this._contentFeed.off('error', this._logError)
+      try {
+        await this._hyperdrive.destroyStorage()
+        this._logger.info({ key: this._key }, 'drive destroyed OK')
+      } catch (err) {
+        this._logger.error({ key: this._key, error: err.message }, 'Unable to destroy drive')
+      }
+    } else {
+      await this._hyperdrive.close()
     }
   }
 }
