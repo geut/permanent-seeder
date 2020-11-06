@@ -1,6 +1,7 @@
 # permanent-seeder
 
-[![Build Status](https://img.shields.io/travis/com/geut/permanent-seeder/master?style=flat-square)](https://travis-ci.com/geut/permanent-seeder)
+![CI Status](https://github.com/geut/permanent-seeder/workflows/CI/badge.svg?style=flat-square)
+
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg?style=flat-square)](https://standardjs.com)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
