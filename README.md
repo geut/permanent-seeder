@@ -243,10 +243,13 @@ Returns the raw data that feed into the dashboard.
 
 ## Release
 
-For releasing we are using GitHub actions :rocket: This is a 2 step process:
-1. First, we need to create the new version. This new version will trigger a changelog update and prepare the new release using **GitHub Releases**.
-    - `npm run release`
-2. When the new GitHub Release is **published**, a custom action will be triggered uploading the new version to npm :new: :package:
+For releasing new versions we are using GitHub Actions :rocket: This is the process.
+
+1. First, we create a new **release** branch: `git co -b username/release-${newVersion}`
+2. Then, we need to create the new version. This new version will trigger a changelog update (using [chan](https://github.com/geut/chan)). To do this just run: `npm run release` It will prompt you what is the next version.
+3. Create the **release pull-request**. The title should indicate this: `Release: newVersion`
+    - :warning: This is an important step, otherwise the publish workflow won't see the PR.
+4. Finally, when the **release** PR is approved, a custom action will be triggered publishing the new version to npm, creating a new tag for it and creating a brand new github release :new: :package:
 
 ## <a name="issues"></a> Issues
 
