@@ -22,8 +22,8 @@
     "test": "lerna run test",
     "posttest": "npm run lint",
     "lerna": "lerna",
-    "release": "lerna version --no-git-tag-version",
-    "postversion": "chan release --allow-yanked && git add CHANGELOG.md && git commit -m \"Update: changelog\"",
+    "release": "lerna version --no-git-tag-version && git add . && git commit -m \"Update: version bump\" && npm run postrelease",
+    "postrelease": "chan release --allow-yanked && git add CHANGELOG.md && git commit -m \"Update: changelog\" && git push",
     "publish": "lerna publish",
     "publish:ci": "lerna publish from-git --yes",
     "ghrelease:ci": "chan gh-release $(node -p -e \"require('./lerna.json').version\")"
