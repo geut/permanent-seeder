@@ -1,14 +1,17 @@
 name: Publish
 
 on:
-  release:
-    types: [published]
+  pull_request:
+    branches:
+      - master
+    types: [closed]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.title, 'Release:')
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
           node-version: 12
@@ -18,3 +21,15 @@ jobs:
       - run: npm run publish:ci
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+      - name: Set version
+        id: lerna-version
+        shell: bash -ex {0}
+        run: |
+          version=$(node -p 'require("./lerna.json").version')
+          echo "::set-output name=version::${version}"
+      - name: Tag commit
+        uses: tvdias/github-tagger@v0.0.1
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          tag: "v${{ steps.lerna-version.outputs.version }}"
+      - run: npm run ghrelease:ci
