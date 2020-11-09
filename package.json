@@ -22,10 +22,11 @@
     "test": "lerna run test",
     "posttest": "npm run lint",
     "lerna": "lerna",
-    "release": "lerna version",
-    "postversion": "chan release --allow-yanked --ghrelease $(node -p -e \"require('./lerna.json').version\") && git add CHANGELOG.md && git commit -m \"Update: changelog\"",
+    "release": "lerna version --no-git-tag-version",
+    "postversion": "chan release --allow-yanked && git add CHANGELOG.md && git commit -m \"Update: changelog\"",
     "publish": "lerna publish",
-    "publish:ci": "lerna publish from-git --yes"
+    "publish:ci": "lerna publish from-git --yes",
+    "ghrelease:ci": "chan gh-release $(node -p -e \"require('./lerna.json').version\")"
   },
   "husky": {
     "hooks": {
