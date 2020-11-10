@@ -18,9 +18,6 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: npm ci
       - run: npm run lerna bootstrap --ci
-      - run: npm run publish:ci
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - name: Set version
         id: lerna-version
         shell: bash -ex {0}
@@ -32,4 +29,8 @@ jobs:
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           tag: "v${{ steps.lerna-version.outputs.version }}"
+      - run: npm run publish:ci
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+
       - run: npm run ghrelease:ci
