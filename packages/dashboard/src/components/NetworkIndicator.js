@@ -46,6 +46,7 @@ function NetworkIndicator () {
     }
 
     fetchInitalData()
+    // eslint-disable-next-line
   }, [])
 
   const color = !network.online

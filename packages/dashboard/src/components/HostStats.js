@@ -58,6 +58,7 @@ function HostStats () {
     fetchInitalData()
 
     return () => unsubscribe()
+    // eslint-disable-next-line
   }, [])
 
   useEffect(() => {
