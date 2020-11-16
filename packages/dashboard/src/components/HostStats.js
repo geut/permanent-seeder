@@ -10,7 +10,7 @@ import Typography from '@material-ui/core/Typography'
 import CircularProgress from './CircularProgress'
 
 import { API_URL } from '../config'
-import { useMilisecondsToHms } from '../hooks/unit'
+import { useHumanMsToDHM } from '../hooks/unit'
 import { humanizedBytes } from '../format'
 
 const useStyles = makeStyles(theme => ({
@@ -24,10 +24,10 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function Uptime ({ uptime }) {
-  const formatted = useMilisecondsToHms(uptime)
+  const formatted = useHumanMsToDHM(uptime)
 
   return (
-    <Typography style={{ verticalAlign: 'center' }} variant='h6' component='div' color='textSecondary' gutterBottom>
+    <Typography style={{ verticalAlign: 'center', letterSpacing: '-0.3px' }} variant='h6' component='div' color='textSecondary' gutterBottom>
       {formatted}
     </Typography>
   )
