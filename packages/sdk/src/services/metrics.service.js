@@ -23,6 +23,7 @@ module.exports = {
 
   events: {
     'seeder.drive.*': {
+      throttle: 100,
       async handler (ctx) {
         const timestamp = Date.now()
         const { eventName: event, params: { key, ...rest } } = ctx
@@ -82,7 +83,7 @@ module.exports = {
         return {
           cpu: top.cpu().percent,
           mem: top.memory().percent,
-          uptime: top.time(),
+          uptime: top.runtime(),
           loadavg: top.loadavg(),
           disk: { directory: disk }
         }

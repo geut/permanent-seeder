@@ -46,7 +46,7 @@
     "moleculer-web": "^0.9.1",
     "nodejs-fs-utils": "^1.2.5",
     "pino": "^6.7.0",
-    "process-top": "^1.1.0",
+    "process-top": "^1.2.0",
     "socket.io": "^2.3.0"
   },
   "devDependencies": {
