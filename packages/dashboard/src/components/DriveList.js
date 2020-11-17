@@ -72,7 +72,8 @@ function DriveList ({ loadDrives, onKeyAdd }) {
       unsubscribeKeyUpdate()
       unsubscribeKeyRemove()
     }
-  }, [unsubscribeKeyUpdate, unsubscribeKeyRemove])
+    // eslint-disable-next-line
+  }, [])
 
   if (!drives) { return null }
 
