@@ -12,6 +12,8 @@ jobs:
     if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.title, 'Release:')
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v1
         with:
           node-version: 12
@@ -29,6 +31,7 @@ jobs:
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           tag: "v${{ steps.lerna-version.outputs.version }}"
+          commit-sha: ${{ github.event.pull_request.head.sha }}
       - run: npm run publish:ci
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
