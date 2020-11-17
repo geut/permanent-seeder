@@ -1,6 +1,6 @@
 {
   "name": "@geut/permanent-seeder",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Permanent Seeder CLI",
   "keywords": [
     "seeder",
@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@geut/permanent-seeder-database": "^1.0.0",
-    "@geut/permanent-seeder-sdk": "^1.0.2",
+    "@geut/permanent-seeder-sdk": "^1.0.3",
     "@iarna/toml": "^2.2.5",
     "@oclif/command": "^1.7.0",
     "@oclif/config": "^1.16.0",
