@@ -58,7 +58,8 @@ function HostStats () {
     fetchInitalData()
 
     return () => unsubscribe()
-  }, [get, response.ok, unsubscribe])
+    // eslint-disable-next-line
+  }, [])
 
   useEffect(() => {
     if (!liveHostStat) return

@@ -46,7 +46,8 @@ function NetworkIndicator () {
     }
 
     fetchInitalData()
-  }, [get, response, error])
+    // eslint-disable-next-line
+  }, [])
 
   const color = !network.online
     ? 'error'
