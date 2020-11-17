@@ -2,6 +2,8 @@
 
 ![CI Status](https://github.com/geut/permanent-seeder/workflows/CI/badge.svg?style=flat-square)
 
+![npm version](https://img.shields.io/npm/v/@geut/permanent-seeder?color=brightgreen&style=flat-square)
+
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg?style=flat-square)](https://standardjs.com)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
