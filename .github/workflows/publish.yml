@@ -27,7 +27,7 @@ jobs:
           version=$(node -p 'require("./lerna.json").version')
           echo "::set-output name=version::${version}"
       - name: Tag commit
-        uses: tvdias/github-tagger@v0.0.1
+        uses: tvdias/github-tagger@v0.0.2
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           tag: "v${{ steps.lerna-version.outputs.version }}"
