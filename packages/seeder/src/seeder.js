@@ -301,8 +301,11 @@ class Seeder extends EventEmitter {
     */
   async getSwarmStats () {
     await this.init()
+    let connectivity = { holepunched: false, bootstrapped: false }
+    try {
+      connectivity = await this._connectivity()
+    } catch (_) {}
 
-    const { holepunched, bootstrapped } = await this._connectivity()
     const ra = this._networker.swarm.remoteAddress()
     const remoteAddress = ra ? `${ra.host}:${ra.port}` : ''
     const currentPeers = Array
@@ -318,8 +321,8 @@ class Seeder extends EventEmitter {
       }, [])
 
     return {
-      holepunchable: holepunched,
-      bootstrapped,
+      holepunchable: connectivity.holepunched,
+      bootstrapped: connectivity.bootstrapped,
       remoteAddress,
       currentPeers
     }
