@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update: publish from ci tweaks (release workflow)
 
+### Fixed
+- packages/seeder
+  - Update: get rid of connectivity method call #150
+
 ## [1.0.4] - 2020-11-17
 ### Changed
 - packages/dasboard
