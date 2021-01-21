@@ -1,7 +1,6 @@
 const { EventEmitter } = require('events')
 const { homedir } = require('os')
 const { join } = require('path')
-const { promisify } = require('util')
 
 const Corestore = require('corestore')
 const HypercoreCache = require('hypercore-cache')
@@ -237,8 +236,6 @@ class Seeder extends EventEmitter {
 
     await this._networker.listen()
 
-    this._connectivity = promisify(this._networker.swarm.connectivity).bind(this._networker.swarm)
-
     const onPeerAdd = (peer) => {
       this.emit('networker-peer-add', {
         remoteAddress: peer.remoteAddress,
@@ -301,10 +298,9 @@ class Seeder extends EventEmitter {
     */
   async getSwarmStats () {
     await this.init()
-    let connectivity = { holepunched: false, bootstrapped: false }
-    try {
-      connectivity = await this._connectivity()
-    } catch (_) {}
+
+    const holepunchable = this._networker.swarm.holepunchable()
+    const bootstrapped = holepunchable
 
     const ra = this._networker.swarm.remoteAddress()
     const remoteAddress = ra ? `${ra.host}:${ra.port}` : ''
@@ -321,8 +317,8 @@ class Seeder extends EventEmitter {
       }, [])
 
     return {
-      holepunchable: connectivity.holepunched,
-      bootstrapped: connectivity.bootstrapped,
+      holepunchable,
+      bootstrapped,
       remoteAddress,
       currentPeers
     }
