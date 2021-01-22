@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - packages/seeder
   - Update: get rid of connectivity method call #150
+- packages/sdk
+  - Fix: Using cron v1.7.2 #151
 
 ## [1.0.4] - 2020-11-17
 ### Changed
