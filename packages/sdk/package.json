@@ -36,7 +36,7 @@
     "@geut/permanent-seeder-dashboard": "^1.0.4",
     "@geut/permanent-seeder-database": "^1.0.0",
     "compression": "^1.7.4",
-    "cron": "^1.8.2",
+    "cron": "1.7.2",
     "deep-equal": "^2.0.4",
     "fromentries": "^1.2.1",
     "got": "^11.7.0",
