@@ -24,7 +24,6 @@
     "lerna": "lerna",
     "release": "lerna version --no-git-tag-version && git add . && git commit -m \"Update: version bump\" && npm run release:chan",
     "release:chan": "chan release --allow-yanked $(node -p -e \"require('./lerna.json').version\") && git add CHANGELOG.md && git commit -m \"Update: changelog\" && git push origin HEAD",
-    "publish": "lerna publish",
     "publish:ci": "lerna publish from-package --yes",
     "ghrelease:ci": "chan gh-release $(node -p -e \"require('./lerna.json').version\")"
   },
