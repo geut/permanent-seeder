@@ -213,7 +213,7 @@ Useful to inspect the Permanent Seeder under the hood. :microscope:
 
 The Permanent Seeder can `fetch` keys from an external endpoint, i.e: perform a `GET` request against a particular endpoint. This can be useful if you maintain a service that stores hyperdrive's keys. If that is the case, then the Permament Seeder can fetch those keys regularly. You can think of this like a cron job.
 
-Whilst, we internally expect an `Array<{key}>`, you can customize and parse the fetch response the way you need it.
+Whilst, we internally expect an `Array<{url}>`, you can customize and parse the fetch response the way you need it.
 
 To do this, you will need to modify `$HOME/permanent-seeder/endpoint-hook.js`.
 
