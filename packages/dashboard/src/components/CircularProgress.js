@@ -7,7 +7,7 @@ import Box from '@material-ui/core/Box'
 function CircularProgress (props) {
   return (
     <Box position='relative' display='inline-flex'>
-      <MUICircularProgress variant='static' {...props} />
+      <MUICircularProgress variant='determinate' {...props} />
       <Box
         top={0}
         left={0}

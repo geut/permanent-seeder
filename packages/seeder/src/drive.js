@@ -1,5 +1,6 @@
 const { EventEmitter } = require('events')
 const { promisify } = require('util')
+const { createHmac } = require('crypto')
 
 const { decode } = require('dat-encoding')
 const debounce = require('lodash.debounce')
@@ -29,7 +30,7 @@ class Drive extends EventEmitter {
    * @param {import('corestore')} store
    * @param {object} opts
    */
-  constructor (key, store, opts = {}) {
+  constructor (key, store, opts = {}, secret) {
     super()
 
     opts = {
@@ -40,6 +41,7 @@ class Drive extends EventEmitter {
     this._hyperdrive = hyperdrive(store, decode(key), opts)
     this._key = key
     this._contentFeed = null
+    this._secret = secret
 
     this._emitDownload = debounce(this._emitDownload.bind(this), 50, { maxWait: 100 * 2, leading: true })
 
@@ -73,7 +75,7 @@ class Drive extends EventEmitter {
 
   get peers () {
     return this._hyperdrive.peers.map(peer => ({
-      remoteAddress: peer.remoteAddress,
+      remoteAddress: this._hash(peer.remoteAddress, this._secret),
       ...peer.stats
     }))
   }
@@ -104,6 +106,16 @@ class Drive extends EventEmitter {
     const version = this._hyperdrive.version
 
     this.emit('info', this._key, { info: { version, indexJSON } })
+  }
+
+  _hash (value, secret) {
+    if (!value) {
+      throw new Error('value is required')
+    }
+
+    const hasher = createHmac('ssl3-sha1', secret)
+    hasher.update(value)
+    return hasher.digest('hex')
   }
 
   resume () {

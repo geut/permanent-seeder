@@ -227,6 +227,28 @@ frequency = 5
 hook = "$HOME/permanent-seeder/endpoint-hook.js"
 ```
 
+## Secret
+
+Sensitive information is hashed and salted. Check out your settings `secret` value in `~/permanent-seeder/settings.toml` to customize your salt value.
+
+<details>
+<summary>Note: for legacy installations of the permanent-seeder a default value is applied. You can change this by adding a secret value to your config.</summary>
+
+```toml
+path = "/Users/deka/permanent-seeder"
+save_stats = true
+
+secret = 'YOUR SECRET HERE'
+
+[[keys.endpoints]]
+url = "http://localhost:3000"
+frequency = 5
+hook = "/Users/deka/permanent-seeder/endpoint-hook.js"
+
+```
+
+</details>
+
 ## Design
 
 The Permanent Seeder is a CLI tool that can starts a daemon which will [seed](https://en.wikipedia.org/wiki/Seeding_(computing)) [hyperdrive's](https://hypercore-protocol.org/#hyperdrive) keys that you pass into it.

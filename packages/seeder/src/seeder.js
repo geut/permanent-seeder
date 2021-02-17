@@ -170,7 +170,7 @@ class Seeder extends EventEmitter {
       // get namespace
       const store = this._store.namespace(key)
       // Create drive
-      drive = new Drive(key, store, { size, logger: this._logger })
+      drive = new Drive(key, store, { size, logger: this._logger }, this._opts.secret)
       await drive.ready()
       this._logger.info({ key }, '_seedKey: drive instantiated OK')
       // Store drive in mem

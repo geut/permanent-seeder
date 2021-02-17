@@ -170,10 +170,17 @@ module.exports = {
       preferredPort: this.settings.config.swarm_port
     }
 
+    let secret = this.settings.config.secret
+    if (!secret) {
+      this.logger.warn('It is recommended to setup a secret value in the config. See more here: https://github.com/geut/permanent-seeder#secret')
+      secret = 'defaultS3cret!'
+    }
+
     this.seeder = new Seeder({
       storageLocation: resolve(this.settings.config.path, '.hyper'),
       networker,
-      logger: this.logger
+      logger: this.logger,
+      secret
     })
 
     const drivesDbPath = resolve(this.settings.config.path, 'drives.db')

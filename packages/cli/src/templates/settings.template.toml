@@ -4,6 +4,9 @@ path = 'permanent-seeder'
 ## Enable stats recording
 save_stats = true
 
+## Secret salt
+secret = 'Thisisyours3cr3t!'
+
 ## [optional] Preferred swarm port
 # swarm_port =
 
