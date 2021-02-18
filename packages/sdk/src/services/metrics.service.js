@@ -31,7 +31,7 @@ module.exports = {
       }
     },
     'seeder.networker.peer.*': {
-      debounce: 100,
+      debounce: 1000,
       async handler (ctx) {
         const stats = await this.getNetworkStats()
         this.broker.broadcast('stats.network', { stats })
