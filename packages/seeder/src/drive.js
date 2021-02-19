@@ -5,6 +5,7 @@ const { createHmac } = require('crypto')
 const { decode } = require('dat-encoding')
 const debounce = require('lodash.debounce')
 const fromEntries = require('fromentries')
+const mem = require('mem')
 const hyperdrive = require('@geut/hyperdrive-promise')
 
 const DEFAULT_OPTIONS = {
@@ -68,6 +69,8 @@ class Drive extends EventEmitter {
     this._downloadedBytes = opts.size.downloadedBytes || 0
 
     this._logger = opts.logger || console
+
+    this._hash = mem(this._hash)
   }
 
   get discoveryKey () {
@@ -76,7 +79,7 @@ class Drive extends EventEmitter {
 
   get peers () {
     return this._hyperdrive.peers.map(peer => ({
-      remoteAddress: this._hash(peer.remoteAddress, this._secret, this._algorithm),
+      remoteAddress: this._hash(peer.remoteAddress),
       ...peer.stats
     }))
   }
@@ -109,12 +112,12 @@ class Drive extends EventEmitter {
     this.emit('info', this._key, { info: { version, indexJSON } })
   }
 
-  _hash (value, secret, algorithm) {
+  _hash (value) {
     if (!value) {
       throw new Error('value is required')
     }
 
-    const hasher = createHmac(algorithm, secret)
+    const hasher = createHmac(this._algorithm, this._secret)
     hasher.update(value)
     return hasher.digest('hex')
   }

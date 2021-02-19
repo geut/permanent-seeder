@@ -41,8 +41,7 @@
     "hypercore-cache": "^1.0.2",
     "hypercore-crypto": "^2.2.0",
     "lodash.debounce": "^4.0.8",
-    "p-memoize": "^4.0.1",
-    "p-timeout": "^3.2.0",
+    "mem": "^8.0.0",
     "random-access-file": "^2.1.4",
     "tempy": "latest"
   },
