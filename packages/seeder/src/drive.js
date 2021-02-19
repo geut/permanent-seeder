@@ -30,7 +30,7 @@ class Drive extends EventEmitter {
    * @param {import('corestore')} store
    * @param {object} opts
    */
-  constructor (key, store, opts = {}, secret) {
+  constructor (key, store, opts = {}, secret, algorithm) {
     super()
 
     opts = {
@@ -42,6 +42,7 @@ class Drive extends EventEmitter {
     this._key = key
     this._contentFeed = null
     this._secret = secret
+    this._algorithm = algorithm
 
     this._emitDownload = debounce(this._emitDownload.bind(this), 50, { maxWait: 100 * 2, leading: true })
 
@@ -75,7 +76,7 @@ class Drive extends EventEmitter {
 
   get peers () {
     return this._hyperdrive.peers.map(peer => ({
-      remoteAddress: this._hash(peer.remoteAddress, this._secret),
+      remoteAddress: this._hash(peer.remoteAddress, this._secret, this._algorithm),
       ...peer.stats
     }))
   }
@@ -108,12 +109,12 @@ class Drive extends EventEmitter {
     this.emit('info', this._key, { info: { version, indexJSON } })
   }
 
-  _hash (value, secret) {
+  _hash (value, secret, algorithm) {
     if (!value) {
       throw new Error('value is required')
     }
 
-    const hasher = createHmac('ssl3-sha1', secret)
+    const hasher = createHmac(algorithm, secret)
     hasher.update(value)
     return hasher.digest('hex')
   }

@@ -231,6 +231,8 @@ hook = "$HOME/permanent-seeder/endpoint-hook.js"
 
 Sensitive information is hashed and salted. Check out your settings `secret` value in `~/permanent-seeder/settings.toml` to customize your salt value.
 
+You can also customize the hashing algorithm. Default: `sha256`. Checkout [node.js `getHashes`](https://nodejs.org/api/crypto.html#crypto_crypto_gethashes) output to know more about the different algorithms options.
+
 <details>
 <summary>Note: for legacy installations of the permanent-seeder a default value is applied. You can change this by adding a secret value to your config.</summary>
 
@@ -239,6 +241,7 @@ path = "/Users/deka/permanent-seeder"
 save_stats = true
 
 secret = 'YOUR SECRET HERE'
+algorithm = 'sha256'
 
 [[keys.endpoints]]
 url = "http://localhost:3000"

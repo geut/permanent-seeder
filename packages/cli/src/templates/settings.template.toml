@@ -6,6 +6,8 @@ save_stats = true
 
 ## Secret salt
 secret = 'Thisisyours3cr3t!'
+## Hashing algorithm
+algorithm = 'sha256'
 
 ## [optional] Preferred swarm port
 # swarm_port =
