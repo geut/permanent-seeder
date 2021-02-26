@@ -73,7 +73,7 @@ class Drive extends EventEmitter {
 
   get peers () {
     return this._hyperdrive.peers.map(peer => ({
-      remoteAddress: peer.remoteAddress,
+      remoteAddress: peer.remotePublicKey.toString('hex'),
       ...peer.stats
     }))
   }

@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update: release process update git tag action
 
+### Fixed
+- packages/seeder
+  - Fix: use remotePublicKey to differentiate peers #154
+
 ## [1.0.5] - 2021-01-22
 ### Changed
 - Update: publish from ci tweaks (release workflow)
