@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - packages/seeder
-  - Fix: added hash + salt for sensitive info #154
+  - Fix: use remotePublicKey to differentiate peers #154
 
 ## [1.0.5] - 2021-01-22
 ### Changed
