@@ -1,11 +1,9 @@
 const { EventEmitter } = require('events')
 const { promisify } = require('util')
-const { createHmac } = require('crypto')
 
 const { decode } = require('dat-encoding')
 const debounce = require('lodash.debounce')
 const fromEntries = require('fromentries')
-const mem = require('mem')
 const hyperdrive = require('@geut/hyperdrive-promise')
 
 const DEFAULT_OPTIONS = {
@@ -31,7 +29,7 @@ class Drive extends EventEmitter {
    * @param {import('corestore')} store
    * @param {object} opts
    */
-  constructor (key, store, opts = {}, secret, algorithm) {
+  constructor (key, store, opts = {}) {
     super()
 
     opts = {
@@ -42,8 +40,6 @@ class Drive extends EventEmitter {
     this._hyperdrive = hyperdrive(store, decode(key), opts)
     this._key = key
     this._contentFeed = null
-    this._secret = secret
-    this._algorithm = algorithm
 
     this._emitDownload = debounce(this._emitDownload.bind(this), 50, { maxWait: 100 * 2, leading: true })
 
@@ -69,8 +65,6 @@ class Drive extends EventEmitter {
     this._downloadedBytes = opts.size.downloadedBytes || 0
 
     this._logger = opts.logger || console
-
-    this._hash = mem(this._hash)
   }
 
   get discoveryKey () {
@@ -110,16 +104,6 @@ class Drive extends EventEmitter {
     const version = this._hyperdrive.version
 
     this.emit('info', this._key, { info: { version, indexJSON } })
-  }
-
-  _hash (value) {
-    if (!value) {
-      throw new Error('value is required')
-    }
-
-    const hasher = createHmac(this._algorithm, this._secret)
-    hasher.update(value)
-    return hasher.digest('hex')
   }
 
   resume () {
