@@ -83,13 +83,13 @@ module.exports = {
     async updateKeys (keys) {
       const updateResult = await Promise.all(keys.map(keyRecord => this.update(keyRecord)))
 
-      const updated = updateResult.filter(({ updated }) => updated).map(({ keyRecord }) => keyRecord)
+      // const updated = updateResult.filter(({ updated }) => updated).map(({ keyRecord }) => keyRecord)
       const created = updateResult.filter(({ created }) => created).map(({ keyRecord }) => keyRecord)
 
-      if (updated.length || created.length) {
+      if (created.length) {
         this.broker.cacher.clean()
       }
-      updated.length && this.broker.broadcast('keys.updated', { keys: updated })
+      // updated.length && this.broker.broadcast('keys.updated', { keys: updated })
       created.length && this.broker.broadcast('keys.created', { keys: created })
     }
   },

@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Changed
+- packages/sdk
+  - Update: Remove keys.updated event handler since that path was not supported yet and could derive on mem leaks
 - Update: release process update git tag action
 
 ### Fixed
