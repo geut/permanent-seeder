@@ -28,8 +28,10 @@ save_stats = true
   # Hook to parse response
   hook = 'endpoint-hook.js'
 
-## [optional] To add another endpoint, uncomment and complete next lines:
-# [[keys.endpoints]]
-#   url =
-#   frequency =
-#   hook
+## [[keys.remove]]
+  # delete keys endpoint
+  # url = ''
+
+  # Hook to parse response
+  # hook = 'endpoint-hook.js'
+
