@@ -29,7 +29,7 @@ module.exports = {
       await ctx.call('seeder.seed', { keys: ctx.params.keys.map(({ key }) => key), created: true })
     },
     async 'keys.removed' (ctx) {
-      await ctx.call('seeder.unseed', { keys: ctx.params.keys.map(({ key }) => key) })
+      await ctx.call('seeder.unseedAll', { keys: ctx.params.keys.map(({ key }) => key) })
     }
   },
 
