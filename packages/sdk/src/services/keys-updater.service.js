@@ -27,8 +27,10 @@ module.exports = {
   events: {
     async 'keys.created' (ctx) {
       await ctx.call('seeder.seed', { keys: ctx.params.keys.map(({ key }) => key), created: true })
+    },
+    async 'keys.removed' (ctx) {
+      await ctx.call('seeder.unseed', { keys: ctx.params.keys.map(({ key }) => key) })
     }
-
   },
 
   actions: {
@@ -101,8 +103,10 @@ module.exports = {
       // keysToRemove = [{url:'C'}, {url: 'A'}]
       // keys = [{url:B}]
 
-      const keys = keysToAdd
       this.logger.info({ keysToRemove }, 'runUpdate: keysToRemove')
+      await this.broker.call('keys.remove', { keys: keysToRemove })
+
+      const keys = keysToAdd
       if (keysToRemove.length) {
         // get the diff
         for (const { url } of keysToRemove) {
