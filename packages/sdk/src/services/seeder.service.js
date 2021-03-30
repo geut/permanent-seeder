@@ -38,6 +38,17 @@ module.exports = {
       }
     },
 
+    unseedAll: {
+      params: {
+        keys: { type: 'array' }
+      },
+      async handler (ctx) {
+        for (const key of ctx.params.keys) {
+          await this.unseed(key)
+        }
+      }
+    },
+
     drivePeers: {
       params: {
         key: { type: 'string', length: '64', hex: true }
