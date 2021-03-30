@@ -78,6 +78,10 @@ class Database {
     return this._filter(filter)
   }
 
+  async batch (keys = []) {
+    return this._db.batch(keys, { keyEncoding: this._buildKey })
+  }
+
   async remove (...keyParts) {
     return this._db.del(this._buildKey(keyParts))
   }
