@@ -54,8 +54,9 @@ module.exports = {
         const keys = ctx.params.keys.map(datum => {
           const key = encode(datum.url)
 
-          return { key, type: 'del' }
+          return { key }
         })
+        this.logger.info('keys service: remove handler')
         await this.removeKeys(keys)
       }
     },
@@ -103,6 +104,7 @@ module.exports = {
     },
 
     async removeKeys (keys) {
+      this.logger.info({ keys }, 'keys service: removeKeys method ')
       await this.database.batch(keys)
       if (keys.length) {
         this.broker.broadcast('keys.removed', { keys })
