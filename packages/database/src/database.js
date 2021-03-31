@@ -79,7 +79,8 @@ class Database {
   }
 
   async batch (keys = []) {
-    return this._db.batch(keys, { keyEncoding: this._buildKey })
+    const buildKeys = keys.map(datum => ({ type: 'del', key: this._buildKey([datum.key]) }))
+    return this._db.batch(buildKeys)
   }
 
   async remove (...keyParts) {
