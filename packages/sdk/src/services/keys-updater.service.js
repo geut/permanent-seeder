@@ -73,20 +73,35 @@ module.exports = {
 
       let keysToAdd = []
       let keysToRemove = []
+      let skipAdd = false
+      let keysToAddLength
+
       try {
         // Note(dk): if the user has enabled the delete keys endpoint and there is a url present
         // in settings, then perform a second got call to this endpoint. Use the delete hook to parse.
 
         keysToAdd = await fetchListOfKeys(add.url, hook, { retry: 0, timeout: 5000 })
+
+        keysToAddLength = keysToAdd.length
+        if (keysToAddLength) {
+          if (this.lastCall.add && (this.lastCall.add === keysToAddLength)) {
+            // nothing changed, we can skip adding keys
+            skipAdd = true
+          } else {
+            this.lastCall.add = keysToAddLength
+          }
+        }
       } catch (error) {
-        this.logger.error(error)
+        this.logger.warn(error)
       }
 
       if (remove.url) {
         try {
           keysToRemove = await fetchListOfKeys(remove.url, removeHook, { retry: 0, timeout: 5000 })
         } catch (error) {
-          this.logger.error(error)
+          this.logger.warn('Remove endpoint failed. Cancelling keys update operation.')
+          this.logger.warn(error)
+          return
         }
       }
 
@@ -99,12 +114,18 @@ module.exports = {
       // then we need to merge results. Removing keys from the output if they are present in the delete
       // endpoint result.
 
-      // keysToAdd = [{url: 'A'}, {url: 'B'}]
-      // keysToRemove = [{url:'C'}, {url: 'A'}]
+      // keysToAdd = [{url: 'A'}, {url: 'B'}] <-- works like an append only log, always adding
+      // keysToRemove = [{url:'C'}, {url: 'A'}] <-- same, always adding keys to delete
+
       // keys = [{url:B}]
 
       this.logger.info({ keysToRemove }, 'runUpdate: keysToRemove')
       await this.broker.call('keys.remove', { keys: keysToRemove })
+
+      if (skipAdd) {
+        this.logger.info('No changes on keysToAdd. Skipping keys to add update.')
+        return
+      }
 
       const keys = keysToAdd
       if (keysToRemove.length) {
@@ -124,17 +145,16 @@ module.exports = {
     const { endpoints, remove = [] } = this.settings.config.keys
 
     this.endpoints = {}
+    this.lastCall = {
+      add: 0,
+      remove: 0
+    }
     this.logger.info('>>>>>> created keys-updater')
-    //   this.crons = endpoints.map((endpoint, index) => {
-
     // Note(dk): simplifying this step, we only admit 1 add endpoint
     // and 1 removal endpoint
 
     this.endpoints.add = endpoints[0] || {}
     this.endpoints.remove = remove[0] || {}
-
-    this.logger.info({ addEndpoint: this.endpoints.add }, '>>>>>> created keys-updater')
-    this.logger.info({ removeEndpoint: this.endpoints.remove }, '>>>>>> created keys-updater')
 
     // Note(dk) updates run at the same frequency at the moment
     this.job = new cron.CronJob({
@@ -150,7 +170,6 @@ module.exports = {
       remove: this.endpoints.remove,
       job: this.job
     }
-    //   })
   },
 
   started () {
