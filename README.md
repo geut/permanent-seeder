@@ -244,6 +244,18 @@ To do this, you can tweak the hook response. By default the "delete keys endpoin
 
 Finally, the fetch frequency is managed by the keys endpoint frequency. In other words, they run with the same frequency interval.
 
+### Update Policy
+
+Here are some rules that we follow to know when to update the keys.
+
+Actions that result in update:
+- add endpoint is defined and returns a list of keys. delete endpoint is not defined. :white_check_mark:
+- add endpoint is defined and returns a list of keys. delete endpoint is defined and returns a list of keys. :white_check_mark:
+
+Actions that does not result in update:
+- add endpoint is defined and returns an empty list. Does not matter if delete endpoint is defined or not. :no_entry:
+- add endpoint is defined but throws an error :no_entry:
+- add endpoint is defined and returns a list of keys. delete endpoint is defined but throws an error. :no_entry:
 
 ## Secret
 
