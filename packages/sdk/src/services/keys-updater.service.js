@@ -87,17 +87,19 @@ module.exports = {
           if (this.lastCall.add && (this.lastCall.add === keysToAddLength)) {
             // nothing changed, we can skip adding keys
             skipAdd = true
-          } else {
-            this.lastCall.add = keysToAddLength
           }
+          this.lastCall.add = keysToAddLength
         }
       } catch (error) {
+        this.logger.warn('Add endpoint failed. Cancelling keys update operation.')
         this.logger.warn(error)
+        return
       }
 
       if (remove.url) {
         try {
           keysToRemove = await fetchListOfKeys(remove.url, removeHook, { retry: 0, timeout: 5000 })
+          this.lastCall.remove = keysToRemove.length
         } catch (error) {
           this.logger.warn('Remove endpoint failed. Cancelling keys update operation.')
           this.logger.warn(error)
@@ -119,7 +121,7 @@ module.exports = {
 
       // keys = [{url:B}]
 
-      this.logger.info({ keysToRemove }, 'runUpdate: keysToRemove')
+      this.logger.info({ lastCall: this.lastCall }, 'runUpdate: this.lastCall updated')
       await this.broker.call('keys.remove', { keys: keysToRemove })
 
       if (skipAdd) {
@@ -149,7 +151,6 @@ module.exports = {
       add: 0,
       remove: 0
     }
-    this.logger.info('>>>>>> created keys-updater')
     // Note(dk): simplifying this step, we only admit 1 add endpoint
     // and 1 removal endpoint
 
