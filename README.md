@@ -227,6 +227,36 @@ frequency = 5
 hook = "$HOME/permanent-seeder/endpoint-hook.js"
 ```
 
+### Delete Keys Endpoint
+
+The Permanent Seeder also allows for another endpoint, this one for deleted keys. With this action the Permanent Seeder can fetch an array of keys similarly to what we defined previously for the keys endpoint (adding).
+
+The setting looks like this:
+```toml
+ [[keys.remove]]
+ url = "http://localhost:60620/deletes.json"
+ hook = "/Users/deka/permanent-seeder/endpoint-hook.js"
+```
+
+Again, we internally expect an `Array<{url}>`, but you can customize and parse the fetch response the way you need it.
+
+To do this, you can tweak the hook response. By default the "delete keys endpoint" is using the same default hook used with the keys endpoint.
+
+Finally, the fetch frequency is managed by the keys endpoint frequency. In other words, they run with the same frequency interval.
+
+### Update Policy
+
+Here are some rules that we follow to know when to update the keys.
+
+Actions that result in update:
+- add endpoint is defined and returns a list of keys. delete endpoint is not defined. :white_check_mark:
+- add endpoint is defined and returns a list of keys. delete endpoint is defined and returns a list of keys. :white_check_mark:
+
+Actions that does not result in update:
+- add endpoint is defined and returns an empty list. Does not matter if delete endpoint is defined or not. :no_entry:
+- add endpoint is defined but throws an error :no_entry:
+- add endpoint is defined and returns a list of keys. delete endpoint is defined but throws an error. :no_entry:
+
 ## Secret
 
 Sensitive information is hashed and salted. Check out your settings `secret` value in `~/permanent-seeder/settings.toml` to customize your salt value.

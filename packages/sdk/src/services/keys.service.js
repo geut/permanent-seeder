@@ -38,6 +38,29 @@ module.exports = {
       }
     },
 
+    remove: {
+      params: {
+        keys: {
+          type: 'array',
+          items: {
+            type: 'object',
+            props: {
+              url: { type: 'string' }
+            }
+          }
+        }
+      },
+      async handler (ctx) {
+        const keys = ctx.params.keys.map(datum => {
+          const key = encode(datum.url)
+
+          return { key }
+        })
+        this.logger.info('keys service: remove handler')
+        await this.removeKeys(keys)
+      }
+    },
+
     add: {
       params: {
         key: { type: 'string', length: '64', hex: true }
@@ -80,16 +103,23 @@ module.exports = {
       }
     },
 
+    async removeKeys (keys) {
+      this.logger.info({ keys }, 'keys service: removeKeys method ')
+      await this.database.batch(keys)
+      if (keys.length) {
+        this.broker.broadcast('keys.removed', { keys })
+      }
+    },
+
     async updateKeys (keys) {
       const updateResult = await Promise.all(keys.map(keyRecord => this.update(keyRecord)))
 
-      // const updated = updateResult.filter(({ updated }) => updated).map(({ keyRecord }) => keyRecord)
       const created = updateResult.filter(({ created }) => created).map(({ keyRecord }) => keyRecord)
 
       if (created.length) {
         this.broker.cacher.clean()
       }
-      // updated.length && this.broker.broadcast('keys.updated', { keys: updated })
+
       created.length && this.broker.broadcast('keys.created', { keys: created })
     }
   },

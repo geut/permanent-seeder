@@ -16,7 +16,7 @@ save_stats = true
 # cert = "/path/to/file.crt"
 # key = "/path/to/file.key"
 
-## keys.endpoints = array of configs per endpoint
+## keys.endpoints
 [[keys.endpoints]]
 
   # Where to fetch keys
@@ -28,8 +28,11 @@ save_stats = true
   # Hook to parse response
   hook = 'endpoint-hook.js'
 
-## [optional] To add another endpoint, uncomment and complete next lines:
-# [[keys.endpoints]]
-#   url =
-#   frequency =
-#   hook
+## [optional] remove keys endpoints
+## [[keys.remove]]
+  # delete keys endpoint
+  # url = ''
+
+  # Hook to parse response
+  # hook = 'endpoint-hook.js'
+
