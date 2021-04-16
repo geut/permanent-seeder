@@ -1,6 +1,6 @@
 {
   "name": "@geut/permanent-seeder-sdk",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Permanent Seeder SDK",
   "keywords": [
     "seeder",
@@ -34,7 +34,7 @@
   "dependencies": {
     "@geut/permanent-seeder-core": "^1.0.7",
     "@geut/permanent-seeder-dashboard": "^1.0.7",
-    "@geut/permanent-seeder-database": "^1.0.0",
+    "@geut/permanent-seeder-database": "^1.0.8",
     "compression": "^1.7.4",
     "cron": "1.7.2",
     "deep-equal": "^2.0.4",
