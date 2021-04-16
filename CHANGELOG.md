@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.0.8] - 2021-04-16
 ### Added
 - packages/sdk
   - Added: new delete endpoint #162
@@ -79,7 +81,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - packages/cli
   - Pretty print logs
 
-[Unreleased]: https://github.com/geut/permanent-seeder/compare/v1.0.6...HEAD
+[Unreleased]: https://github.com/geut/permanent-seeder/compare/v1.0.8...HEAD
+[1.0.8]: https://github.com/geut/permanent-seeder/compare/v1.0.6...v1.0.8
 [1.0.6]: https://github.com/geut/permanent-seeder/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/geut/permanent-seeder/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/geut/permanent-seeder/compare/v1.0.3...v1.0.4
