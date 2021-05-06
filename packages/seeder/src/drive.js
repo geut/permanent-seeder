@@ -215,6 +215,10 @@ class Drive extends EventEmitter {
     return this._hyperdrive.download(path, cb)
   }
 
+  watch (path = '/', cb) {
+    return this._hyperdrive.watch(path, cb)
+  }
+
   async getContentFeed () {
     if (!this._contentFeed) {
       try {
