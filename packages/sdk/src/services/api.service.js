@@ -71,9 +71,7 @@ module.exports = function (broker) {
         res.setHeader('Content-Type', 'text/plain')
         res.writeHead(501)
         res.end(err.message)
-      },
-
-      cors: true
+      }
     },
 
     events: {
@@ -237,6 +235,7 @@ module.exports = function (broker) {
       emitDriveUpdate: {
         async handler (key) {
           const drive = await this.drives(key)
+          this.logger.info({ key }, 'emitDriveUpdate')
 
           return this.io.emit('update', drive)
         }
@@ -259,7 +258,7 @@ module.exports = function (broker) {
     },
 
     async started () {
-      this.io = IO.listen(this.server)
+      this.io = IO(this.server)
     }
   }
 }
