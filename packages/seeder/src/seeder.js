@@ -197,14 +197,6 @@ class Seeder extends EventEmitter {
 
     drive.download('/')
 
-    const watcher = drive.watch('/', () => {
-      drive.download('/')
-    })
-
-    this._unwatches.set(key, () => {
-      watcher.destroy()
-    })
-
     this._logger.info({ key }, '_seedKey: drive download called')
     // Wait for content ready
     try {
@@ -217,6 +209,17 @@ class Seeder extends EventEmitter {
     // Resume Download
     this._logger.info({ key }, '_seedKey: resuming drive download')
     drive.resume()
+
+    const watcher = drive.watch('/', async () => {
+      this._logger.info({ key }, 'drive watch: drive updated')
+      drive.download('/')
+      drive.resume()
+    })
+
+    this._unwatches.set(key, () => {
+      watcher.destroy()
+    })
+
     this._logger.info({ key }, '_seedKey: completed OK')
   }
 
