@@ -41,7 +41,7 @@ class Drive extends EventEmitter {
     this._key = key
     this._contentFeed = null
 
-    this._emitDownload = debounce(this._emitDownload.bind(this), 50, { maxWait: 100 * 2, leading: true })
+    this._emitDownload = debounce(this._emitDownload.bind(this), 25, { maxWait: 75, leading: true })
 
     this._onDownload = this._onDownload.bind(this)
     this._onPeerAdd = debounce(this._onPeerAdd.bind(this), 1000 * 5, { maxWait: 1000 * 10 })
@@ -51,7 +51,7 @@ class Drive extends EventEmitter {
     this._onUpload = this._onUpload.bind(this)
     this._logError = this._logError.bind(this)
 
-    this._loadStats = debounce(this._loadStats.bind(this), 100, { maxWait: 100 * 3, leading: true })
+    this._loadStats = debounce(this._loadStats.bind(this), 20, { maxWait: 100, leading: true })
 
     this._hyperdrive.on('update', this._onUpdate)
     this._hyperdrive.on('peer-add', this._onPeerAdd)
@@ -106,7 +106,7 @@ class Drive extends EventEmitter {
     this.emit('info', this._key, { info: { version, indexJSON } })
   }
 
-  resume () {
+  resume (force = false) {
     if (!this._contentFeed) {
       this._logger.warn({ key: this._key }, 'content feed not available')
       return
@@ -114,12 +114,12 @@ class Drive extends EventEmitter {
     const downloaded = this._downloadedBlocks
     const total = this.feedBlocks
 
-    if (downloaded < total) {
+    if (downloaded < total || force) {
       if (this._contentFeed.downloaded() > this._downloadedBlocks) {
         this._downloadedBlocks = this._contentFeed.downloaded()
       }
       this._logger.info({ key: this._key }, 'Resuming download...')
-      this._contentFeed.download()
+      this._contentFeed.download({ start: 0, end: total + 1 })
 
       this._loadStats()
       this._loadInfo()
