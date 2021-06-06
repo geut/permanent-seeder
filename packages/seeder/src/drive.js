@@ -119,7 +119,7 @@ class Drive extends EventEmitter {
         this._downloadedBlocks = this._contentFeed.downloaded()
       }
       this._logger.info({ key: this._key }, 'Resuming download...')
-      this._contentFeed.download({ start: 0, end: total + 1 })
+      this._contentFeed.download() // { start: 0, end: total + 1 }
 
       this._loadStats()
       this._loadInfo()
