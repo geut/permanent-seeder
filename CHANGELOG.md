@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.0.9] - 2021-06-24
 ### Changed
 - packages/sdk
   - Update: socketio upgrade
@@ -86,7 +88,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - packages/cli
   - Pretty print logs
 
-[Unreleased]: https://github.com/geut/permanent-seeder/compare/v1.0.8...HEAD
+[Unreleased]: https://github.com/geut/permanent-seeder/compare/v1.0.9...HEAD
+[1.0.9]: https://github.com/geut/permanent-seeder/compare/v1.0.8...v1.0.9
 [1.0.8]: https://github.com/geut/permanent-seeder/compare/v1.0.6...v1.0.8
 [1.0.6]: https://github.com/geut/permanent-seeder/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/geut/permanent-seeder/compare/v1.0.4...v1.0.5
