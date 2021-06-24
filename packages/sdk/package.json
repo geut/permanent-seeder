@@ -48,13 +48,17 @@
     "p-memoize": "^4.0.1",
     "pino": "^6.7.0",
     "process-top": "^1.2.0",
-    "socket.io": "^2.3.0"
+    "socket.io": "^4.1.2"
   },
   "devDependencies": {
     "@geut/chan": "^2.0.0",
     "@geut/xd": "^1.6.0",
     "jest": "^24.8.0",
     "standard": "^14.3.1"
+  },
+  "optionalDependencies": {
+    "utf-8-validate": "^5.0.5",
+    "bufferutil": "^4.0.3"
   },
   "engines": {
     "node": ">=12.x"

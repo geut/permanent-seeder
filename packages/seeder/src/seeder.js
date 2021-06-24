@@ -61,6 +61,7 @@ class Seeder extends EventEmitter {
     this._opts = { ...DEFAULT_OPTS, ...opts }
     this._drives = new Map()
     this._unlistens = new Map()
+    this._unwatches = new Map()
     this._ready = false
     this._logger = this._opts.logger || console
 
@@ -195,6 +196,7 @@ class Seeder extends EventEmitter {
     this._logger.info({ key }, '_seedKey: drive announced to swarm')
 
     drive.download('/')
+
     this._logger.info({ key }, '_seedKey: drive download called')
     // Wait for content ready
     try {
@@ -207,6 +209,17 @@ class Seeder extends EventEmitter {
     // Resume Download
     this._logger.info({ key }, '_seedKey: resuming drive download')
     drive.resume()
+
+    const watcher = drive.watch('/', async () => {
+      this._logger.info({ key }, 'drive watch: drive updated')
+      drive.download('/')
+      drive.resume()
+    })
+
+    this._unwatches.set(key, () => {
+      watcher.destroy()
+    })
+
     this._logger.info({ key }, '_seedKey: completed OK')
   }
 
@@ -347,6 +360,14 @@ class Seeder extends EventEmitter {
       this._logger.info({ key }, 'unseed: remove listeners attached to key')
     }
 
+    if (this._unwatches.has(key)) {
+      const unwatch = this._unwatches.get(key)
+      // destroy watcher '/'
+      unwatch()
+      this._unwatches.delete(key)
+      this._logger.info({ key }, 'unseed: remove watcher attached to key')
+    }
+
     this._networker.configure(drive.discoveryKey, { announce: false, lookup: false })
     this._logger.info({ key }, 'unseed: unnanouncing discoveryKey')
     this._drives.delete(key)
@@ -372,6 +393,12 @@ class Seeder extends EventEmitter {
     }
 
     this._unlistens.clear()
+
+    for (const unwatch of this._unwatches.values()) {
+      unwatch()
+    }
+
+    this._unwatches.clear()
 
     // close all drives
     try {

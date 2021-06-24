@@ -124,10 +124,11 @@ module.exports = {
         size,
         ...{ seedingStatus }
       })
-      this.broker.broadcast('seeder.drive.download.resume', { key, size })
+      this.broker.broadcast('seeder.drive.download-resume', { key, size })
     },
 
     async onDriveDownloadFix (key, { size }) {
+      this.broker.broadcast('seeder.drive.update', { key, size })
       await this.database.update(key, {
         size
       })
