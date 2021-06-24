@@ -1,6 +1,6 @@
 {
   "name": "@geut/permanent-seeder-sdk",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Permanent Seeder SDK",
   "keywords": [
     "seeder",
@@ -32,9 +32,9 @@
     ]
   },
   "dependencies": {
-    "@geut/permanent-seeder-core": "^1.0.7",
+    "@geut/permanent-seeder-core": "^1.0.9",
     "@geut/permanent-seeder-dashboard": "^1.0.7",
-    "@geut/permanent-seeder-database": "^1.0.8",
+    "@geut/permanent-seeder-database": "^1.0.9",
     "compression": "^1.7.4",
     "cron": "1.7.2",
     "deep-equal": "^2.0.4",
@@ -57,8 +57,8 @@
     "standard": "^14.3.1"
   },
   "optionalDependencies": {
-    "utf-8-validate": "^5.0.5",
-    "bufferutil": "^4.0.3"
+    "bufferutil": "^4.0.3",
+    "utf-8-validate": "^5.0.5"
   },
   "engines": {
     "node": ">=12.x"
