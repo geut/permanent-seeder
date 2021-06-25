@@ -53,7 +53,7 @@
   "devDependencies": {
     "@geut/chan": "^2.0.0",
     "@geut/xd": "^1.6.0",
-    "jest": "^24.8.0",
+    "jest": "26.6.0",
     "standard": "^14.3.1"
   },
   "optionalDependencies": {

@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "@geut/chan": "^2.2.1",
-    "@geut/xd": "geut/xd",
+    "@geut/xd": "^1.6.0",
     "husky": "^3.1.0",
     "lerna": "^3.22.1",
     "lint-staged": "^10.2.9",
