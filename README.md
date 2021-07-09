@@ -128,7 +128,7 @@ Opens the dashboard app in a browser. If you want to manually access the dashboa
 
 <img src="./Dashboard.png" width="800px" height="auto" style="border:2px solid #fff; box-shadow: 10px 10px 5px #ccc">
 
-:warning: Note: The dashboard app runs in `http://localhost:3001`. If you deploy the Permanent Seeder on a server and wants to access the dashboard from the outside, you would need to setup a reverse proxy.
+:warning: Note: The dashboard app runs in `http://localhost:3001`. If you deploy the Permanent Seeder on a server and wants to access the dashboard from the outside, you may need to setup a reverse proxy.
 
 <details>
   <summary>Sample nginx reverse proxy config</summary>
@@ -173,9 +173,20 @@ server {
 </details>
 
 
-:warning: Note2: We use the `.env.example` file as a placeholder for some environment variables that we use internally, like `PUBLIC_URL`. For **development** there are a few others variables that you can tweak, like the `SOCKET_URL` and `API_URL`. Checkout the full `.env.example`:
+#### Environment Variables
 
-```
+We use the `.env.example` file as a placeholder for some environment variables that we use internally, like `PUBLIC_URL`.
+
+If you build the Permanent Seeder from source then you may want to customize some things.
+
+There are two variables that can be used:
+- `PUBLIC_URL`: used to define the root path of the dashboard app. DEFAULT = '/'
+- `REACT_APP_API_VERSION`: used to indicate the api version to use. DEFAULT = 'v1'
+
+For **development** there are a few others variables that you can tweak, like the `SOCKET_URL` and `API_URL`. Checkout the full `.env.example`:
+
+```env
+REACT_APP_API_VERSION=v1
 PUBLIC_URL=/
 
 ## Extend eslint config
@@ -257,30 +268,6 @@ Actions that does not result in update:
 - add endpoint is defined but throws an error :no_entry:
 - add endpoint is defined and returns a list of keys. delete endpoint is defined but throws an error. :no_entry:
 
-## Secret
-
-Sensitive information is hashed and salted. Check out your settings `secret` value in `~/permanent-seeder/settings.toml` to customize your salt value.
-
-You can also customize the hashing algorithm. Default: `sha256`. Checkout [node.js `getHashes`](https://nodejs.org/api/crypto.html#crypto_crypto_gethashes) output to know more about the different algorithms options.
-
-<details>
-<summary>Note: for legacy installations of the permanent-seeder a default value is applied. You can change this by adding a secret value to your config.</summary>
-
-```toml
-path = "/Users/deka/permanent-seeder"
-save_stats = true
-
-secret = 'YOUR SECRET HERE'
-algorithm = 'sha256'
-
-[[keys.endpoints]]
-url = "http://localhost:3000"
-frequency = 5
-hook = "/Users/deka/permanent-seeder/endpoint-hook.js"
-
-```
-
-</details>
 
 ## Design
 
@@ -294,9 +281,43 @@ As you can see the project does a couple of things. To do this we decided to use
 
 ## <a name="routes"></a> Routes
 
-### `api/raw/:key`
+Below we define some internal API routes that can be used to obtain some information about the PS running instance as well as some basic drive queries.
 
-Returns the raw data that feed into the dashboard.
+### `GET /api/<API_VERSION>/drives/:key`
+
+Returns summary data associated to a specific drive `key`. Data may contain download information, peers info, seeding status and basic `index.json` information and version.
+
+### `GET /api/<API_VERSION>/drives/:key/size`
+
+Returns only the download information.
+
+### `GET /api/<API_VERSION>/drives/:key/peers`
+
+Returns only the peers information.
+
+### `GET /api/<API_VERSION>/drives/:key/stats`
+
+Returns only information about the drive's files and its download status.
+
+### `GET /api/<API_VERSION>/drives/:key/info`
+
+Returns only the `index.json` information part.
+
+### `GET /api/<API_VERSION>/drives/:key/seedingStatus`
+
+Returns only the seeding status label.
+
+### `GET /api/v1/stats/host`
+
+Returns information about the host. CPU load, memory and directory usage.
+
+### `GET /api/v1/stats/network`
+
+Returns network information. Include things like online status, swarm information (hole-punching, bootstrapping info and network address), along with transferred bytes.
+
+### `GET /api/<API_VERSION>/raw/:key`
+
+Returns the raw data associated with the seeded drive (`key`). The returned data may include various [lifecycle](packages/seeder/src/drive-events.md) events with their timestamps. This endpoint will return values as long as `save_stats` config property is enabled. See [config](#config).
 
 ## Release
 
