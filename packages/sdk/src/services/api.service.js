@@ -12,6 +12,8 @@ const dashboard = require.resolve('@geut/permanent-seeder-dashboard')
 const { Config } = require('../mixins/config.mixin')
 
 module.exports = function (broker) {
+  const API_VERSION = broker.metadata.version
+  broker.logger.info({ API_VERSION }, 'API VERSION')
   let { api: { https, port = 3001 } = {} } = broker.metadata.config
 
   try {
@@ -49,21 +51,23 @@ module.exports = function (broker) {
         'api.*'
       ],
 
+      path: `api/${API_VERSION}`,
+
       routes: [{
         use: [
           compression()
         ],
         aliases: {
-          'GET api/drives/:key?': 'api.drives',
-          'GET api/drives/:key/size': 'api.drives.size',
-          'GET api/drives/:key/peers': 'api.drives.peers',
-          'GET api/drives/:key/stats': 'api.drives.stats',
-          'GET api/drives/:key/info': 'api.drives.info',
-          'GET api/drives/:key/seedingStatus': 'api.drives.seedingStatus',
-          'GET api/stats/host': 'api.stats.host',
-          'GET api/stats/network': 'api.stats.network',
-          'GET api/raw/:key': 'api.raw',
-          'POST api/drives': 'api.drives.add'
+          'GET drives/:key?': 'api.drives',
+          'GET drives/:key/size': 'api.drives.size',
+          'GET drives/:key/peers': 'api.drives.peers',
+          'GET drives/:key/stats': 'api.drives.stats',
+          'GET drives/:key/info': 'api.drives.info',
+          'GET drives/:key/seedingStatus': 'api.drives.seedingStatus',
+          'GET stats/host': 'api.stats.host',
+          'GET stats/network': 'api.stats.network',
+          'GET raw/:key': 'api.raw',
+          'POST drives': 'api.drives.add'
         }
       }],
 
