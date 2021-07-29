@@ -5,9 +5,13 @@ const memdown = require('memdown')
 const level = require('level-party')
 const { v4: uuid } = require('uuid')
 
+const noop = () => {}
+
 class Database {
-  constructor (db) {
+  constructor (db, logger) {
     const options = { valueEncoding: 'json' }
+
+    this.logger = logger || noop
 
     if (typeof db === 'string') {
       this._db = level(db, options)
@@ -104,6 +108,21 @@ class Database {
     }
 
     return this._db.createReadStream(options)
+  }
+
+  createKeyStream (filter) {
+    let options = {}
+
+    if (filter && Array.isArray(filter)) {
+      const gte = this._buildKey(filter)
+
+      options = {
+        gte,
+        lte: `${gte}~`
+      }
+    }
+
+    return this._db.createKeyStream(options)
   }
 
   onPreSet (key, value) {
