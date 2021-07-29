@@ -319,6 +319,23 @@ Returns network information. Include things like online status, swarm informatio
 
 Returns the raw data associated with the seeded drive (`key`). The returned data may include various [lifecycle](packages/seeder/src/drive-events.md) events with their timestamps. This endpoint will return values as long as `save_stats` config property is enabled. See [config](#config).
 
+### Filter by Version
+
+You can also query data using the drive version.
+
+### `GET /api/<API_VERSION>/drives/:key/versions`
+
+Returns all the versions saved for `key` drive
+
+### `GET /api/<API_VERSION>/drives/:key/:version/info`
+
+Returns only the `info` field for this specific key and version
+
+### `GET /api/<API_VERSION>/drives/:key/:version/stats`
+
+Returns only the `stats` (files) field for this specific key and version
+
+
 ## Release
 
 For releasing new versions we are using GitHub Actions :rocket: This is the process.
