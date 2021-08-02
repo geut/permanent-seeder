@@ -307,6 +307,10 @@ Returns only the `index.json` information part.
 
 Returns only the seeding status label.
 
+### `GET /api/<API_VERSION>/drives/:key/files/:file`
+
+Download the file passed as argument from `key` drive.
+
 ### `GET /api/v1/stats/host`
 
 Returns information about the host. CPU load, memory and directory usage.
@@ -334,6 +338,10 @@ Returns only the `info` field for this specific key and version
 ### `GET /api/<API_VERSION>/drives/:key/:version/stats`
 
 Returns only the `stats` (files) field for this specific key and version
+
+### `GET /api/<API_VERSION>/drives/:key/:version/files/:file`
+
+Download the file passed as argument from a specific drive's checkout (`key`+`version`).
 
 
 ## Release
