@@ -4,9 +4,9 @@ import TableCell from '@material-ui/core/TableCell'
 import TableHead from '@material-ui/core/TableHead'
 import MuiTableRow from '@material-ui/core/TableRow'
 import TableSortLabel from '@material-ui/core/TableSortLabel'
-import IconButton from '@material-ui/core/IconButton'
+// import IconButton from '@material-ui/core/IconButton'
 
-import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline'
+// import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline'
 import { makeStyles } from '@material-ui/core'
 
 const headCells = [
@@ -15,19 +15,19 @@ const headCells = [
   {
     id: 'key',
     numeric: false,
-    label: 'Key',
-    extra: ({ onKeyAdd }) =>
-      (
-        <IconButton
-          aria-label='add key'
-          onClick={onKeyAdd}
-          color='primary'
-          variant='outlined'
-          size='small'
-        >
-          <AddCircleOutlineIcon />
-        </IconButton>
-      )
+    label: 'Key'
+    // extra: ({ onKeyAdd }) =>
+    //   (
+    //     <IconButton
+    //       aria-label='add key'
+    //       onClick={onKeyAdd}
+    //       color='primary'
+    //       variant='outlined'
+    //       size='small'
+    //     >
+    //       <AddCircleOutlineIcon />
+    //     </IconButton>
+    //   )
   },
   { id: 'title', numeric: false, label: 'Title', width: '25%' },
   { id: 'sizeBlocks', numeric: true, label: 'Blocks' },
