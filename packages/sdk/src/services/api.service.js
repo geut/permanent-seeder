@@ -1,10 +1,12 @@
 const { readFileSync } = require('fs')
-const { dirname, resolve } = require('path')
+const { dirname, resolve, normalize } = require('path')
 
 const ApiGatewayService = require('moleculer-web')
+const { MoleculerError } = require('moleculer').Errors
 const IO = require('socket.io')
 const compression = require('compression')
 const { encode } = require('dat-encoding')
+const mime = require('mime')
 
 const { DrivesDatabase } = require('@geut/permanent-seeder-database')
 const dashboard = require.resolve('@geut/permanent-seeder-dashboard')
@@ -71,6 +73,8 @@ module.exports = function (broker) {
           'GET stats/network': 'api.stats.network',
           'GET raw/:key': 'api.raw',
           'GET drives/keys': 'api.keys',
+          'GET drives/:key/files/:file': 'api.drives.downloadFile',
+          'GET drives/:key/:version/files/:file': 'api.drives.downloadFileVersion',
           'POST drives': 'api.drives.add'
         }
       }],
@@ -166,6 +170,57 @@ module.exports = function (broker) {
         }
       },
 
+      'drives.downloadFile': {
+        params: {
+          key: { type: 'string', length: '64', hex: true },
+          file: { type: 'string' }
+        },
+        async handler (ctx) {
+          const filename = normalize(ctx.params.file)
+          const mimeType = mime.getType(filename)
+
+          ctx.meta.$responseType = mimeType
+          ctx.meta.$responseHeaders = {
+            'Content-Disposition': `attachment; filename="${filename}"`
+          }
+
+          try {
+            const fileStream = await this.driveFiles(ctx.params.key, filename)
+            return fileStream
+          } catch (err) {
+            this.logger.error({ filename }, 'FILE NOT FOUND')
+
+            throw new MoleculerError(err.message, 404, 'FILE_NOT_FOUND')
+          }
+        }
+      },
+
+      'drives.downloadFileVersion': {
+        params: {
+          key: { type: 'string', length: '64', hex: true },
+          file: { type: 'string' },
+          version: { type: 'number', convert: true, negative: false }
+        },
+        async handler (ctx) {
+          const filename = normalize(ctx.params.file)
+
+          const mimeType = mime.getType(filename)
+
+          ctx.meta.$responseType = mimeType
+          ctx.meta.$responseHeaders = {
+            'Content-Disposition': `attachment; filename="${filename}"`
+          }
+
+          try {
+            const fileStream = this.driveFilesByVersion(ctx.params.key, ctx.params.version, filename)
+            return fileStream
+          } catch (err) {
+            this.logger.error({ filename }, 'FILE NOT FOUND')
+            throw new MoleculerError(err.message, 404, 'FILE_NOT_FOUND')
+          }
+        }
+      },
+
       'stats.network': {
         cache: {
           ttl: 5
@@ -246,6 +301,20 @@ module.exports = function (broker) {
       driveStats: {
         async handler (key) {
           return this.drivesDatabase.get(key, 'stats')
+        }
+      },
+
+      driveFiles: {
+        async handler (key, file) {
+          const stream = await this.broker.call('seeder.getFile', { key, file })
+
+          return stream
+        }
+      },
+
+      driveFilesByVersion: {
+        async handler (key, version, file) {
+          return this.broker.call('seeder.getFile', { key, version, file })
         }
       },
 
