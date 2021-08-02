@@ -62,6 +62,17 @@ module.exports = {
       async handler () {
         return this.seeder.getSwarmStats()
       }
+    },
+
+    getFile: {
+      params: {
+        key: { type: 'string', length: '64', hex: true },
+        file: { type: 'string' },
+        version: { type: 'number', optional: true }
+      },
+      async handler (ctx) {
+        return this.seeder.getFileStream(ctx.params.key, ctx.params.file, ctx.params.version)
+      }
     }
   },
 
