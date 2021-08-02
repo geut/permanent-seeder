@@ -337,6 +337,37 @@ class Seeder extends EventEmitter {
     }
   }
 
+  async getFileStream (key, filename, version) {
+    if (!key) {
+      throw new Error('A key is required')
+    }
+
+    if (!filename) {
+      throw new Error('A filename is required')
+    }
+
+    let drive = this._getDrive(key)
+
+    if (!drive) return
+
+    if (version) {
+      drive = drive.checkout(version)
+    }
+
+    // check if file exists
+    try {
+      await drive.access(filename, { wait: false })
+    } catch (err) {
+      this._logger.error({ key, filename }, err.message)
+
+      throw new Error(`File not found: ${filename}`)
+    }
+
+    const stream = drive.createReadStream(filename)
+
+    return stream
+  }
+
   /**
    * unseed.
    *
