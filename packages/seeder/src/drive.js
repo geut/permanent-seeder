@@ -261,6 +261,18 @@ class Drive extends EventEmitter {
     }
   }
 
+  checkout (version) {
+    return this._hyperdrive.checkout(version)
+  }
+
+  createReadStream (filename, options = {}) {
+    return this._hyperdrive.createReadStream(filename, options)
+  }
+
+  access (file, opts = {}) {
+    return this._hyperdrive.access(file, opts)
+  }
+
   async close () {
     this._hyperdrive.off('update', this._onUpdate)
     this._hyperdrive.off('peer-add', this._onPeerAdd)
