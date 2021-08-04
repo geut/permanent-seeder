@@ -132,6 +132,7 @@ const DrivesTableRow = React.memo(
           <TableCell className={classes.collapse} colSpan={10}>
             <Collapse in={open} timeout='auto' unmountOnExit>
               <DriveInfo
+                driveKey={driveKey}
                 peers={peers}
                 files={files}
                 sizeBytes={sizeBytes}
