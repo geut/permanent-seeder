@@ -2,14 +2,17 @@ import React from 'react'
 
 import { makeStyles } from '@material-ui/core/styles'
 import Paper from '@material-ui/core/Paper'
+import Link from '@material-ui/core/Link'
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
 import TableCell from '@material-ui/core/TableCell'
 import TableContainer from '@material-ui/core/TableContainer'
 import TableHead from '@material-ui/core/TableHead'
 import TableRow from '@material-ui/core/TableRow'
+import DownloadIcon from '@material-ui/icons/GetApp'
 
 import { humanizedBytes } from '../format'
+import { API_URL } from '../config'
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -38,7 +41,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-function DriveFiles ({ files, blocks, bytes }) {
+function DriveFiles ({ driveKey, files, blocks, bytes }) {
   const classes = useStyles()
   const totalFiles = Object.entries(files).length
 
@@ -54,12 +57,14 @@ function DriveFiles ({ files, blocks, bytes }) {
         </TableHead>
         <TableBody>
           <TableRow className={classes.row}>
+            <TableCell size='small'><strong>Download</strong></TableCell>
             <TableCell size='small'><strong>{totalFiles} file{totalFiles === 1 ? '' : 's'}</strong></TableCell>
             <TableCell align='right'><strong>{humanizedBytes(bytes).pretty}</strong></TableCell>
             <TableCell align='right'><strong>{blocks}</strong></TableCell>
           </TableRow>
           {Object.entries(files).map(([fileName, { size, blocks }]) => (
             <TableRow key={fileName} className={classes.row}>
+              <TableCell size='small'><Link href={`${API_URL}/files/${driveKey}?path=${fileName}`}><DownloadIcon /></Link></TableCell>
               <TableCell className={classes.cell} size='small'>{fileName}</TableCell>
               <TableCell align='right'>{humanizedBytes(size).pretty}</TableCell>
               <TableCell align='right'>{blocks}</TableCell>
