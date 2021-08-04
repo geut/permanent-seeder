@@ -62,6 +62,17 @@ module.exports = {
       async handler () {
         return this.seeder.getSwarmStats()
       }
+    },
+
+    getFile: {
+      params: {
+        key: { type: 'string', length: '64', hex: true },
+        file: { type: 'string' },
+        version: { type: 'number', optional: true }
+      },
+      async handler (ctx) {
+        return this.seeder.getFileStream(ctx.params.key, ctx.params.file, ctx.params.version)
+      }
     }
   },
 
@@ -114,7 +125,7 @@ module.exports = {
     },
 
     async onDriveInfo (key, { info }) {
-      await this.database.update(key, { info })
+      await this.database.update(key, { info }, info.version)
 
       this.broker.broadcast('seeder.drive.info', { key })
     },
@@ -163,8 +174,8 @@ module.exports = {
       this.broker.broadcast('seeder.drive.peer.remove', { key })
     },
 
-    async onDriveStats (key, { stats }) {
-      await this.database.update(key, { stats })
+    async onDriveStats (key, { stats, version }) {
+      await this.database.update(key, { stats }, version)
       this.broker.broadcast('seeder.drive.stats', { key })
     },
 

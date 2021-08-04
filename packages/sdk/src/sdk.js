@@ -65,7 +65,8 @@ class SDK extends EventEmitter {
 
     this._createBroker({
       metadata: {
-        config: this._config
+        config: this._config,
+        version: SDK.VERSION
       },
 
       started (broker) {
@@ -112,5 +113,7 @@ class SDK extends EventEmitter {
     return this._broker.call('seeder.unseed', keyRecord)
   }
 }
+
+SDK.VERSION = 'v1'
 
 module.exports = SDK

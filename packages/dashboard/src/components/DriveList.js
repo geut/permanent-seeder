@@ -38,7 +38,7 @@ function buildDriveData (drive) {
   }
 }
 
-function DriveList ({ loadDrives, onKeyAdd }) {
+function DriveList ({ loadDrives }) {
   const [drives, setDrives] = useState(() => {
     const drives = loadDrives()
 
@@ -80,7 +80,6 @@ function DriveList ({ loadDrives, onKeyAdd }) {
   return (
     <DrivesTable
       drives={Object.values(drives)}
-      onKeyAdd={onKeyAdd}
     />
   )
 }

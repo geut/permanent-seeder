@@ -41,7 +41,7 @@ class Drive extends EventEmitter {
     this._key = key
     this._contentFeed = null
 
-    this._emitDownload = debounce(this._emitDownload.bind(this), 25, { maxWait: 75, leading: true })
+    this._emitDownload = debounce(this._emitDownload.bind(this), 15, { maxWait: 45, leading: true })
 
     this._onDownload = this._onDownload.bind(this)
     this._onPeerAdd = debounce(this._onPeerAdd.bind(this), 1000 * 5, { maxWait: 1000 * 10 })
@@ -51,7 +51,7 @@ class Drive extends EventEmitter {
     this._onUpload = this._onUpload.bind(this)
     this._logError = this._logError.bind(this)
 
-    this._loadStats = debounce(this._loadStats.bind(this), 20, { maxWait: 100, leading: true })
+    this._loadStats = debounce(this._loadStats.bind(this), 10, { maxWait: 50, leading: true })
 
     this._hyperdrive.on('update', this._onUpdate)
     this._hyperdrive.on('peer-add', this._onPeerAdd)
@@ -200,7 +200,8 @@ class Drive extends EventEmitter {
       return
     }
 
-    this.emit('stats', this._key, { stats: fromEntries(stats) })
+    const version = this._hyperdrive.version
+    this.emit('stats', this._key, { stats: fromEntries(stats), version })
   }
 
   _logError (error = {}) {
@@ -258,6 +259,18 @@ class Drive extends EventEmitter {
       downloadedBlocks: this._downloadedBlocks,
       downloadedBytes: this._downloadedBytes
     }
+  }
+
+  checkout (version) {
+    return this._hyperdrive.checkout(version)
+  }
+
+  createReadStream (filename, options = {}) {
+    return this._hyperdrive.createReadStream(filename, options)
+  }
+
+  access (file, opts = {}) {
+    return this._hyperdrive.access(file, opts)
   }
 
   async close () {

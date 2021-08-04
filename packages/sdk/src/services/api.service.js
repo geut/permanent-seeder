@@ -1,10 +1,12 @@
 const { readFileSync } = require('fs')
-const { dirname, resolve } = require('path')
+const { dirname, resolve, normalize } = require('path')
 
 const ApiGatewayService = require('moleculer-web')
+const { MoleculerError } = require('moleculer').Errors
 const IO = require('socket.io')
 const compression = require('compression')
 const { encode } = require('dat-encoding')
+const mime = require('mime')
 
 const { DrivesDatabase } = require('@geut/permanent-seeder-database')
 const dashboard = require.resolve('@geut/permanent-seeder-dashboard')
@@ -12,6 +14,8 @@ const dashboard = require.resolve('@geut/permanent-seeder-dashboard')
 const { Config } = require('../mixins/config.mixin')
 
 module.exports = function (broker) {
+  const API_VERSION = broker.metadata.version
+  broker.logger.info({ API_VERSION }, 'API VERSION')
   let { api: { https, port = 3001 } = {} } = broker.metadata.config
 
   try {
@@ -49,21 +53,29 @@ module.exports = function (broker) {
         'api.*'
       ],
 
+      path: `api/${API_VERSION}`,
+
       routes: [{
         use: [
           compression()
         ],
         aliases: {
-          'GET api/drives/:key?': 'api.drives',
-          'GET api/drives/:key/size': 'api.drives.size',
-          'GET api/drives/:key/peers': 'api.drives.peers',
-          'GET api/drives/:key/stats': 'api.drives.stats',
-          'GET api/drives/:key/info': 'api.drives.info',
-          'GET api/drives/:key/seedingStatus': 'api.drives.seedingStatus',
-          'GET api/stats/host': 'api.stats.host',
-          'GET api/stats/network': 'api.stats.network',
-          'GET api/raw/:key': 'api.raw',
-          'POST api/drives': 'api.drives.add'
+          'GET drives/:key?': 'api.drives',
+          'GET drives/:key/size': 'api.drives.size',
+          'GET drives/:key/peers': 'api.drives.peers',
+          'GET drives/:key/stats': 'api.drives.stats',
+          'GET drives/:key/info': 'api.drives.info',
+          'GET drives/:key/versions': 'api.drives.versions',
+          'GET drives/:key/:version/info': 'api.drives.infoByVersion',
+          'GET drives/:key/:version/stats': 'api.drives.statsByVersion',
+          'GET drives/:key/seedingStatus': 'api.drives.seedingStatus',
+          'GET stats/host': 'api.stats.host',
+          'GET stats/network': 'api.stats.network',
+          'GET raw/:key': 'api.raw',
+          'GET drives/keys': 'api.keys',
+          'GET files/:key': 'api.drives.downloadFile',
+          'GET files/:key/:version': 'api.drives.downloadFileVersion',
+          'POST drives': 'api.drives.add'
         }
       }],
 
@@ -110,9 +122,27 @@ module.exports = function (broker) {
         }
       },
 
+      'drives.versions': {
+        async handler (ctx) {
+          return this.driveVersions(ctx.params.key)
+        }
+      },
+
       'drives.info': {
         async handler (ctx) {
           return this.driveInfo(ctx.params.key)
+        }
+      },
+
+      'drives.infoByVersion': {
+        async handler (ctx) {
+          return this.driveFieldByVersion(ctx.params.key, ctx.params.version, 'info')
+        }
+      },
+
+      'drives.statsByVersion': {
+        async handler (ctx) {
+          return this.driveFieldByVersion(ctx.params.key, ctx.params.version, 'stats')
         }
       },
 
@@ -140,6 +170,57 @@ module.exports = function (broker) {
         }
       },
 
+      'drives.downloadFile': {
+        params: {
+          key: { type: 'string', length: '64', hex: true },
+          path: { type: 'string' }
+        },
+        async handler (ctx) {
+          const filename = normalize(ctx.params.path)
+          const mimeType = mime.getType(filename)
+
+          ctx.meta.$responseType = mimeType
+          ctx.meta.$responseHeaders = {
+            'Content-Disposition': `attachment; filename="${filename}"`
+          }
+
+          try {
+            const fileStream = await this.driveFiles(ctx.params.key, filename)
+            return fileStream
+          } catch (err) {
+            this.logger.error({ filename }, 'FILE NOT FOUND')
+
+            throw new MoleculerError(err.message, 404, 'FILE_NOT_FOUND')
+          }
+        }
+      },
+
+      'drives.downloadFileVersion': {
+        params: {
+          key: { type: 'string', length: '64', hex: true },
+          path: { type: 'string' },
+          version: { type: 'number', convert: true, negative: false }
+        },
+        async handler (ctx) {
+          const filename = normalize(ctx.params.path)
+
+          const mimeType = mime.getType(filename)
+
+          ctx.meta.$responseType = mimeType
+          ctx.meta.$responseHeaders = {
+            'Content-Disposition': `attachment; filename="${filename}"`
+          }
+
+          try {
+            const fileStream = this.driveFilesByVersion(ctx.params.key, ctx.params.version, filename)
+            return fileStream
+          } catch (err) {
+            this.logger.error({ filename }, 'FILE NOT FOUND')
+            throw new MoleculerError(err.message, 404, 'FILE_NOT_FOUND')
+          }
+        }
+      },
+
       'stats.network': {
         cache: {
           ttl: 5
@@ -161,6 +242,12 @@ module.exports = function (broker) {
         }
       },
 
+      keys: {
+        async handler (ctx) {
+          return this.keys()
+        }
+      },
+
       'raw.event': {
         async handler (ctx) {
           return this.raw(ctx.params.key, ctx.params.event)
@@ -172,6 +259,24 @@ module.exports = function (broker) {
       driveInfo: {
         async handler (key) {
           return this.drivesDatabase.get(key, 'info')
+        }
+      },
+
+      driveFieldByVersion: {
+        async handler (key, version, field) {
+          return this.drivesDatabase.getByVersion(key, version, field)
+        }
+      },
+
+      keys: {
+        async handler () {
+          return this.drivesDatabase.getKeys()
+        }
+      },
+
+      driveVersions: {
+        async handler (key) {
+          return this.drivesDatabase.getVersions(key)
         }
       },
 
@@ -196,6 +301,20 @@ module.exports = function (broker) {
       driveStats: {
         async handler (key) {
           return this.drivesDatabase.get(key, 'stats')
+        }
+      },
+
+      driveFiles: {
+        async handler (key, file) {
+          const stream = await this.broker.call('seeder.getFile', { key, file })
+
+          return stream
+        }
+      },
+
+      driveFilesByVersion: {
+        async handler (key, version, file) {
+          return this.broker.call('seeder.getFile', { key, version, file })
         }
       },
 
@@ -253,7 +372,7 @@ module.exports = function (broker) {
     created () {
       const drivesDbPath = resolve(this.settings.config.path, 'drives.db')
 
-      this.drivesDatabase = new DrivesDatabase(drivesDbPath)
+      this.drivesDatabase = new DrivesDatabase(drivesDbPath, this.logger)
       this.recentlyAdded = new Map()
     },
 

@@ -79,7 +79,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }))
 
-function DrivesTable ({ drives, onKeyAdd }) {
+function DrivesTable ({ drives, onKeyAdd = () => {} }) {
   const classes = useStyles()
   const [order, setOrder] = useState('asc')
   const [orderBy, setOrderBy] = useState('seedingStatus')
@@ -102,7 +102,6 @@ function DrivesTable ({ drives, onKeyAdd }) {
         order={order}
         orderBy={orderBy}
         onRequestSort={handleRequestSort}
-        onKeyAdd={onKeyAdd}
         rowCount={drives.length}
       />
       <TableBody>
