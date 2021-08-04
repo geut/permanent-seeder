@@ -73,8 +73,8 @@ module.exports = function (broker) {
           'GET stats/network': 'api.stats.network',
           'GET raw/:key': 'api.raw',
           'GET drives/keys': 'api.keys',
-          'GET drives/:key/files/:file': 'api.drives.downloadFile',
-          'GET drives/:key/:version/files/:file': 'api.drives.downloadFileVersion',
+          'GET files/:key': 'api.drives.downloadFile',
+          'GET files/:key/:version': 'api.drives.downloadFileVersion',
           'POST drives': 'api.drives.add'
         }
       }],
@@ -173,10 +173,10 @@ module.exports = function (broker) {
       'drives.downloadFile': {
         params: {
           key: { type: 'string', length: '64', hex: true },
-          file: { type: 'string' }
+          path: { type: 'string' }
         },
         async handler (ctx) {
-          const filename = normalize(ctx.params.file)
+          const filename = normalize(ctx.params.path)
           const mimeType = mime.getType(filename)
 
           ctx.meta.$responseType = mimeType
@@ -198,11 +198,11 @@ module.exports = function (broker) {
       'drives.downloadFileVersion': {
         params: {
           key: { type: 'string', length: '64', hex: true },
-          file: { type: 'string' },
+          path: { type: 'string' },
           version: { type: 'number', convert: true, negative: false }
         },
         async handler (ctx) {
-          const filename = normalize(ctx.params.file)
+          const filename = normalize(ctx.params.path)
 
           const mimeType = mime.getType(filename)
 
