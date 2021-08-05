@@ -36,6 +36,8 @@ jobs:
           git_tag_prefix: "v"
       - run: npm run publish:ci
         env:
+          PUBLIC_URL: '/'
+          REACT_APP_API_VERSION: 'v1'
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - run: npm run ghrelease:ci
         env:
