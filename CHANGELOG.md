@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 1.0.10 - 2021-08-05 [YANKED]
+
 ## [1.0.9] - 2021-06-24
 ### Changed
 - packages/sdk
@@ -88,7 +90,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - packages/cli
   - Pretty print logs
 
-[Unreleased]: https://github.com/geut/permanent-seeder/compare/v1.0.9...HEAD
+[Unreleased]: https://github.com/geut/permanent-seeder/compare/v1.0.10...HEAD
 [1.0.9]: https://github.com/geut/permanent-seeder/compare/v1.0.8...v1.0.9
 [1.0.8]: https://github.com/geut/permanent-seeder/compare/v1.0.6...v1.0.8
 [1.0.6]: https://github.com/geut/permanent-seeder/compare/v1.0.5...v1.0.6
